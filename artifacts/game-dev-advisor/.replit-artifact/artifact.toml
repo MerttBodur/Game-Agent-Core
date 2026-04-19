@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Game Dev Stack Advisor"
+version = "1.0.0"
+id = "artifacts/game-dev-advisor"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22630
+
+[services.development]
+run = "pnpm --filter @workspace/game-dev-advisor run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/game-dev-advisor", "run", "build" ]
+publicDir = "artifacts/game-dev-advisor/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22630"
+BASE_PATH = "/"

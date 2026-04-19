@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Game Dev Stack Advisor API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: advisor
+    description: AI-powered game dev stack advisor
+  - name: tools
+    description: Game development tool catalog
 paths:
   /healthz:
     get:
@@ -24,6 +28,149 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /advisor/analyze:
+    post:
+      operationId: analyzeProject
+      tags: [advisor]
+      summary: Analyze project and recommend tools
+      description: Takes user project inputs and returns a full AI-powered tool stack recommendation with RAG-backed rationale
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "200":
+          description: Tool stack recommendation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResult"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /advisor/sessions:
+    get:
+      operationId: listSessions
+      tags: [advisor]
+      summary: List recent analysis sessions
+      description: Returns a list of recent project analysis sessions
+      responses:
+        "200":
+          description: List of sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SessionSummary"
+
+  /advisor/sessions/{id}:
+    get:
+      operationId: getSession
+      tags: [advisor]
+      summary: Get a specific analysis session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Session with full analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tools:
+    get:
+      operationId: listTools
+      tags: [tools]
+      summary: List all tools in the catalog
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tool catalog list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tool"
+
+  /tools/{id}:
+    get:
+      operationId: getTool
+      tags: [tools]
+      summary: Get a specific tool by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Tool details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tool"
+        "404":
+          description: Tool not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tools/categories:
+    get:
+      operationId: getToolCategories
+      tags: [tools]
+      summary: List all tool categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ToolCategory"
+
+  /advisor/stats:
+    get:
+      operationId: getAdvisorStats
+      tags: [advisor]
+      summary: Get advisor usage statistics
+      description: Returns stats like total analyses, most recommended tools, popular categories
+      responses:
+        "200":
+          description: Advisor statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdvisorStats"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +181,291 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    ProjectInput:
+      type: object
+      properties:
+        projectIdea:
+          type: string
+          description: Description of the game project idea
+        budget:
+          type: string
+          enum: [zero, low, medium, high, enterprise]
+          description: Budget range for the project
+        timeLimit:
+          type: string
+          enum: [jam, month, quarter, year, longterm]
+          description: Time available for the project
+        skillLevel:
+          type: string
+          enum: [beginner, intermediate, advanced, expert]
+          description: Developer skill level
+        teamSize:
+          type: string
+          enum: [solo, small, medium, large]
+          description: Team size
+        platformTarget:
+          type: array
+          items:
+            type: string
+          description: Target platforms (pc, mobile, web, console, vr)
+        artCapability:
+          type: string
+          enum: [none, basic, intermediate, advanced, professional]
+          description: Art and design capability level
+        otherConstraints:
+          type: ["string", "null"]
+          description: Any other constraints or notes
+      required:
+        - projectIdea
+        - budget
+        - timeLimit
+        - skillLevel
+        - teamSize
+        - platformTarget
+        - artCapability
+
+    ToolRecommendation:
+      type: object
+      properties:
+        toolId:
+          type: integer
+        toolName:
+          type: string
+        score:
+          type: number
+          description: Fit score 0-100
+        reasoning:
+          type: string
+          description: Why this tool was recommended
+        strengths:
+          type: array
+          items:
+            type: string
+        weaknesses:
+          type: array
+          items:
+            type: string
+        tradeoffs:
+          type: string
+        isTopPick:
+          type: boolean
+      required:
+        - toolId
+        - toolName
+        - score
+        - reasoning
+        - strengths
+        - weaknesses
+        - tradeoffs
+        - isTopPick
+
+    CategoryRecommendation:
+      type: object
+      properties:
+        category:
+          type: string
+        categoryLabel:
+          type: string
+        topPick:
+          $ref: "#/components/schemas/ToolRecommendation"
+        alternatives:
+          type: array
+          items:
+            $ref: "#/components/schemas/ToolRecommendation"
+        categoryReasoning:
+          type: string
+      required:
+        - category
+        - categoryLabel
+        - topPick
+        - alternatives
+        - categoryReasoning
+
+    AnalysisResult:
+      type: object
+      properties:
+        sessionId:
+          type: integer
+        projectSummary:
+          type: string
+          description: AI-generated summary of the project
+        detectedProjectType:
+          type: string
+          description: Detected game genre/type
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryRecommendation"
+        overallConfidence:
+          type: number
+          description: Overall confidence score 0-100
+        finalSummary:
+          type: string
+          description: Final narrative explanation of the stack
+        stackOverview:
+          type: string
+          description: One-liner overview of the recommended stack
+      required:
+        - sessionId
+        - projectSummary
+        - detectedProjectType
+        - categories
+        - overallConfidence
+        - finalSummary
+        - stackOverview
+
+    SessionSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectIdea:
+          type: string
+        detectedProjectType:
+          type: string
+        stackOverview:
+          type: string
+        overallConfidence:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - projectIdea
+        - detectedProjectType
+        - stackOverview
+        - overallConfidence
+        - createdAt
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectInput:
+          $ref: "#/components/schemas/ProjectInput"
+        result:
+          $ref: "#/components/schemas/AnalysisResult"
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - projectInput
+        - result
+        - createdAt
+
+    Tool:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        website:
+          type: ["string", "null"]
+        pricing:
+          type: string
+          enum: [free, freemium, paid, subscription, open_source]
+        minSkillLevel:
+          type: string
+          enum: [beginner, intermediate, advanced, expert]
+        platforms:
+          type: array
+          items:
+            type: string
+        strengths:
+          type: array
+          items:
+            type: string
+        weaknesses:
+          type: array
+          items:
+            type: string
+        bestFor:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - name
+        - category
+        - description
+        - pricing
+        - minSkillLevel
+        - platforms
+        - strengths
+        - weaknesses
+        - bestFor
+        - tags
+
+    ToolCategory:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        toolCount:
+          type: integer
+      required:
+        - id
+        - label
+        - description
+        - toolCount
+
+    AdvisorStats:
+      type: object
+      properties:
+        totalAnalyses:
+          type: integer
+        topRecommendedTools:
+          type: array
+          items:
+            type: object
+            properties:
+              toolName:
+                type: string
+              count:
+                type: integer
+            required:
+              - toolName
+              - count
+        popularCategories:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+              count:
+                type: integer
+            required:
+              - category
+              - count
+        avgConfidenceScore:
+          type: number
+      required:
+        - totalAnalyses
+        - topRecommendedTools
+        - popularCategories
+        - avgConfidenceScore
