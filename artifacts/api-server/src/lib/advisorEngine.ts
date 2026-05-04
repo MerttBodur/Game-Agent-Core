@@ -1,5 +1,6 @@
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { GAME_DEV_TOOLS, TOOL_CATEGORIES, type GameDevTool } from "./gameDevTools.js";
+import { retrieveRelevantKnowledge } from "./rag/index.js";
 
 export interface ProjectInput {
   projectIdea: string;
@@ -17,6 +18,26 @@ interface ToolScore {
   score: number;
   reasoning: string;
 }
+
+interface RetrievedKnowledgeChunk {
+  content?: string;
+  text?: string;
+  chunk?: string;
+  pageContent?: string;
+  score?: number;
+  source?: string | Record<string, unknown>;
+  metadata?: Record<string, unknown> | null;
+  [key: string]: unknown;
+}
+
+type RetrievedKnowledgeResponse =
+  | RetrievedKnowledgeChunk[]
+  | {
+      chunks?: RetrievedKnowledgeChunk[];
+      results?: RetrievedKnowledgeChunk[];
+      items?: RetrievedKnowledgeChunk[];
+      documents?: RetrievedKnowledgeChunk[];
+    };
 
 function scoreTool(tool: GameDevTool, input: ProjectInput): number {
   let score = 50;
@@ -108,6 +129,72 @@ function generateReasoning(tool: GameDevTool, input: ProjectInput, score: number
   return parts.join(" ");
 }
 
+async function retrieveKnowledgeForAdvisor(input: ProjectInput): Promise<RetrievedKnowledgeResponse | null> {
+  try {
+    return await retrieveRelevantKnowledge(input, { topK: 5 });
+  } catch (error) {
+    console.warn("RAG retrieval failed; continuing with scoring-only advisor flow.", error);
+    return null;
+  }
+}
+
+function compactText(value: string, maxLength: number): string {
+  const compacted = value.replace(/\s+/g, " ").trim();
+  if (compacted.length <= maxLength) return compacted;
+  return `${compacted.slice(0, maxLength - 1).trimEnd()}...`;
+}
+
+function getRetrievedKnowledgeChunks(retrieved: RetrievedKnowledgeResponse | null): RetrievedKnowledgeChunk[] {
+  if (!retrieved) return [];
+  if (Array.isArray(retrieved)) return retrieved;
+
+  return retrieved.chunks ?? retrieved.results ?? retrieved.items ?? retrieved.documents ?? [];
+}
+
+function getChunkText(chunk: RetrievedKnowledgeChunk): string {
+  const text = chunk.content ?? chunk.text ?? chunk.chunk ?? chunk.pageContent;
+  return typeof text === "string" ? text : "";
+}
+
+function getSourceMetadata(chunk: RetrievedKnowledgeChunk): string {
+  const parts: string[] = [];
+
+  if (typeof chunk.source === "string" && chunk.source.trim()) {
+    parts.push(`source=${compactText(chunk.source, 120)}`);
+  } else if (typeof chunk.source === "object" && chunk.source !== null) {
+    for (const key of ["title", "name", "url", "path", "id"]) {
+      const value = chunk.source[key];
+      if (typeof value === "string" && value.trim()) parts.push(`${key}=${compactText(value, 120)}`);
+    }
+  }
+
+  if (chunk.metadata) {
+    for (const key of ["title", "source", "url", "path", "section", "tool", "category"]) {
+      const value = chunk.metadata[key];
+      if (typeof value === "string" && value.trim()) parts.push(`${key}=${compactText(value, 120)}`);
+    }
+  }
+
+  if (typeof chunk.score === "number") parts.push(`score=${chunk.score.toFixed(3)}`);
+
+  return parts.length > 0 ? parts.join("; ") : "source=unknown";
+}
+
+function formatRetrievedKnowledgeContext(retrieved: RetrievedKnowledgeResponse | null): string {
+  const chunks = getRetrievedKnowledgeChunks(retrieved)
+    .map((chunk) => ({
+      text: compactText(getChunkText(chunk), 900),
+      sourceMetadata: getSourceMetadata(chunk),
+    }))
+    .filter((chunk) => chunk.text.length > 0);
+
+  if (chunks.length === 0) {
+    return "No retrieved knowledge context was available.";
+  }
+
+  return chunks.map((chunk, index) => `${index + 1}. ${chunk.text}\n   Source metadata: ${chunk.sourceMetadata}`).join("\n");
+}
+
 export async function analyzeProjectWithAI(input: ProjectInput): Promise<{
   projectSummary: string;
   detectedProjectType: string;
@@ -145,6 +232,9 @@ export async function analyzeProjectWithAI(input: ProjectInput): Promise<{
     .map(([cat, res]) => `${cat}: ${res.topTool.name} (score: ${res.topTool.score})`)
     .join(", ");
 
+  const retrievedKnowledge = await retrieveKnowledgeForAdvisor(input);
+  const retrievedKnowledgeContext = formatRetrievedKnowledgeContext(retrievedKnowledge);
+
   const prompt = `You are a senior game development consultant. Analyze this game project and provide concise, expert analysis.
 
 PROJECT DETAILS:
@@ -159,6 +249,11 @@ PROJECT DETAILS:
 
 PRE-SCORED TOOL STACK:
 ${topStackSummary}
+
+RETRIEVED KNOWLEDGE CONTEXT:
+${retrievedKnowledgeContext}
+
+Use the pre-scored tool stack as the base ranking. When retrieved knowledge context is available, ground explanations in it and use source metadata to understand where each fact came from. Do not invent unsupported details about tools, pricing, capabilities, performance, or platform support. If retrieved knowledge is unavailable, rely only on the project details and pre-scored stack.
 
 Respond with a JSON object with these exact keys:
 {
