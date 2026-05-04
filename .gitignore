@@ -11,6 +11,14 @@ out-tsc
 # dependencies
 node_modules
 
+# local environment
+.env
+.env.local
+.env.*.local
+
+# Claude Code / MCP local config
+.mcp.json
+
 # IDEs and editors
 /.idea
 .project
@@ -26,6 +34,7 @@ node_modules
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/mcp.json
 
 # misc
 /.sass-cache
@@ -40,9 +49,6 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
-
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
 
 # Replit
 .cache/
