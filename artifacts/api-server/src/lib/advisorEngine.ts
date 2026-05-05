@@ -16,7 +16,17 @@ export interface ProjectInput {
 interface ToolScore {
   tool: GameDevTool;
   score: number;
+  scoreBreakdown: ScoreBreakdown;
   reasoning: string;
+}
+
+interface ScoreBreakdown {
+  budget: number;
+  skill: number;
+  platform: number;
+  timeLimit: number;
+  artCapability: number;
+  total: number;
 }
 
 interface RetrievedKnowledgeChunk {
@@ -39,8 +49,13 @@ type RetrievedKnowledgeResponse =
       documents?: RetrievedKnowledgeChunk[];
     };
 
-function scoreTool(tool: GameDevTool, input: ProjectInput): number {
-  let score = 50;
+function scoreTool(tool: GameDevTool, input: ProjectInput): { total: number; breakdown: ScoreBreakdown } {
+  const baseScore = 50;
+  let budgetDelta = 0;
+  let skillDelta = 0;
+  let platformDelta = 0;
+  let timeLimitDelta = 0;
+  let artCapabilityDelta = 0;
 
   // Budget fit
   const budgetMap: Record<string, string[]> = {
@@ -52,9 +67,9 @@ function scoreTool(tool: GameDevTool, input: ProjectInput): number {
   };
   const allowedPricing = budgetMap[input.budget] || [];
   if (allowedPricing.includes(tool.pricing)) {
-    score += 15;
+    budgetDelta += 15;
   } else {
-    score -= 20;
+    budgetDelta -= 20;
   }
 
   // Skill fit
@@ -62,10 +77,10 @@ function scoreTool(tool: GameDevTool, input: ProjectInput): number {
   const userSkillIdx = skillLevels.indexOf(input.skillLevel);
   const toolSkillIdx = skillLevels.indexOf(tool.minSkillLevel);
   if (userSkillIdx >= toolSkillIdx) {
-    score += 10;
-    if (userSkillIdx - toolSkillIdx >= 2) score += 5; // Comfortable with tool
+    skillDelta += 10;
+    if (userSkillIdx - toolSkillIdx >= 2) skillDelta += 5; // Comfortable with tool
   } else {
-    score -= 15 * (toolSkillIdx - userSkillIdx);
+    skillDelta -= 15 * (toolSkillIdx - userSkillIdx);
   }
 
   // Platform fit
@@ -73,15 +88,15 @@ function scoreTool(tool: GameDevTool, input: ProjectInput): number {
   const toolPlatforms = tool.platforms.map((p) => p.toLowerCase());
   const overlap = userPlatforms.filter((p) => toolPlatforms.includes(p));
   if (overlap.length > 0) {
-    score += 10 + (overlap.length - 1) * 3;
+    platformDelta += 10 + (overlap.length - 1) * 3;
   } else if (userPlatforms.length > 0) {
-    score -= 25;
+    platformDelta -= 25;
   }
 
   // Time limit fit for MVPs (fast iteration tools preferred for jams)
   if (input.timeLimit === "jam") {
-    if (tool.tags.includes("beginner-friendly") || tool.tags.includes("game-jam")) score += 15;
-    if (tool.minSkillLevel === "expert" || tool.minSkillLevel === "advanced") score -= 10;
+    if (tool.tags.includes("beginner-friendly") || tool.tags.includes("game-jam")) timeLimitDelta += 15;
+    if (tool.minSkillLevel === "expert" || tool.minSkillLevel === "advanced") timeLimitDelta -= 10;
   }
 
   // Art capability fit
@@ -95,14 +110,24 @@ function scoreTool(tool: GameDevTool, input: ProjectInput): number {
     };
     const allowedArt = artMap[input.artCapability] || [];
     if (allowedArt.includes(tool.minSkillLevel) || allowedArt.includes("ai_tooling")) {
-      score += 10;
+      artCapabilityDelta += 10;
     } else {
-      score -= 15;
+      artCapabilityDelta -= 15;
     }
   }
 
-  // Clamp 0-100
-  return Math.min(100, Math.max(0, score));
+  const total = Math.min(100, Math.max(0, baseScore + budgetDelta + skillDelta + platformDelta + timeLimitDelta + artCapabilityDelta));
+  return {
+    total,
+    breakdown: {
+      budget: budgetDelta,
+      skill: skillDelta,
+      platform: platformDelta,
+      timeLimit: timeLimitDelta,
+      artCapability: artCapabilityDelta,
+      total,
+    },
+  };
 }
 
 function generateReasoning(tool: GameDevTool, input: ProjectInput, score: number): string {
@@ -198,32 +223,37 @@ function formatRetrievedKnowledgeContext(retrieved: RetrievedKnowledgeResponse |
 export async function analyzeProjectWithAI(input: ProjectInput): Promise<{
   projectSummary: string;
   detectedProjectType: string;
-  categoryResults: Record<string, { topTool: GameDevTool & { score: number; reasoning: string }; alternatives: (GameDevTool & { score: number; reasoning: string })[] }>;
+  categoryResults: Record<string, { topTool: GameDevTool & { score: number; scoreBreakdown: ScoreBreakdown; reasoning: string }; alternatives: (GameDevTool & { score: number; scoreBreakdown: ScoreBreakdown; reasoning: string })[] }>;
   finalSummary: string;
   stackOverview: string;
   overallConfidence: number;
+  ragChunks: Array<{ text: string; source: string; score?: number | null }>;
 }> {
   // Score all tools per category
   const categories = TOOL_CATEGORIES.map((cat) => cat.id);
-  const categoryResults: Record<string, { topTool: GameDevTool & { score: number; reasoning: string }; alternatives: (GameDevTool & { score: number; reasoning: string })[] }> = {};
+  const categoryResults: Record<string, { topTool: GameDevTool & { score: number; scoreBreakdown: ScoreBreakdown; reasoning: string }; alternatives: (GameDevTool & { score: number; scoreBreakdown: ScoreBreakdown; reasoning: string })[] }> = {};
 
   for (const cat of categories) {
     const toolsInCat = GAME_DEV_TOOLS.filter((t) => t.category === cat);
     if (toolsInCat.length === 0) continue;
 
-    const scored: ToolScore[] = toolsInCat.map((tool) => ({
-      tool,
-      score: scoreTool(tool, input),
-      reasoning: generateReasoning(tool, input, scoreTool(tool, input)),
-    }));
+    const scored: ToolScore[] = toolsInCat.map((tool) => {
+      const scoredTool = scoreTool(tool, input);
+      return {
+        tool,
+        score: scoredTool.total,
+        scoreBreakdown: scoredTool.breakdown,
+        reasoning: generateReasoning(tool, input, scoredTool.total),
+      };
+    });
     scored.sort((a, b) => b.score - a.score);
 
     const top = scored[0];
     const alts = scored.slice(1, 3);
 
     categoryResults[cat] = {
-      topTool: { ...top.tool, score: top.score, reasoning: top.reasoning },
-      alternatives: alts.map((a) => ({ ...a.tool, score: a.score, reasoning: a.reasoning })),
+      topTool: { ...top.tool, score: top.score, scoreBreakdown: top.scoreBreakdown, reasoning: top.reasoning },
+      alternatives: alts.map((a) => ({ ...a.tool, score: a.score, scoreBreakdown: a.scoreBreakdown, reasoning: a.reasoning })),
     };
   }
 
@@ -233,6 +263,13 @@ export async function analyzeProjectWithAI(input: ProjectInput): Promise<{
     .join(", ");
 
   const retrievedKnowledge = await retrieveKnowledgeForAdvisor(input);
+  const ragChunks = getRetrievedKnowledgeChunks(retrievedKnowledge)
+    .map((chunk) => ({
+      text: compactText(getChunkText(chunk), 280),
+      source: getSourceMetadata(chunk),
+      score: typeof chunk.score === "number" ? chunk.score : null,
+    }))
+    .filter((chunk) => chunk.text.length > 0);
   const retrievedKnowledgeContext = formatRetrievedKnowledgeContext(retrievedKnowledge);
 
   const prompt = `You are a senior game development consultant. Analyze this game project and provide concise, expert analysis.
@@ -295,5 +332,6 @@ Respond with a JSON object with these exact keys:
   return {
     ...parsed,
     categoryResults,
+    ragChunks,
   };
 }

@@ -30,6 +30,10 @@ router.post("/advisor/analyze", async (req, res): Promise<void> => {
         toolName: cr.topTool.name,
         score: cr.topTool.score,
         reasoning: cr.topTool.reasoning,
+        evidence: {
+          scoreBreakdown: cr.topTool.scoreBreakdown,
+          ragChunks: analysis.ragChunks,
+        },
         strengths: cr.topTool.strengths,
         weaknesses: cr.topTool.weaknesses,
         tradeoffs: cr.topTool.weaknesses[0] ?? "",
@@ -40,6 +44,10 @@ router.post("/advisor/analyze", async (req, res): Promise<void> => {
         toolName: alt.name,
         score: alt.score,
         reasoning: alt.reasoning,
+        evidence: {
+          scoreBreakdown: alt.scoreBreakdown,
+          ragChunks: analysis.ragChunks,
+        },
         strengths: alt.strengths,
         weaknesses: alt.weaknesses,
         tradeoffs: alt.weaknesses[0] ?? "",
