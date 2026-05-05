@@ -1,64 +1,33 @@
-import { PGVectorStore } from "@langchain/community/vectorstores/pgvector";
-import type { PGVectorStoreArgs } from "@langchain/community/vectorstores/pgvector";
+import { pool } from "@workspace/db";
 
-import { getOpenAIEmbeddings, RAG_EMBEDDING_DIMENSIONS } from "./embeddings.js";
+type Row = { content: string; metadata: Record<string, unknown>; score: number };
 
-const RAG_TABLE_NAME = "knowledge_chunks";
+export async function similaritySearch(embedding: number[], topK: number): Promise<Row[]> {
+  const result = await pool.query<Row>(
+    `SELECT content, metadata, 1 - (embedding <=> $1::vector) AS score
+     FROM knowledge_chunks
+     WHERE metadata->>'sourceType' = 'catalog'
+     ORDER BY embedding <=> $1::vector
+     LIMIT $2`,
+    [`[${embedding.join(",")}]`, topK],
+  );
+  return result.rows;
+}
 
-const ragVectorStoreConfig: PGVectorStoreArgs & { dimensions: number } = {
-  tableName: RAG_TABLE_NAME,
-  columns: {
-    idColumnName: "id",
-    vectorColumnName: "embedding",
-    contentColumnName: "content",
-    metadataColumnName: "metadata",
-  },
-  distanceStrategy: "cosine",
-  scoreNormalization: "similarity",
-  dimensions: RAG_EMBEDDING_DIMENSIONS,
-};
-
-let ragVectorStorePromise: Promise<PGVectorStore> | undefined;
-
-function getDatabaseUrl(): string {
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    throw new Error(
-      "DATABASE_URL must be set. Did you forget to provision a database?",
+export async function upsertChunks(
+  chunks: Array<{ id: string; content: string; metadata: Record<string, unknown>; embedding: number[] }>,
+): Promise<void> {
+  for (const chunk of chunks) {
+    await pool.query(
+      `INSERT INTO knowledge_chunks (id, content, metadata, embedding)
+       VALUES ($1, $2, $3::jsonb, $4::vector)
+       ON CONFLICT (id) DO UPDATE SET content = EXCLUDED.content, metadata = EXCLUDED.metadata, embedding = EXCLUDED.embedding`,
+      [chunk.id, chunk.content, JSON.stringify(chunk.metadata), `[${chunk.embedding.join(",")}]`],
     );
   }
-
-  return databaseUrl;
 }
 
-export async function getRagVectorStore(): Promise<PGVectorStore> {
-  ragVectorStorePromise ??= PGVectorStore.initialize(getOpenAIEmbeddings(), {
-    ...ragVectorStoreConfig,
-    postgresConnectionOptions: {
-      connectionString: getDatabaseUrl(),
-    },
-  });
-
-  return ragVectorStorePromise;
-}
-
-export async function closeRagVectorStore(
-  vectorStore?: PGVectorStore,
-): Promise<void> {
-  const activeStore =
-    vectorStore ??
-    (ragVectorStorePromise ? await ragVectorStorePromise : undefined);
-
-  if (!activeStore) return;
-
-  await activeStore.end();
-
-  if (
-    !vectorStore ||
-    activeStore ===
-      (ragVectorStorePromise ? await ragVectorStorePromise : undefined)
-  ) {
-    ragVectorStorePromise = undefined;
-  }
+export async function deleteChunks(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  await pool.query("DELETE FROM knowledge_chunks WHERE id = ANY($1::uuid[])", [ids]);
 }

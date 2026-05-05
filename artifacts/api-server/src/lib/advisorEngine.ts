@@ -1,5 +1,10 @@
-import { openai } from "@workspace/integrations-openai-ai-server";
+import OpenAI from "openai";
 import { GAME_DEV_TOOLS, TOOL_CATEGORIES, type GameDevTool } from "./gameDevTools.js";
+
+const openai = new OpenAI({
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+});
 import { retrieveRelevantKnowledge } from "./rag/index.js";
 
 export interface ProjectInput {
