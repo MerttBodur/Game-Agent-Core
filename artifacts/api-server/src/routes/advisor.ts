@@ -11,6 +11,7 @@ import {
   type ProjectInput,
 } from "../lib/advisorEngine.js";
 import { TOOL_CATEGORIES } from "../lib/gameDevTools.js";
+import { rateLimit } from "../middleware/rateLimit.js";
 
 const router: IRouter = Router();
 
@@ -56,7 +57,7 @@ function buildResponseCategories(
   });
 }
 
-router.post("/advisor/analyze", async (req, res): Promise<void> => {
+router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
   const parsed = AnalyzeProjectBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
