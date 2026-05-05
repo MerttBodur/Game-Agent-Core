@@ -1,9 +1,10 @@
 import { useGetSession, getGetSessionQueryKey } from "@workspace/api-client-react";
 import { Link, useParams } from "wouter";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 type Evidence = {
@@ -160,6 +161,40 @@ export default function SessionDetail() {
   const params = useParams<{ id: string }>();
   const id = parseInt(params.id ?? "0", 10);
   const { data: session, isLoading } = useGetSession(id, { query: { enabled: !!id, queryKey: getGetSessionQueryKey(id) } });
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (session?.result?.stackOverview) {
+      document.title = `${session.result.stackOverview} - Game Dev Stack Advisor`;
+    }
+
+    return () => {
+      document.title = "Game Dev Stack Advisor";
+    };
+  }, [session?.result?.stackOverview]);
+
+  useEffect(() => {
+    if (!copied) {
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [copied]);
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -209,6 +244,11 @@ export default function SessionDetail() {
               <div className={`text-4xl font-black ${confColor}`}>{Math.round(result.overallConfidence)}</div>
               <div className="text-xs text-muted-foreground">Fit Score</div>
             </div>
+          </div>
+          <div className="mb-3">
+            <Button type="button" variant="outline" size="sm" onClick={handleCopyLink}>
+              {copied ? "Link copied!" : "Copy Link"}
+            </Button>
           </div>
           <p className="text-sm text-muted-foreground">{result.projectSummary}</p>
           <p className="text-sm font-semibold text-primary mt-3">{result.stackOverview}</p>
