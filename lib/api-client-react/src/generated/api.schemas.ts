@@ -103,6 +103,27 @@ export interface ProjectInput {
   otherConstraints?: string | null;
 }
 
+export interface ScoreBreakdown {
+  budget: number;
+  skill: number;
+  platform: number;
+  timeLimit: number;
+  artCapability: number;
+  total: number;
+}
+
+export interface RagChunk {
+  text: string;
+  source: string;
+  /** @nullable */
+  score?: number | null;
+}
+
+export interface Evidence {
+  scoreBreakdown: ScoreBreakdown;
+  ragChunks: RagChunk[];
+}
+
 export interface ToolRecommendation {
   toolId: number;
   toolName: string;
@@ -114,6 +135,7 @@ export interface ToolRecommendation {
   weaknesses: string[];
   tradeoffs: string;
   isTopPick: boolean;
+  evidence?: Evidence;
 }
 
 export interface CategoryRecommendation {

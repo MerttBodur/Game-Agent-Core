@@ -62,6 +62,25 @@ export const AnalyzeProjectResponse = zod.object({
         weaknesses: zod.array(zod.string()),
         tradeoffs: zod.string(),
         isTopPick: zod.boolean(),
+        evidence: zod
+          .object({
+            scoreBreakdown: zod.object({
+              budget: zod.number(),
+              skill: zod.number(),
+              platform: zod.number(),
+              timeLimit: zod.number(),
+              artCapability: zod.number(),
+              total: zod.number(),
+            }),
+            ragChunks: zod.array(
+              zod.object({
+                text: zod.string(),
+                source: zod.string(),
+                score: zod.number().nullish(),
+              }),
+            ),
+          })
+          .optional(),
       }),
       alternatives: zod.array(
         zod.object({
@@ -73,6 +92,25 @@ export const AnalyzeProjectResponse = zod.object({
           weaknesses: zod.array(zod.string()),
           tradeoffs: zod.string(),
           isTopPick: zod.boolean(),
+          evidence: zod
+            .object({
+              scoreBreakdown: zod.object({
+                budget: zod.number(),
+                skill: zod.number(),
+                platform: zod.number(),
+                timeLimit: zod.number(),
+                artCapability: zod.number(),
+                total: zod.number(),
+              }),
+              ragChunks: zod.array(
+                zod.object({
+                  text: zod.string(),
+                  source: zod.string(),
+                  score: zod.number().nullish(),
+                }),
+              ),
+            })
+            .optional(),
         }),
       ),
       categoryReasoning: zod.string(),
@@ -154,6 +192,25 @@ export const GetSessionResponse = zod.object({
           weaknesses: zod.array(zod.string()),
           tradeoffs: zod.string(),
           isTopPick: zod.boolean(),
+          evidence: zod
+            .object({
+              scoreBreakdown: zod.object({
+                budget: zod.number(),
+                skill: zod.number(),
+                platform: zod.number(),
+                timeLimit: zod.number(),
+                artCapability: zod.number(),
+                total: zod.number(),
+              }),
+              ragChunks: zod.array(
+                zod.object({
+                  text: zod.string(),
+                  source: zod.string(),
+                  score: zod.number().nullish(),
+                }),
+              ),
+            })
+            .optional(),
         }),
         alternatives: zod.array(
           zod.object({
@@ -165,6 +222,25 @@ export const GetSessionResponse = zod.object({
             weaknesses: zod.array(zod.string()),
             tradeoffs: zod.string(),
             isTopPick: zod.boolean(),
+            evidence: zod
+              .object({
+                scoreBreakdown: zod.object({
+                  budget: zod.number(),
+                  skill: zod.number(),
+                  platform: zod.number(),
+                  timeLimit: zod.number(),
+                  artCapability: zod.number(),
+                  total: zod.number(),
+                }),
+                ragChunks: zod.array(
+                  zod.object({
+                    text: zod.string(),
+                    source: zod.string(),
+                    score: zod.number().nullish(),
+                  }),
+                ),
+              })
+              .optional(),
           }),
         ),
         categoryReasoning: zod.string(),

@@ -5,6 +5,7 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
+import type { Evidence } from "./evidence";
 
 export interface ToolRecommendation {
   toolId: number;
@@ -17,4 +18,5 @@ export interface ToolRecommendation {
   weaknesses: string[];
   tradeoffs: string;
   isTopPick: boolean;
+  evidence?: Evidence;
 }
