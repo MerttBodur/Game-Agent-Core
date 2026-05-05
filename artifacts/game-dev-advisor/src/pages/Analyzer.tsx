@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  useAnalyzeProject,
   ProjectInputBudget,
   ProjectInputTimeLimit,
   ProjectInputSkillLevel,
@@ -259,6 +258,8 @@ function AnalysisView({ result }: { result: AnalysisResult }) {
   );
 }
 
+type AnalyzerPhase = "idle" | "scoring" | "metadata_ready" | "streaming" | "done" | "error";
+
 function SelectCards({
   options,
   value,
@@ -328,11 +329,145 @@ export default function Analyzer() {
   const [platformTarget, setPlatformTarget] = useState<string[]>(["pc"]);
   const [artCapability, setArtCapability] = useState<ProjectInput["artCapability"]>(ProjectInputArtCapability.basic);
   const [otherConstraints, setOtherConstraints] = useState("");
+  const [phase, setPhase] = useState<AnalyzerPhase>("idle");
+  const [partialCategories, setPartialCategories] = useState<CategoryRecommendation[]>([]);
+  const [narrativeTokens, setNarrativeTokens] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [metadata, setMetadata] = useState<{
+    projectSummary: string;
+    detectedProjectType: string;
+    stackOverview: string;
+    overallConfidence: number;
+  } | null>(null);
 
-  const mutation = useAnalyzeProject();
+  const isBusy = phase === "scoring" || phase === "metadata_ready" || phase === "streaming";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const applySseEvent = (eventName: string, rawData: string) => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(rawData);
+    } catch {
+      setPhase("error");
+      setErrorMsg("We received an invalid response chunk. Please try again.");
+      return;
+    }
+
+    if (eventName === "scoring_complete") {
+      const payload = parsed as { categories?: CategoryRecommendation[] };
+      setPartialCategories(payload.categories ?? []);
+      setPhase("metadata_ready");
+      return;
+    }
+
+    if (eventName === "metadata_complete") {
+      const payload = parsed as {
+        projectSummary: string;
+        detectedProjectType: string;
+        stackOverview: string;
+        overallConfidence: number;
+      };
+      setMetadata(payload);
+      setPhase("streaming");
+      return;
+    }
+
+    if (eventName === "narrative_chunk") {
+      const payload = parsed as { token?: string };
+      if (payload.token) {
+        setNarrativeTokens((prev) => prev + payload.token);
+      }
+      if (phase !== "done") {
+        setPhase("streaming");
+      }
+      return;
+    }
+
+    if (eventName === "done") {
+      setResult(parsed as AnalysisResult);
+      setPhase("done");
+      return;
+    }
+
+    if (eventName === "error") {
+      const payload = parsed as { message?: string };
+      setPhase("error");
+      setErrorMsg(payload.message || "Analysis failed. Please try again.");
+    }
+  };
+
+  const streamAnalysis = async (input: ProjectInput): Promise<void> => {
+    setPhase("scoring");
+    setErrorMsg("");
+    setResult(null);
+    setMetadata(null);
+    setNarrativeTokens("");
+    setPartialCategories([]);
+
+    try {
+      const res = await fetch("/api/advisor/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+
+      if (!res.ok || !res.body) {
+        throw new Error("Unable to start analysis stream.");
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const blocks = buffer.split("\n\n");
+        buffer = blocks.pop() ?? "";
+
+        for (const block of blocks) {
+          const lines = block.split(/\r?\n/);
+          let eventName = "";
+          const dataLines: string[] = [];
+
+          for (const line of lines) {
+            if (line.startsWith("event:")) {
+              eventName = line.slice(6).trim();
+            } else if (line.startsWith("data:")) {
+              dataLines.push(line.slice(5).trim());
+            }
+          }
+
+          if (!eventName || dataLines.length === 0) continue;
+          applySseEvent(eventName, dataLines.join("\n"));
+        }
+      }
+
+      const trailing = buffer.trim();
+      if (trailing) {
+        const lines = trailing.split(/\r?\n/);
+        let eventName = "";
+        const dataLines: string[] = [];
+        for (const line of lines) {
+          if (line.startsWith("event:")) {
+            eventName = line.slice(6).trim();
+          } else if (line.startsWith("data:")) {
+            dataLines.push(line.slice(5).trim());
+          }
+        }
+        if (eventName && dataLines.length > 0) {
+          applySseEvent(eventName, dataLines.join("\n"));
+        }
+      }
+    } catch {
+      setPhase("error");
+      setErrorMsg("Analysis failed. Please try again.");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!projectIdea.trim() || platformTarget.length === 0) return;
 
@@ -347,9 +482,7 @@ export default function Analyzer() {
       otherConstraints: otherConstraints || null,
     };
 
-    mutation.mutate({ data: input }, {
-      onSuccess: (data) => setResult(data),
-    });
+    await streamAnalysis(input);
   };
 
   return (
@@ -422,25 +555,68 @@ export default function Analyzer() {
 
           <Button
             type="submit"
-            disabled={mutation.isPending || !projectIdea.trim() || platformTarget.length === 0}
+            disabled={isBusy || !projectIdea.trim() || platformTarget.length === 0}
             className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8 h-11"
           >
-            {mutation.isPending ? "Analyzing..." : "Analyze Project"}
+            {isBusy ? "Analyzing..." : "Analyze Project"}
           </Button>
 
-          {mutation.isError && (
-            <p className="text-sm text-destructive">Analysis failed. Please try again.</p>
+          {phase === "error" && (
+            <p className="text-sm text-destructive">{errorMsg || "Analysis failed. Please try again."}</p>
           )}
         </form>
 
-        {mutation.isPending && (
+        {phase === "scoring" && (
           <div className="flex items-center gap-3 p-6 rounded-xl border border-border bg-card text-muted-foreground">
             <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm">Running AI-powered analysis across all tool categories...</span>
+            <span className="text-sm">Scoring 116 tools across all categories...</span>
           </div>
         )}
 
-        {result && !mutation.isPending && (
+        {(phase === "metadata_ready" || phase === "streaming") && partialCategories.length > 0 && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <Separator className="bg-border" />
+
+            {metadata && (
+              <div className="p-6 rounded-xl border border-primary/30 bg-primary/5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
+                        {metadata.detectedProjectType}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{metadata.projectSummary}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-4xl font-black text-yellow-400">{Math.round(metadata.overallConfidence)}</div>
+                    <div className="text-xs text-muted-foreground">Fit Score</div>
+                  </div>
+                </div>
+                <Separator className="my-4 bg-border" />
+                <p className="text-sm font-semibold text-primary">{metadata.stackOverview}</p>
+              </div>
+            )}
+
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">Stack Breakdown</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {partialCategories.map((cat, i) => (
+                  <CategoryCard key={i} cat={cat} />
+                ))}
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <h3 className="text-sm font-semibold text-foreground mb-2">Final Analysis</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap min-h-16">
+                {narrativeTokens || (phase === "metadata_ready" ? "Generating AI narrative..." : "Streaming narrative...")}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {result && phase === "done" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Separator className="mb-8 bg-border" />
             <AnalysisView result={result} />
