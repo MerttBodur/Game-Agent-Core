@@ -7,12 +7,13 @@ import {
   ProjectInputTeamSize,
   ProjectInputArtCapability,
 } from "@workspace/api-client-react";
-import type { AnalysisResult, ProjectInput, CategoryRecommendation } from "@workspace/api-client-react";
+import type { AnalysisResult, ProjectInput, CategoryRecommendation, Evidence } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const BUDGET_OPTIONS = [
   { value: "zero", label: "Zero", desc: "No money at all" },
@@ -70,6 +71,13 @@ const CATEGORY_LABELS: Record<string, string> = {
   version_control: "Version Control",
   deployment: "Deployment",
   ai_tooling: "AI Tooling",
+  audio: "Audio & Music",
+  networking: "Networking",
+  backend_services: "Backend Services",
+  monetization: "Monetization",
+  analytics: "Analytics",
+  narrative: "Narrative Tools",
+  build_ci: "Build & CI",
 };
 
 function ScoreBar({ score }: { score: number }) {
@@ -80,6 +88,44 @@ function ScoreBar({ score }: { score: number }) {
         className={`score-bar-fill${cls}`}
         style={{ width: `${score}%` }}
       />
+    </div>
+  );
+}
+
+function EvidencePanel({ evidence }: { evidence: Evidence }) {
+  const chunks = evidence.ragChunks.slice(0, 3);
+  return (
+    <div className="mt-3 space-y-4 rounded-md border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
+      <div>
+        <p className="mb-2 font-semibold text-foreground">Score Breakdown</p>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+          <dt>Budget</dt>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.budget}</dd>
+          <dt>Skill</dt>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.skill}</dd>
+          <dt>Platform</dt>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.platform}</dd>
+          <dt>Time</dt>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.timeLimit}</dd>
+          <dt>Art</dt>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.artCapability}</dd>
+        </dl>
+        <p className="mt-2 text-[11px] text-muted-foreground/80">
+          Total: <span className="font-mono">{evidence.scoreBreakdown.total}</span>
+        </p>
+      </div>
+
+      {chunks.length > 0 && (
+        <div className="space-y-2">
+          <p className="font-semibold text-foreground">Knowledge Sources</p>
+          {chunks.map((chunk, index) => (
+            <blockquote key={`${chunk.source}-${index}`} className="border-l-2 border-border pl-2 italic">
+              {chunk.text}
+              <footer className="mt-1 not-italic text-[11px] text-muted-foreground/70">{chunk.source}</footer>
+            </blockquote>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -152,6 +198,17 @@ function CategoryCard({ cat }: { cat: CategoryRecommendation }) {
             </div>
           )}
         </>
+      )}
+
+      {cat.topPick.evidence && (
+        <Collapsible className="mt-3">
+          <CollapsibleTrigger className="text-xs text-primary hover:underline">
+            Why this recommendation?
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <EvidencePanel evidence={cat.topPick.evidence} />
+          </CollapsibleContent>
+        </Collapsible>
       )}
     </Card>
   );
