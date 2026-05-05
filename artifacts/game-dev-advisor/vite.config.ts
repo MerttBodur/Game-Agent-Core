@@ -29,6 +29,9 @@ export default defineConfig({
     host: "0.0.0.0",
     allowedHosts: true,
     fs: { strict: true, deny: ["**/.*"] },
+    proxy: {
+      "/api": "http://localhost:3000",
+    },
   },
   preview: {
     port,
