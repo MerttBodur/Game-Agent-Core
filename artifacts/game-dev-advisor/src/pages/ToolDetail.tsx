@@ -11,10 +11,18 @@ const PRICING_COLORS: Record<string, string> = {
   subscription: "text-orange-400 bg-orange-400/10 border-orange-400/20",
 };
 
+function getFriendlyErrorMessage(error: unknown): string {
+  const e = error as { status?: number; response?: { status?: number } };
+  const status = e?.status ?? e?.response?.status;
+  if (status === 429) return "You're sending requests too quickly. Please wait a minute.";
+  if (status === 404) return "Not found.";
+  return "Something went wrong. Please try again.";
+}
+
 export default function ToolDetail() {
   const params = useParams<{ id: string }>();
   const id = parseInt(params.id ?? "0", 10);
-  const { data: tool, isLoading } = useGetTool(id, { query: { enabled: !!id, queryKey: getGetToolQueryKey(id) } });
+  const { data: tool, isLoading, isError, error } = useGetTool(id, { query: { enabled: !!id, queryKey: getGetToolQueryKey(id) } });
 
   if (isLoading) {
     return (
@@ -24,12 +32,23 @@ export default function ToolDetail() {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-muted-foreground">{getFriendlyErrorMessage(error)}</p>
+          <Link href="/tools" className="text-primary hover:underline text-sm mt-2 inline-block">Back to Catalog</Link>
+        </div>
+      </div>
+    );
+  }
+
   if (!tool) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground">Tool not found.</p>
-          <Link href="/tools" className="text-primary hover:underline text-sm mt-2 inline-block">Back to catalog</Link>
+          <p className="text-muted-foreground">Not found.</p>
+          <Link href="/tools" className="text-primary hover:underline text-sm mt-2 inline-block">Back to Catalog</Link>
         </div>
       </div>
     );
@@ -39,7 +58,7 @@ export default function ToolDetail() {
     <div className="min-h-screen bg-background">
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="mb-6">
-          <Link href="/tools" className="text-xs text-muted-foreground hover:text-primary">← Back to catalog</Link>
+          <Link href="/tools" className="text-xs text-muted-foreground hover:text-primary">Back to Catalog</Link>
         </div>
 
         <div className="mb-8">
@@ -56,7 +75,7 @@ export default function ToolDetail() {
           <p className="text-muted-foreground leading-relaxed">{tool.description}</p>
           {tool.website && (
             <a href={tool.website} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline mt-2 inline-block">
-              {tool.website} →
+              {tool.website}
             </a>
           )}
         </div>

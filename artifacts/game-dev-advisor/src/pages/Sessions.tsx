@@ -1,15 +1,43 @@
 import { useListSessions } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function getFriendlyErrorMessage(error: unknown): string {
+  const e = error as { status?: number; response?: { status?: number } };
+  const status = e?.status ?? e?.response?.status;
+  if (status === 429) return "You're sending requests too quickly. Please wait a minute.";
+  if (status === 404) return "Not found.";
+  return "Something went wrong. Please try again.";
+}
 
 export default function Sessions() {
-  const { data: sessions, isLoading } = useListSessions();
+  const { data: sessions, isLoading, isError, error } = useListSessions();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-background">
+        <div className="max-w-4xl mx-auto px-4 py-12 space-y-3">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index} className="p-4 border-border bg-card">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <p className="text-sm text-muted-foreground text-center">{getFriendlyErrorMessage(error)}</p>
       </div>
     );
   }
@@ -24,7 +52,7 @@ export default function Sessions() {
 
         {!sessions || sessions.length === 0 ? (
           <div className="p-10 text-center border border-border rounded-xl bg-card">
-            <p className="text-muted-foreground">No analyses yet.</p>
+            <p className="text-muted-foreground">No analyses yet. Start by describing your game project above.</p>
             <Link href="/" className="text-primary text-sm hover:underline mt-2 inline-block">
               Run your first analysis
             </Link>
@@ -52,14 +80,19 @@ export default function Sessions() {
                         <div className="text-xs text-muted-foreground">Fit</div>
                       </div>
                     </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      {new Date(session.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(session.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                      <Button type="button" size="sm" variant="outline">
+                        View Session
+                      </Button>
                     </div>
                   </Card>
                 </Link>

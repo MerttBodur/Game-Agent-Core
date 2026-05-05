@@ -157,10 +157,18 @@ function CategoryCard({ cat }: { cat: CategoryRecommendation }) {
   );
 }
 
+function getFriendlyErrorMessage(error: unknown): string {
+  const e = error as { status?: number; response?: { status?: number } };
+  const status = e?.status ?? e?.response?.status;
+  if (status === 429) return "You're sending requests too quickly. Please wait a minute.";
+  if (status === 404) return "Not found.";
+  return "Something went wrong. Please try again.";
+}
+
 export default function SessionDetail() {
   const params = useParams<{ id: string }>();
   const id = parseInt(params.id ?? "0", 10);
-  const { data: session, isLoading } = useGetSession(id, { query: { enabled: !!id, queryKey: getGetSessionQueryKey(id) } });
+  const { data: session, isLoading, isError, error } = useGetSession(id, { query: { enabled: !!id, queryKey: getGetSessionQueryKey(id) } });
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -204,12 +212,23 @@ export default function SessionDetail() {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-muted-foreground">{getFriendlyErrorMessage(error)}</p>
+          <Link href="/sessions" className="text-primary hover:underline text-sm mt-2 inline-block">Back to History</Link>
+        </div>
+      </div>
+    );
+  }
+
   if (!session) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground">Session not found.</p>
-          <Link href="/sessions" className="text-primary hover:underline text-sm mt-2 inline-block">Back to history</Link>
+          <p className="text-muted-foreground">Not found.</p>
+          <Link href="/sessions" className="text-primary hover:underline text-sm mt-2 inline-block">Back to History</Link>
         </div>
       </div>
     );
@@ -231,7 +250,7 @@ export default function SessionDetail() {
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 py-12">
         <div className="mb-6">
-          <Link href="/sessions" className="text-xs text-muted-foreground hover:text-primary">← Back to history</Link>
+          <Link href="/sessions" className="text-xs text-muted-foreground hover:text-primary">Back to History</Link>
         </div>
 
         <div className="mb-8">

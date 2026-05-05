@@ -14,12 +14,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border bg-card/60 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
+        <div className="max-w-6xl mx-auto px-4 py-2 sm:h-14 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-6">
+          <div className="flex w-full sm:w-auto items-center justify-between sm:justify-start gap-3 sm:gap-6">
             <Link href="/" className="text-sm font-black text-foreground tracking-tight">
               GameStack
             </Link>
-            <nav className="flex items-center gap-1">
+            <nav className="flex flex-wrap items-center justify-end sm:justify-start gap-1">
               {NAV.map(({ path, label }) => (
                 <Link
                   key={path}
@@ -45,7 +45,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </header>
       <main className="flex-1">{children}</main>
       <footer className="border-t border-border py-4 text-center text-xs text-muted-foreground">
-        Game Dev Stack Advisor — RAG-powered tool recommendations for indie developers
+        Game Dev Stack Advisor - RAG-powered tool recommendations for indie developers
       </footer>
     </div>
   );

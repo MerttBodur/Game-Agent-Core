@@ -243,11 +243,17 @@ function AnalysisView({ result }: { result: AnalysisResult }) {
 
       <div>
         <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">Stack Breakdown</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {result.categories.map((cat, i) => (
-            <CategoryCard key={i} cat={cat} />
-          ))}
-        </div>
+        {result.categories.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+            No recommendations available for this category yet.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {result.categories.map((cat, i) => (
+              <CategoryCard key={i} cat={cat} />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="p-5 rounded-xl border border-border bg-card">
@@ -349,7 +355,7 @@ export default function Analyzer() {
       parsed = JSON.parse(rawData);
     } catch {
       setPhase("error");
-      setErrorMsg("We received an invalid response chunk. Please try again.");
+      setErrorMsg("Something went wrong. Please try again.");
       return;
     }
 
@@ -392,7 +398,7 @@ export default function Analyzer() {
     if (eventName === "error") {
       const payload = parsed as { message?: string };
       setPhase("error");
-      setErrorMsg(payload.message || "Analysis failed. Please try again.");
+      setErrorMsg(payload.message || "Something went wrong. Please try again.");
     }
   };
 
@@ -412,7 +418,15 @@ export default function Analyzer() {
       });
 
       if (!res.ok || !res.body) {
-        throw new Error("Unable to start analysis stream.");
+        if (res.status === 429) {
+          setErrorMsg("You're sending requests too quickly. Please wait a minute.");
+        } else if (res.status === 404) {
+          setErrorMsg("Not found.");
+        } else {
+          setErrorMsg("Something went wrong. Please try again.");
+        }
+        setPhase("error");
+        return;
       }
 
       const reader = res.body.getReader();
@@ -463,7 +477,7 @@ export default function Analyzer() {
       }
     } catch {
       setPhase("error");
-      setErrorMsg("Analysis failed. Please try again.");
+      setErrorMsg("Something went wrong. Please try again.");
     }
   };
 
@@ -503,7 +517,7 @@ export default function Analyzer() {
             <Textarea
               value={projectIdea}
               onChange={(e) => setProjectIdea(e.target.value)}
-              placeholder="Describe your game concept — genre, mechanics, what makes it unique..."
+              placeholder="Describe your game concept and key mechanics"
               className="min-h-[100px] bg-card border-border text-foreground placeholder:text-muted-foreground resize-none"
               required
             />
@@ -548,7 +562,7 @@ export default function Analyzer() {
             <Textarea
               value={otherConstraints}
               onChange={(e) => setOtherConstraints(e.target.value)}
-              placeholder="Any other requirements, preferences, or constraints..."
+              placeholder="Any other requirements, preferences, or constraints"
               className="bg-card border-border text-foreground placeholder:text-muted-foreground resize-none"
             />
           </div>
@@ -558,18 +572,18 @@ export default function Analyzer() {
             disabled={isBusy || !projectIdea.trim() || platformTarget.length === 0}
             className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8 h-11"
           >
-            {isBusy ? "Analyzing..." : "Analyze Project"}
+            {isBusy ? "Analyzing" : "Analyze Project"}
           </Button>
 
           {phase === "error" && (
-            <p className="text-sm text-destructive">{errorMsg || "Analysis failed. Please try again."}</p>
+            <p className="text-sm text-destructive">{errorMsg || "Something went wrong. Please try again."}</p>
           )}
         </form>
 
         {phase === "scoring" && (
           <div className="flex items-center gap-3 p-6 rounded-xl border border-border bg-card text-muted-foreground">
             <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm">Scoring 116 tools across all categories...</span>
+            <span className="text-sm">Scoring 116 tools across all categories.</span>
           </div>
         )}
 
@@ -600,17 +614,23 @@ export default function Analyzer() {
 
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">Stack Breakdown</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {partialCategories.map((cat, i) => (
-                  <CategoryCard key={i} cat={cat} />
-                ))}
-              </div>
+              {partialCategories.length === 0 ? (
+                <div className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+                  No recommendations available for this category yet.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {partialCategories.map((cat, i) => (
+                    <CategoryCard key={i} cat={cat} />
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <h3 className="text-sm font-semibold text-foreground mb-2">Final Analysis</h3>
               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap min-h-16">
-                {narrativeTokens || (phase === "metadata_ready" ? "Generating AI narrative..." : "Streaming narrative...")}
+                {narrativeTokens || (phase === "metadata_ready" ? "Generating AI narrative." : "Streaming narrative.")}
               </p>
             </div>
           </div>

@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const PRICING_COLORS: Record<string, string> = {
   free: "text-green-400 bg-green-400/10 border-green-400/20",
@@ -20,12 +21,20 @@ const SKILL_COLORS: Record<string, string> = {
   expert: "text-red-400",
 };
 
+function getFriendlyErrorMessage(error: unknown): string {
+  const e = error as { status?: number; response?: { status?: number } };
+  const status = e?.status ?? e?.response?.status;
+  if (status === 429) return "You're sending requests too quickly. Please wait a minute.";
+  if (status === 404) return "Not found.";
+  return "Something went wrong. Please try again.";
+}
+
 export default function Tools() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const { data: categories } = useGetToolCategories();
-  const { data: tools, isLoading } = useListTools(
+  const { data: tools, isLoading, isError, error } = useListTools(
     activeCategory ? { category: activeCategory } : undefined
   );
 
@@ -67,15 +76,35 @@ export default function Tools() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tools..."
+            placeholder="Search tools"
             className="bg-card border-border text-foreground placeholder:text-muted-foreground max-w-sm"
           />
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {Array.from({ length: 9 }).map((_, index) => (
+              <Card key={index} className="p-4 border-border bg-card h-full">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <Skeleton className="h-5 w-1/2" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-5/6" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-1">
+                      <Skeleton className="h-4 w-14" />
+                      <Skeleton className="h-4 w-14" />
+                    </div>
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
+        ) : isError ? (
+          <div className="text-center py-16 text-sm text-muted-foreground">{getFriendlyErrorMessage(error)}</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filtered.map((tool) => (
@@ -103,7 +132,7 @@ export default function Tools() {
             ))}
             {filtered.length === 0 && (
               <div className="col-span-3 text-center py-16 text-muted-foreground text-sm">
-                No tools found.
+                No tools found for this filter.
               </div>
             )}
           </div>
