@@ -2,25 +2,23 @@ import { Router, type IRouter } from "express";
 import { db, sessionsTable, toolsTable } from "@workspace/db";
 import { eq, desc, sql } from "drizzle-orm";
 import { AnalyzeProjectBody, GetSessionParams } from "@workspace/api-zod";
-import { analyzeProjectWithAI, type ProjectInput } from "../lib/advisorEngine.js";
+import {
+  buildCategoryResults,
+  generateMetadataWithAI,
+  retrieveAdvisorKnowledge,
+  streamFinalSummaryWithAI,
+  type CategoryResults,
+  type ProjectInput,
+} from "../lib/advisorEngine.js";
 import { TOOL_CATEGORIES } from "../lib/gameDevTools.js";
 
 const router: IRouter = Router();
 
-router.post("/advisor/analyze", async (req, res): Promise<void> => {
-  const parsed = AnalyzeProjectBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-
-  const input = parsed.data as ProjectInput;
-
-  const analysis = await analyzeProjectWithAI(input);
-  const { categoryResults, projectSummary, detectedProjectType, finalSummary, stackOverview, overallConfidence } = analysis;
-
-  // Build categories array for storage
-  const categories = TOOL_CATEGORIES.filter((cat) => categoryResults[cat.id]).map((cat) => {
+function buildResponseCategories(
+  categoryResults: CategoryResults,
+  ragChunks: Array<{ text: string; source: string; score?: number | null }>,
+) {
+  return TOOL_CATEGORIES.filter((cat) => categoryResults[cat.id]).map((cat) => {
     const cr = categoryResults[cat.id];
     return {
       category: cat.id,
@@ -32,7 +30,7 @@ router.post("/advisor/analyze", async (req, res): Promise<void> => {
         reasoning: cr.topTool.reasoning,
         evidence: {
           scoreBreakdown: cr.topTool.scoreBreakdown,
-          ragChunks: analysis.ragChunks,
+          ragChunks,
         },
         strengths: cr.topTool.strengths,
         weaknesses: cr.topTool.weaknesses,
@@ -46,7 +44,7 @@ router.post("/advisor/analyze", async (req, res): Promise<void> => {
         reasoning: alt.reasoning,
         evidence: {
           scoreBreakdown: alt.scoreBreakdown,
-          ragChunks: analysis.ragChunks,
+          ragChunks,
         },
         strengths: alt.strengths,
         weaknesses: alt.weaknesses,
@@ -56,46 +54,91 @@ router.post("/advisor/analyze", async (req, res): Promise<void> => {
       categoryReasoning: cr.topTool.reasoning,
     };
   });
+}
 
-  // Resolve tool IDs from DB
-  const dbTools = await db.select().from(toolsTable);
-  const toolIdMap: Record<string, number> = {};
-  for (const t of dbTools) {
-    toolIdMap[t.name] = t.id;
+router.post("/advisor/analyze", async (req, res): Promise<void> => {
+  const parsed = AnalyzeProjectBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
   }
 
-  for (const cat of categories) {
-    cat.topPick.toolId = toolIdMap[cat.topPick.toolName] ?? 0;
-    for (const alt of cat.alternatives) {
-      alt.toolId = toolIdMap[alt.toolName] ?? 0;
-    }
-  }
+  const input = parsed.data as ProjectInput;
 
-  const resultObj = {
-    projectSummary,
-    detectedProjectType,
-    categories,
-    overallConfidence,
-    finalSummary,
-    stackOverview,
-    sessionId: 0,
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  if (typeof res.flushHeaders === "function") res.flushHeaders();
+  const send = (event: string, data: unknown): void => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };
 
-  const [session] = await db
-    .insert(sessionsTable)
-    .values({
-      projectIdea: input.projectIdea,
-      projectInput: input as object,
-      detectedProjectType,
-      stackOverview,
-      overallConfidence,
-      result: resultObj as object,
-    })
-    .returning();
+  try {
+    const categoryResults = buildCategoryResults(input);
+    const earlyCategories = buildResponseCategories(categoryResults, []);
+    send("scoring_complete", { categories: earlyCategories });
 
-  resultObj.sessionId = session.id;
+    const { ragChunks, retrievedKnowledgeContext } = await retrieveAdvisorKnowledge(input);
+    const metadata = await generateMetadataWithAI(input, categoryResults, retrievedKnowledgeContext);
+    send("metadata_complete", metadata);
 
-  res.json(resultObj);
+    const finalSummary = await streamFinalSummaryWithAI(
+      input,
+      metadata,
+      categoryResults,
+      retrievedKnowledgeContext,
+      (token) => send("narrative_chunk", { token }),
+    );
+
+    const categories = buildResponseCategories(categoryResults, ragChunks);
+
+    // Resolve tool IDs from DB
+    const dbTools = await db.select().from(toolsTable);
+    const toolIdMap: Record<string, number> = {};
+    for (const t of dbTools) {
+      toolIdMap[t.name] = t.id;
+    }
+
+    for (const cat of categories) {
+      cat.topPick.toolId = toolIdMap[cat.topPick.toolName] ?? 0;
+      for (const alt of cat.alternatives) {
+        alt.toolId = toolIdMap[alt.toolName] ?? 0;
+      }
+    }
+
+    const resultObj = {
+      projectSummary: metadata.projectSummary,
+      detectedProjectType: metadata.detectedProjectType,
+      categories,
+      overallConfidence: metadata.overallConfidence,
+      finalSummary:
+        finalSummary ||
+        "This stack has been selected based on your budget, skill level, and platform targets.",
+      stackOverview: metadata.stackOverview,
+      sessionId: 0,
+    };
+
+    const [session] = await db
+      .insert(sessionsTable)
+      .values({
+        projectIdea: input.projectIdea,
+        projectInput: input as object,
+        detectedProjectType: metadata.detectedProjectType,
+        stackOverview: metadata.stackOverview,
+        overallConfidence: metadata.overallConfidence,
+        result: resultObj as object,
+      })
+      .returning();
+
+    resultObj.sessionId = session.id;
+
+    send("done", resultObj);
+    res.end();
+  } catch (error) {
+    console.error("Advisor streaming failed", error);
+    send("error", { message: "Analysis failed." });
+    res.end();
+  }
 });
 
 router.get("/advisor/sessions", async (_req, res): Promise<void> => {

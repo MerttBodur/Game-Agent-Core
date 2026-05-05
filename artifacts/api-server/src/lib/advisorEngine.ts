@@ -20,7 +20,7 @@ interface ToolScore {
   reasoning: string;
 }
 
-interface ScoreBreakdown {
+export interface ScoreBreakdown {
   budget: number;
   skill: number;
   platform: number;
@@ -48,6 +48,21 @@ type RetrievedKnowledgeResponse =
       items?: RetrievedKnowledgeChunk[];
       documents?: RetrievedKnowledgeChunk[];
     };
+
+export interface CategoryResultTool extends GameDevTool {
+  score: number;
+  scoreBreakdown: ScoreBreakdown;
+  reasoning: string;
+}
+
+export type CategoryResults = Record<string, { topTool: CategoryResultTool; alternatives: CategoryResultTool[] }>;
+
+export interface AnalysisMetadata {
+  projectSummary: string;
+  detectedProjectType: string;
+  stackOverview: string;
+  overallConfidence: number;
+}
 
 function scoreTool(tool: GameDevTool, input: ProjectInput): { total: number; breakdown: ScoreBreakdown } {
   const baseScore = 50;
@@ -220,18 +235,9 @@ function formatRetrievedKnowledgeContext(retrieved: RetrievedKnowledgeResponse |
   return chunks.map((chunk, index) => `${index + 1}. ${chunk.text}\n   Source metadata: ${chunk.sourceMetadata}`).join("\n");
 }
 
-export async function analyzeProjectWithAI(input: ProjectInput): Promise<{
-  projectSummary: string;
-  detectedProjectType: string;
-  categoryResults: Record<string, { topTool: GameDevTool & { score: number; scoreBreakdown: ScoreBreakdown; reasoning: string }; alternatives: (GameDevTool & { score: number; scoreBreakdown: ScoreBreakdown; reasoning: string })[] }>;
-  finalSummary: string;
-  stackOverview: string;
-  overallConfidence: number;
-  ragChunks: Array<{ text: string; source: string; score?: number | null }>;
-}> {
-  // Score all tools per category
+export function buildCategoryResults(input: ProjectInput): CategoryResults {
   const categories = TOOL_CATEGORIES.map((cat) => cat.id);
-  const categoryResults: Record<string, { topTool: GameDevTool & { score: number; scoreBreakdown: ScoreBreakdown; reasoning: string }; alternatives: (GameDevTool & { score: number; scoreBreakdown: ScoreBreakdown; reasoning: string })[] }> = {};
+  const categoryResults: CategoryResults = {};
 
   for (const cat of categories) {
     const toolsInCat = GAME_DEV_TOOLS.filter((t) => t.category === cat);
@@ -257,22 +263,34 @@ export async function analyzeProjectWithAI(input: ProjectInput): Promise<{
     };
   }
 
-  // Use AI to generate narrative summaries
-  const topStackSummary = Object.entries(categoryResults)
+  return categoryResults;
+}
+
+export function buildTopStackSummary(categoryResults: CategoryResults): string {
+  return Object.entries(categoryResults)
     .map(([cat, res]) => `${cat}: ${res.topTool.name} (score: ${res.topTool.score})`)
     .join(", ");
+}
 
+export async function retrieveAdvisorKnowledge(input: ProjectInput): Promise<{
+  ragChunks: Array<{ text: string; source: string; score?: number | null }>;
+  retrievedKnowledgeContext: string;
+}> {
   const retrievedKnowledge = await retrieveKnowledgeForAdvisor(input);
-  const ragChunks = getRetrievedKnowledgeChunks(retrievedKnowledge)
+  return {
+    ragChunks: getRetrievedKnowledgeChunks(retrievedKnowledge)
     .map((chunk) => ({
       text: compactText(getChunkText(chunk), 280),
       source: getSourceMetadata(chunk),
       score: typeof chunk.score === "number" ? chunk.score : null,
     }))
-    .filter((chunk) => chunk.text.length > 0);
-  const retrievedKnowledgeContext = formatRetrievedKnowledgeContext(retrievedKnowledge);
+    .filter((chunk) => chunk.text.length > 0),
+    retrievedKnowledgeContext: formatRetrievedKnowledgeContext(retrievedKnowledge),
+  };
+}
 
-  const prompt = `You are a senior game development consultant. Analyze this game project and provide concise, expert analysis.
+function getMetadataPrompt(input: ProjectInput, topStackSummary: string, retrievedKnowledgeContext: string): string {
+  return `You are a senior game development consultant. Analyze this game project and provide concise, expert analysis.
 
 PROJECT DETAILS:
 - Idea: ${input.projectIdea}
@@ -296,10 +314,51 @@ Respond with a JSON object with these exact keys:
 {
   "projectSummary": "2-3 sentence summary of what this game project is and what makes it interesting/challenging",
   "detectedProjectType": "Brief label like '2D Platformer', 'Mobile Puzzle Game', 'FPS Shooter', 'RPG', 'Game Jam Entry' etc.",
-  "finalSummary": "3-4 sentences explaining why this stack is recommended for this specific project, covering the most important trade-offs",
   "stackOverview": "One crisp sentence listing the core recommended tools, e.g. 'Godot + GDScript + Aseprite + itch.io'",
   "overallConfidence": <number 0-100 representing how confident you are this stack fits the project>
 }`;
+}
+
+function getFinalSummaryPrompt(
+  input: ProjectInput,
+  metadata: AnalysisMetadata,
+  topStackSummary: string,
+  retrievedKnowledgeContext: string,
+): string {
+  return `You are a senior game development consultant.
+
+Write only the final recommendation narrative for this project in 3-4 sentences.
+
+PROJECT DETAILS:
+- Idea: ${input.projectIdea}
+- Budget: ${input.budget}
+- Timeline: ${input.timeLimit}
+- Skill Level: ${input.skillLevel}
+- Team: ${input.teamSize}
+- Target Platforms: ${input.platformTarget.join(", ")}
+- Art Capability: ${input.artCapability}
+- Constraints: ${input.otherConstraints || "None"}
+
+PRE-SCORED TOOL STACK:
+${topStackSummary}
+
+METADATA:
+- Project Summary: ${metadata.projectSummary}
+- Project Type: ${metadata.detectedProjectType}
+- Stack Overview: ${metadata.stackOverview}
+
+RETRIEVED KNOWLEDGE CONTEXT:
+${retrievedKnowledgeContext}
+
+Ground your narrative in the stack and available retrieved context. Do not invent unsupported details.`;
+}
+
+export async function generateMetadataWithAI(
+  input: ProjectInput,
+  categoryResults: CategoryResults,
+  retrievedKnowledgeContext: string,
+): Promise<AnalysisMetadata> {
+  const prompt = getMetadataPrompt(input, buildTopStackSummary(categoryResults), retrievedKnowledgeContext);
 
   const response = await openai.chat.completions.create({
     model: "gpt-5-mini",
@@ -309,13 +368,7 @@ Respond with a JSON object with these exact keys:
   });
 
   const content = response.choices[0]?.message?.content ?? "{}";
-  let parsed: {
-    projectSummary: string;
-    detectedProjectType: string;
-    finalSummary: string;
-    stackOverview: string;
-    overallConfidence: number;
-  };
+  let parsed: AnalysisMetadata;
 
   try {
     parsed = JSON.parse(content);
@@ -323,14 +376,81 @@ Respond with a JSON object with these exact keys:
     parsed = {
       projectSummary: "A game development project with specific constraints and goals.",
       detectedProjectType: "Indie Game",
-      finalSummary: "This stack has been selected based on your budget, skill level, and platform targets.",
-      stackOverview: Object.values(categoryResults).map((r) => r.topTool.name).slice(0, 4).join(" + "),
+      stackOverview: Object.values(categoryResults)
+        .map((r) => r.topTool.name)
+        .slice(0, 4)
+        .join(" + "),
       overallConfidence: 72,
     };
   }
 
   return {
-    ...parsed,
+    projectSummary: parsed.projectSummary,
+    detectedProjectType: parsed.detectedProjectType,
+    stackOverview: parsed.stackOverview,
+    overallConfidence: parsed.overallConfidence,
+  };
+}
+
+export async function streamFinalSummaryWithAI(
+  input: ProjectInput,
+  metadata: AnalysisMetadata,
+  categoryResults: CategoryResults,
+  retrievedKnowledgeContext: string,
+  onToken: (token: string) => void,
+): Promise<string> {
+  const prompt = getFinalSummaryPrompt(input, metadata, buildTopStackSummary(categoryResults), retrievedKnowledgeContext);
+  const stream = await openai.chat.completions.create({
+    model: "gpt-5-mini",
+    stream: true,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  let finalSummary = "";
+  for await (const chunk of stream) {
+    const token = chunk.choices[0]?.delta?.content ?? "";
+    if (token) {
+      finalSummary += token;
+      onToken(token);
+    }
+  }
+  return finalSummary.trim();
+}
+
+export async function generateFinalSummaryWithAI(
+  input: ProjectInput,
+  metadata: AnalysisMetadata,
+  categoryResults: CategoryResults,
+  retrievedKnowledgeContext: string,
+): Promise<string> {
+  const prompt = getFinalSummaryPrompt(input, metadata, buildTopStackSummary(categoryResults), retrievedKnowledgeContext);
+  const response = await openai.chat.completions.create({
+    model: "gpt-5-mini",
+    max_completion_tokens: 512,
+    messages: [{ role: "user", content: prompt }],
+  });
+  return (response.choices[0]?.message?.content ?? "").trim();
+}
+
+export async function analyzeProjectWithAI(input: ProjectInput): Promise<{
+  projectSummary: string;
+  detectedProjectType: string;
+  categoryResults: CategoryResults;
+  finalSummary: string;
+  stackOverview: string;
+  overallConfidence: number;
+  ragChunks: Array<{ text: string; source: string; score?: number | null }>;
+}> {
+  const categoryResults = buildCategoryResults(input);
+  const { ragChunks, retrievedKnowledgeContext } = await retrieveAdvisorKnowledge(input);
+  const metadata = await generateMetadataWithAI(input, categoryResults, retrievedKnowledgeContext);
+  const finalSummary = await generateFinalSummaryWithAI(input, metadata, categoryResults, retrievedKnowledgeContext);
+
+  return {
+    ...metadata,
+    finalSummary:
+      finalSummary ||
+      "This stack has been selected based on your budget, skill level, and platform targets.",
     categoryResults,
     ragChunks,
   };
