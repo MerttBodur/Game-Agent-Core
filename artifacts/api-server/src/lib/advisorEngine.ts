@@ -366,7 +366,7 @@ export async function generateMetadataWithAI(
   const prompt = getMetadataPrompt(input, buildTopStackSummary(categoryResults), retrievedKnowledgeContext);
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5-mini",
+    model: "gpt-4o-mini",
     max_completion_tokens: 1024,
     messages: [{ role: "user", content: prompt }],
     response_format: { type: "json_object" },
@@ -406,7 +406,7 @@ export async function streamFinalSummaryWithAI(
 ): Promise<string> {
   const prompt = getFinalSummaryPrompt(input, metadata, buildTopStackSummary(categoryResults), retrievedKnowledgeContext);
   const stream = await openai.chat.completions.create({
-    model: "gpt-5-mini",
+    model: "gpt-4o-mini",
     stream: true,
     messages: [{ role: "user", content: prompt }],
   });
@@ -430,7 +430,7 @@ export async function generateFinalSummaryWithAI(
 ): Promise<string> {
   const prompt = getFinalSummaryPrompt(input, metadata, buildTopStackSummary(categoryResults), retrievedKnowledgeContext);
   const response = await openai.chat.completions.create({
-    model: "gpt-5-mini",
+    model: "gpt-4o-mini",
     max_completion_tokens: 512,
     messages: [{ role: "user", content: prompt }],
   });
