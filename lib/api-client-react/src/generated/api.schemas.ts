@@ -101,6 +101,10 @@ export interface ProjectInput {
    * @nullable
    */
   otherConstraints?: string | null;
+  /** Category ids where user accepts paid tools. Empty = prefer free. */
+  paidPriorityCategories?: string[];
+  /** Set true to bypass block-tier early-return */
+  adviseAnyway?: boolean;
 }
 
 export interface ScoreBreakdown {
@@ -138,6 +142,21 @@ export interface ToolRecommendation {
   evidence?: Evidence;
 }
 
+export type ArchetypeScope =
+  (typeof ArchetypeScope)[keyof typeof ArchetypeScope];
+
+export const ArchetypeScope = {
+  jam: "jam",
+  prototype: "prototype",
+  indie: "indie",
+  AA: "AA",
+  AAA: "AAA",
+} as const;
+
+export interface Archetype {
+  scope: ArchetypeScope;
+}
+
 export interface CategoryRecommendation {
   category: string;
   categoryLabel: string;
@@ -146,19 +165,55 @@ export interface CategoryRecommendation {
   categoryReasoning: string;
 }
 
+export interface CategoryResults {
+  locked: CategoryRecommendation[];
+  flexible: CategoryRecommendation[];
+  /** Category ids hidden by projectMode (e.g. networking, backend_services) */
+  hidden: string[];
+}
+
+export type AnalysisResultIdeaScoreTier =
+  (typeof AnalysisResultIdeaScoreTier)[keyof typeof AnalysisResultIdeaScoreTier];
+
+export const AnalysisResultIdeaScoreTier = {
+  pass: "pass",
+  warn: "warn",
+  block: "block",
+} as const;
+
+export type AnalysisResultArchetype = {
+  implied: Archetype;
+  achievable: Archetype;
+};
+
+export type AnalysisResultProjectMode =
+  (typeof AnalysisResultProjectMode)[keyof typeof AnalysisResultProjectMode];
+
+export const AnalysisResultProjectMode = {
+  single_player: "single_player",
+  co_op_local: "co_op_local",
+  multiplayer_online: "multiplayer_online",
+  live_service: "live_service",
+} as const;
+
 export interface AnalysisResult {
   sessionId: number;
-  /** AI-generated summary of the project */
   projectSummary: string;
-  /** Detected game genre/type */
   detectedProjectType: string;
-  categories: CategoryRecommendation[];
-  /** Overall confidence score 0-100 */
+  /** Null when ideaScoreTier == 'block' and adviseAnyway is false */
+  categoryResults?: CategoryResults | null;
   overallConfidence: number;
-  /** Final narrative explanation of the stack */
-  finalSummary: string;
-  /** One-liner overview of the recommended stack */
-  stackOverview: string;
+  /** @nullable */
+  finalSummary?: string | null;
+  /** @nullable */
+  stackOverview?: string | null;
+  /** 0-100 feasibility score, may be decimal */
+  ideaScore: number;
+  ideaScoreTier: AnalysisResultIdeaScoreTier;
+  mismatchReasons: string[];
+  archetype: AnalysisResultArchetype;
+  projectMode: AnalysisResultProjectMode;
+  feasibilityOverridden: boolean;
 }
 
 export interface SessionSummary {

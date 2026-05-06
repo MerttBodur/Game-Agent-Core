@@ -1,3 +1,19 @@
+export type Ecosystem =
+  | "unity"
+  | "unreal"
+  | "godot"
+  | "gamemaker"
+  | "phaser"
+  | "cocos"
+  | "defold"
+  | "love"
+  | "construct"
+  | "bevy"
+  | "web"
+  | "engine_agnostic";
+
+export type ArchetypeScope = "jam" | "prototype" | "indie" | "AA" | "AAA";
+
 export interface GameDevTool {
   name: string;
   category: string;
@@ -10,6 +26,9 @@ export interface GameDevTool {
   weaknesses: string[];
   bestFor: string[];
   tags: string[];
+  ecosystem: Ecosystem[];
+  popularityByArchetype: Record<ArchetypeScope, number> | null;
+  archetypeBias?: Partial<Record<ArchetypeScope, number>>;
 }
 
 export const GAME_DEV_TOOLS: GameDevTool[] = [
@@ -26,6 +45,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Performance overhead vs native engines", "Licensing costs at scale", "Complex build pipeline", "Runtime fee controversy"],
     bestFor: ["mobile games", "indie games", "prototypes", "VR/AR", "cross-platform releases"],
     tags: ["2d", "3d", "mobile", "vr", "ar", "beginner-friendly", "c#"],
+
+    ecosystem: ["unity"],
+    popularityByArchetype: null,
   },
   {
     name: "Unreal Engine",
@@ -39,6 +61,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Steep learning curve", "Heavy resource requirements", "Complex project setup", "Overkill for simple 2D games", "Longer compile times"],
     bestFor: ["3d games", "realistic graphics", "shooters", "open world", "VR", "cinematics"],
     tags: ["3d", "aaa", "blueprints", "c++", "realistic", "console", "vr"],
+
+    ecosystem: ["unreal"],
+    popularityByArchetype: null,
   },
   {
     name: "Godot",
@@ -52,6 +77,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["3D still maturing vs Unity/Unreal", "Smaller community", "Fewer third-party assets", "Limited console support (needs platform SDK)"],
     bestFor: ["2d games", "indie games", "game jams", "open source projects", "learning game dev"],
     tags: ["2d", "3d", "open-source", "free", "beginner-friendly", "gdscript"],
+
+    ecosystem: ["godot"],
+    popularityByArchetype: null,
   },
   {
     name: "GameMaker",
@@ -65,6 +93,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Not suited for 3D", "Subscription required for commercial use", "Less flexibility than general engines", "GML not transferable"],
     bestFor: ["2d games", "pixel art games", "game jams", "retro games", "platformers"],
     tags: ["2d", "pixel-art", "beginner-friendly", "gml", "retro"],
+
+    ecosystem: ["gamemaker"],
+    popularityByArchetype: null,
   },
   {
     name: "Phaser",
@@ -78,6 +109,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Web-only (no native mobile/desktop)", "JavaScript can be slow vs native", "Limited 3D support", "No visual editor"],
     bestFor: ["browser games", "web monetization", "web game jams", "html5 games"],
     tags: ["web", "html5", "javascript", "typescript", "2d", "browser"],
+
+    ecosystem: ["phaser"],
+    popularityByArchetype: null,
   },
   {
     name: "Cocos Creator",
@@ -91,6 +125,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Smaller Western community", "Less AAA 3D tooling", "Plugin ecosystem smaller than Unity"],
     bestFor: ["mobile games", "2d games", "web exports", "performance-focused projects"],
     tags: ["2d", "3d", "mobile", "web", "typescript", "open-source"],
+
+    ecosystem: ["cocos"],
+    popularityByArchetype: null,
   },
   {
     name: "Defold",
@@ -104,6 +141,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Smaller asset ecosystem", "Limited high-end 3D workflows", "Fewer third-party tutorials"],
     bestFor: ["2d games", "mobile games", "indie projects", "game jams"],
     tags: ["2d", "lua", "mobile", "web", "game-jam", "beginner-friendly"],
+
+    ecosystem: ["defold"],
+    popularityByArchetype: null,
   },
   {
     name: "LOVE",
@@ -117,6 +157,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["No built-in visual editor", "Framework-level tooling", "2D-focused only"],
     bestFor: ["2d prototypes", "game jams", "retro projects", "code-first workflows"],
     tags: ["2d", "lua", "open-source", "game-jam", "retro"],
+
+    ecosystem: ["love"],
+    popularityByArchetype: null,
   },
   {
     name: "Construct 3",
@@ -130,6 +173,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Subscription cost", "Limited for complex architecture", "Less flexibility than code-heavy engines"],
     bestFor: ["beginner projects", "education", "2d games", "web games"],
     tags: ["2d", "beginner-friendly", "web", "rapid-prototyping"],
+
+    ecosystem: ["construct"],
+    popularityByArchetype: null,
   },
   {
     name: "Bevy",
@@ -143,6 +189,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Young ecosystem", "Steeper learning curve", "Tooling still maturing"],
     bestFor: ["performance-critical games", "rust projects", "engine programmers", "experimental systems"],
     tags: ["3d", "2d", "rust", "ecs", "open-source"],
+
+    ecosystem: ["bevy"],
+    popularityByArchetype: null,
   },
   // PROGRAMMING
   {
@@ -157,6 +206,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Steeper learning curve than GDScript", "Not directly portable outside Unity context"],
     bestFor: ["unity development", "large teams", "complex game systems"],
     tags: ["unity", "oop", "strongly-typed", "c#"],
+
+    ecosystem: ["unity"],
+    popularityByArchetype: null,
   },
   {
     name: "GDScript",
@@ -170,6 +222,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Not transferable outside Godot", "Performance below C# for heavy tasks"],
     bestFor: ["godot projects", "learning programming", "rapid prototyping"],
     tags: ["godot", "beginner-friendly", "scripting", "python-like"],
+
+    ecosystem: ["godot"],
+    popularityByArchetype: null,
   },
   {
     name: "C++",
@@ -183,6 +238,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Complex syntax", "Manual memory pitfalls", "Longer iteration times"],
     bestFor: ["unreal development", "engine programming", "performance-critical gameplay"],
     tags: ["c++", "performance", "aaa", "systems"],
+
+    ecosystem: ["unreal", "engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Lua",
@@ -196,6 +254,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Limited static typing", "Smaller general ecosystem than JS/Python"],
     bestFor: ["scripting gameplay", "embedded tools", "rapid iteration"],
     tags: ["lua", "scripting", "beginner-friendly", "game-jam"],
+
+    ecosystem: ["love", "defold", "engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "JavaScript / TypeScript",
@@ -209,6 +270,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Runtime performance limits", "Package ecosystem churn", "Browser compatibility concerns"],
     bestFor: ["web games", "tools", "live-ops dashboards", "cross-platform frontends"],
     tags: ["javascript", "typescript", "web", "tooling", "beginner-friendly"],
+
+    ecosystem: ["phaser", "cocos", "web", "engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Rust",
@@ -222,6 +286,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Steep learning curve", "Long compile times", "Smaller game middleware ecosystem"],
     bestFor: ["engine systems", "performance-critical code", "backend services"],
     tags: ["rust", "performance", "systems", "open-source"],
+
+    ecosystem: ["bevy", "engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Haxe",
@@ -235,6 +302,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Smaller talent pool", "Niche ecosystem", "Less mainstream tooling"],
     bestFor: ["cross-platform 2d games", "shared game logic", "indie pipelines"],
     tags: ["haxe", "cross-platform", "2d", "open-source"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Python",
@@ -248,6 +318,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Not ideal for runtime performance", "Packaging complexity at scale"],
     bestFor: ["tooling scripts", "content pipelines", "automation", "ai workflows"],
     tags: ["python", "tooling", "ai", "automation", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // ART
   {
@@ -262,6 +335,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Pixel art only (no vector or raster painting)", "Niche tool", "One-time purchase (~$20)"],
     bestFor: ["pixel art games", "indie games", "retro aesthetics", "sprite animation"],
     tags: ["pixel-art", "2d", "animation", "sprites", "tiles"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Blender",
@@ -275,6 +351,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Steep learning curve", "Not optimized for game-real-time workflows", "Can be slow for very large assets"],
     bestFor: ["3d game assets", "character modeling", "environment art", "animations"],
     tags: ["3d", "modeling", "animation", "free", "open-source"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Adobe Photoshop",
@@ -288,6 +367,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Expensive subscription", "Heavy software", "Overkill for pixel art", "Not 3D"],
     bestFor: ["texture creation", "UI art", "concept art", "professional studios"],
     tags: ["2d", "textures", "ui", "professional", "adobe"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Krita",
@@ -301,6 +383,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Less industry recognition than Photoshop", "Fewer plugins", "UI can feel dated"],
     bestFor: ["concept art", "2d art", "textures", "budget-conscious teams"],
     tags: ["2d", "painting", "concept-art", "free", "open-source"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Substance Painter",
@@ -314,6 +399,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Subscription/license cost", "Focused on texturing only", "Requires solid UV workflow"],
     bestFor: ["3d texturing", "character assets", "environment materials"],
     tags: ["3d", "textures", "pbr", "professional"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Substance Designer",
@@ -327,6 +415,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Steep learning curve", "Best value in larger pipelines", "Subscription cost"],
     bestFor: ["material libraries", "environment production", "technical art workflows"],
     tags: ["3d", "materials", "node-based", "technical-art"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "ZBrush",
@@ -340,6 +431,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Unique UI paradigm", "Steep learning curve", "Requires retopo/baking workflow"],
     bestFor: ["character sculpting", "creatures", "high-poly concept meshes"],
     tags: ["3d", "sculpting", "character-art", "advanced"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Autodesk Maya",
@@ -353,6 +447,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["High subscription cost", "Steep learning curve", "Heavy software footprint"],
     bestFor: ["aaa pipelines", "character production", "team-based 3d workflows"],
     tags: ["3d", "modeling", "rigging", "professional", "aaa"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Procreate",
@@ -366,6 +463,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["iPad-only", "Not a full pipeline suite", "Limited advanced production tooling"],
     bestFor: ["concept sketches", "2d ideation", "art direction drafts"],
     tags: ["2d", "painting", "concept-art", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Pyxel Edit",
@@ -379,6 +479,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Narrow scope vs Aseprite", "Smaller community", "Limited non-pixel use"],
     bestFor: ["tilemap production", "pixel environments", "retro projects"],
     tags: ["pixel-art", "2d", "tiles", "retro", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // ANIMATION
   {
@@ -393,6 +496,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Significant cost (~$100-300)", "Learning curve for advanced features", "Runtime integrations require setup"],
     bestFor: ["2d character animation", "mobile games", "action games"],
     tags: ["2d", "skeletal-animation", "mobile", "character"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "DragonBones",
@@ -406,6 +512,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Less community support than Spine", "Fewer tutorials", "Documentation quality varies"],
     bestFor: ["2d animation", "budget projects", "mobile games"],
     tags: ["2d", "skeletal-animation", "free", "mobile"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Cascadeur",
@@ -419,6 +528,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Narrow focus vs full DCC tools", "Pipeline integration setup required"],
     bestFor: ["character animation", "combat moves", "indie 3d projects"],
     tags: ["3d", "character", "physics", "animation"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Mixamo",
@@ -432,6 +544,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Generic motion style", "Limited deep customization", "External workflow step"],
     bestFor: ["prototype animation", "indie teams", "placeholder character motion"],
     tags: ["3d", "mocap", "character", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Live2D Cubism",
@@ -445,6 +560,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Specialized workflow", "License cost", "Learning curve for rig structure"],
     bestFor: ["visual novels", "anime-style characters", "mobile rpg ui characters"],
     tags: ["2d", "character", "rigging", "mobile"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Maya Animation",
@@ -458,6 +576,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["High cost", "Steep onboarding", "Complex setup for solo creators"],
     bestFor: ["studio pipelines", "character animation", "cinematic sequences"],
     tags: ["3d", "animation", "rigging", "professional", "aaa"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // UI / HUD
   {
@@ -472,6 +593,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Newer system with some gaps", "Learning curve for traditional game devs", "3D world-space UI needs workarounds"],
     bestFor: ["complex game ui", "menus", "hud systems", "unity projects"],
     tags: ["ui", "unity", "declarative", "css-like"],
+
+    ecosystem: ["unity"],
+    popularityByArchetype: null,
   },
   {
     name: "Godot Control Nodes",
@@ -485,6 +609,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Godot-only", "Less powerful than web-based UI solutions"],
     bestFor: ["godot projects", "menus", "hud", "game ui"],
     tags: ["ui", "godot", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "NoesisGUI",
@@ -498,6 +625,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["License cost", "Advanced setup", "Smaller community than engine-native UI"],
     bestFor: ["complex hud", "cross-platform ui", "studio ui architecture"],
     tags: ["ui", "hud", "cross-platform", "realtime"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Rive",
@@ -511,6 +641,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Extra integration step", "Advanced states require planning"],
     bestFor: ["animated ui", "polished menus", "interactive hud elements"],
     tags: ["ui", "animation", "realtime", "cross-platform"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // VFX
   {
@@ -525,6 +658,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Requires HDRP or URP", "Not mobile-friendly", "Steep learning curve", "Heavy GPU requirements"],
     bestFor: ["3d vfx", "realistic effects", "aaa-style games", "pc/console"],
     tags: ["vfx", "particles", "unity", "gpu", "node-based"],
+
+    ecosystem: ["unity"],
+    popularityByArchetype: null,
   },
   {
     name: "Godot Particles",
@@ -538,6 +674,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Less powerful than Unity VFX Graph", "Limited shader customization"],
     bestFor: ["2d vfx", "indie game effects", "godot projects"],
     tags: ["vfx", "particles", "godot", "2d"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "After Effects",
@@ -551,6 +690,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Not real-time", "Expensive subscription", "Requires export to use in engine"],
     bestFor: ["cutscenes", "ui animations", "marketing material", "sprite sheet vfx"],
     tags: ["vfx", "motion-graphics", "2d", "adobe", "cinematic"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Niagara (UE5)",
@@ -564,6 +706,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Complex system", "Heavy for simple projects", "UE-focused workflow"],
     bestFor: ["unreal projects", "high-end 3d vfx", "gameplay-reactive particles"],
     tags: ["vfx", "unreal", "niagara", "3d", "realtime", "aaa"],
+
+    ecosystem: ["unreal"],
+    popularityByArchetype: null,
   },
   {
     name: "Houdini",
@@ -577,6 +722,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Very steep learning curve", "High complexity", "Expensive for small teams"],
     bestFor: ["technical art", "procedural worlds", "simulation-heavy pipelines"],
     tags: ["vfx", "procedural", "simulation", "technical-art", "3d"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "EmberGen",
@@ -590,6 +738,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Specialized scope", "Paid license", "Requires integration into engine pipeline"],
     bestFor: ["explosions", "fire and smoke effects", "cinematic vfx assets"],
     tags: ["vfx", "volumetric", "realtime", "3d"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // VERSION CONTROL
   {
@@ -604,6 +755,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Poor at handling large binary files (art, audio)", "Need Git LFS for binaries (extra cost)", "Command line can be daunting for beginners"],
     bestFor: ["code versioning", "solo projects", "small teams", "open source"],
     tags: ["version-control", "git", "collaboration", "ci-cd"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Plastic SCM (Unity DevOps)",
@@ -617,6 +771,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Learning curve", "Cost at scale", "Unity ecosystem only effectively"],
     bestFor: ["unity projects", "teams with artists", "large binary assets"],
     tags: ["version-control", "unity", "binary-files", "teams"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Perforce Helix Core",
@@ -630,6 +787,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Operational complexity", "Infrastructure/admin overhead", "Cost at scale"],
     bestFor: ["aaa teams", "large asset repositories", "studio pipelines"],
     tags: ["version-control", "binary-files", "teams", "enterprise"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "GitLab",
@@ -643,6 +803,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Git binary limitations still apply", "Can be heavy to administer self-hosted"],
     bestFor: ["devops workflows", "self-hosted teams", "code collaboration"],
     tags: ["version-control", "git", "ci-cd", "cloud"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Diversion",
@@ -656,6 +819,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Newer ecosystem", "Smaller community", "Fewer mature integrations"],
     bestFor: ["small game teams", "binary asset collaboration", "indie production"],
     tags: ["version-control", "binary-files", "beginner-friendly", "collaboration"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // DEPLOYMENT
   {
@@ -670,6 +836,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["$100 one-time fee per game", "30% revenue cut", "Discovery can be difficult", "Review process required"],
     bestFor: ["pc games", "commercial releases", "indie games"],
     tags: ["deployment", "pc", "commercial", "marketplace"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "itch.io",
@@ -683,6 +852,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Smaller audience than Steam", "Less discovery infrastructure", "No built-in DRM"],
     bestFor: ["game jams", "free games", "indie experiments", "web games", "demo releases"],
     tags: ["deployment", "indie", "free", "game-jam", "web"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Google Play Store",
@@ -696,6 +868,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["30% revenue cut (reduces to 15% over $1M)", "Review process", "Fragmented Android devices", "More piracy than iOS"],
     bestFor: ["android games", "mobile games", "free-to-play"],
     tags: ["deployment", "android", "mobile", "commercial"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Apple App Store",
@@ -709,6 +884,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["$99/year developer fee", "Strict review guidelines", "30% revenue cut", "Requires Mac for builds"],
     bestFor: ["ios games", "premium mobile games", "high-revenue mobile"],
     tags: ["deployment", "ios", "mobile", "apple"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Epic Games Store",
@@ -722,6 +900,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Smaller audience than Steam", "Curation/release requirements", "Lower discoverability tools"],
     bestFor: ["pc commercial releases", "indie-to-midcore launches", "epic ecosystem titles"],
     tags: ["deployment", "pc", "commercial", "marketplace"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "GOG Connect / GOG Galaxy",
@@ -735,6 +916,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Smaller install base than Steam", "Selective onboarding", "Fewer live-service features"],
     bestFor: ["premium pc games", "drm-free releases", "catalog distribution"],
     tags: ["deployment", "pc", "commercial", "drm-free"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Xbox / PlayStation / Nintendo Partner Portals",
@@ -748,6 +932,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Strict certification requirements", "Long lead times", "Higher business/legal overhead"],
     bestFor: ["console launches", "certification workflows", "cross-platform commercial releases"],
     tags: ["deployment", "console", "certification", "commercial"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "CrazyGames",
@@ -761,6 +948,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Web-only constraints", "Platform-specific monetization model", "Short session focus"],
     bestFor: ["html5 games", "casual web titles", "rapid release cycles"],
     tags: ["deployment", "web", "browser", "game-jam"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Poki",
@@ -774,6 +964,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Web-only scope", "Editorial acceptance requirements", "Limited fit for deep premium games"],
     bestFor: ["casual web games", "html5 launches", "browser-first titles"],
     tags: ["deployment", "web", "browser", "casual"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // AI TOOLING
   {
@@ -788,6 +981,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Monthly subscription cost", "Can suggest incorrect code", "Privacy concerns", "Less useful for engine-specific patterns"],
     bestFor: ["code generation", "all skill levels", "script writing", "productivity"],
     tags: ["ai", "code-generation", "ide", "productivity"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Midjourney",
@@ -801,6 +997,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Subscription required", "Discord-based UI is awkward", "Commercial license terms vary", "Not pixel art focused"],
     bestFor: ["concept art", "texture references", "art direction", "prototyping visuals"],
     tags: ["ai", "art-generation", "concept-art", "textures"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "ChatGPT / GPT-4",
@@ -814,6 +1013,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Not game-engine specific", "Can hallucinate API details", "Requires good prompting"],
     bestFor: ["game design", "dialog writing", "brainstorming", "code help", "documentation"],
     tags: ["ai", "writing", "design", "brainstorming", "code-help"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Cursor",
@@ -827,6 +1029,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Paid tier for advanced usage", "Needs careful review of generated code", "IDE migration overhead"],
     bestFor: ["rapid prototyping", "gameplay scripting", "tools development"],
     tags: ["ai", "code-generation", "ide", "productivity"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Claude Code",
@@ -840,6 +1045,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Output still needs validation", "Subscription cost", "Quality varies by prompt precision"],
     bestFor: ["multi-file refactors", "debugging", "technical planning"],
     tags: ["ai", "code-generation", "productivity", "tooling"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Windsurf",
@@ -853,6 +1061,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Subscription dependency", "Requires prompt discipline", "Feature set evolves quickly"],
     bestFor: ["indie workflows", "scripting", "tooling acceleration"],
     tags: ["ai", "code-generation", "ide", "productivity"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "v0.dev",
@@ -866,6 +1077,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Needs manual polish", "Best fit for web UI only", "Generated patterns may need refactor"],
     bestFor: ["live-ops dashboards", "community portals", "internal tooling"],
     tags: ["ai", "ui", "code-generation", "web"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Lovable",
@@ -879,6 +1093,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Not intended for engine runtime code", "Generated architecture may be generic", "Platform limits on customization"],
     bestFor: ["prototype web apps", "ops tools", "rapid validation"],
     tags: ["ai", "web", "rapid-prototyping", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Bolt.new",
@@ -892,6 +1109,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Limited for complex production architecture", "Token/cost limits", "Needs code review"],
     bestFor: ["hackathon tools", "prototype services", "small web utilities"],
     tags: ["ai", "web", "rapid-prototyping", "game-jam"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Scenario.gg",
@@ -905,6 +1125,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Subscription cost", "Prompt and dataset quality matter", "Requires curation and cleanup"],
     bestFor: ["concept assets", "icon packs", "texture ideation"],
     tags: ["ai", "art-generation", "game-dev", "2d"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Leonardo.ai",
@@ -918,6 +1141,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Quality can vary by prompt", "Licensing checks still needed", "Not a replacement for production polish"],
     bestFor: ["concept art", "moodboards", "visual exploration"],
     tags: ["ai", "art-generation", "concept-art", "2d"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Suno",
@@ -931,6 +1157,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Licensing/commercial terms require review", "Limited fine-grained composition control", "Not a full DAW replacement"],
     bestFor: ["prototype soundtrack", "genre exploration", "temp music"],
     tags: ["ai", "audio", "music", "rapid-prototyping"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Eleven Labs",
@@ -944,6 +1173,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Recurring cost", "Licensing and voice rights must be managed", "Audio cleanup still often required"],
     bestFor: ["npc dialogue prototypes", "narration", "temp voiceovers"],
     tags: ["ai", "audio", "tts", "narrative"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Meshy",
@@ -957,6 +1189,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Topology/UV quality may need manual cleanup", "Style consistency needs oversight", "Not final-quality for all assets"],
     bestFor: ["prototype 3d assets", "blocking scenes", "rapid content tests"],
     tags: ["ai", "3d", "asset-generation", "rapid-prototyping"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Tripo3D",
@@ -970,6 +1205,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Needs retopology for production", "Detail control is limited", "Output quality varies"],
     bestFor: ["3d placeholders", "prototype worlds", "concept testing"],
     tags: ["ai", "3d", "asset-generation", "game-jam"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Inworld AI",
@@ -983,6 +1221,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Complex integration", "Latency and cost considerations", "Design safeguards required"],
     bestFor: ["npc interaction systems", "narrative games", "immersive simulations"],
     tags: ["ai", "npc", "realtime", "narrative"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Convai",
@@ -996,6 +1237,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Advanced integration effort", "Operational cost for scale", "Needs narrative and moderation design"],
     bestFor: ["vr social experiences", "narrative prototypes", "ai-driven npcs"],
     tags: ["ai", "npc", "realtime", "vr"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Rosebud AI",
@@ -1009,6 +1253,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Limited customization for advanced teams", "Prototype-first scope", "Output quality can vary"],
     bestFor: ["idea validation", "game-jam concepts", "rapid prototypes"],
     tags: ["ai", "rapid-prototyping", "beginner-friendly", "game-jam"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Layer.ai",
@@ -1022,6 +1269,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Subscription cost", "Curation still required", "Workflow setup overhead"],
     bestFor: ["art pipelines", "asset iteration", "team collaboration"],
     tags: ["ai", "art-generation", "game-dev", "cloud"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Promethean AI",
@@ -1035,6 +1285,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Advanced tooling setup", "Best value in larger productions", "Subscription dependency"],
     bestFor: ["environment art", "level dressing", "3d production pipelines"],
     tags: ["ai", "3d", "environment", "technical-art"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Charisma.ai",
@@ -1048,6 +1301,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Requires narrative design effort", "Platform cost", "Integration complexity for full productions"],
     bestFor: ["interactive storytelling", "dialogue systems", "immersive narrative experiences"],
     tags: ["ai", "narrative", "dialogue", "realtime"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Krea",
@@ -1061,6 +1317,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Asset quality varies", "Needs post-processing for production", "Licensing checks still needed"],
     bestFor: ["art direction", "concept exploration", "visual brainstorming"],
     tags: ["ai", "art-generation", "concept-art", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Runway",
@@ -1074,6 +1333,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Subscription/token cost", "Not engine-runtime tooling", "Output may require heavy editing"],
     bestFor: ["cinematic mockups", "marketing previews", "previsualization"],
     tags: ["ai", "video", "cinematic", "prototype"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Move.ai",
@@ -1087,6 +1349,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Capture quality depends on setup", "Post-cleanup often required", "Paid service"],
     bestFor: ["character animation prototyping", "indie mocap workflows", "cinematic iteration"],
     tags: ["ai", "animation", "mocap", "3d"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // AUDIO
   {
@@ -1101,6 +1366,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Learning curve for non-audio teams", "License cost at scale", "Middleware integration overhead"],
     bestFor: ["adaptive music", "interactive sound design", "cross-platform titles"],
     tags: ["audio", "middleware", "realtime", "cross-platform"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Wwise",
@@ -1114,6 +1382,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Complex setup", "Steeper onboarding", "License complexity for teams"],
     bestFor: ["aaa audio pipelines", "complex interactive music", "performance-sensitive audio systems"],
     tags: ["audio", "middleware", "aaa", "cross-platform"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Audacity",
@@ -1127,6 +1398,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Not a full production DAW", "Limited advanced workflow automation", "UI can feel basic"],
     bestFor: ["voice cleanup", "basic sfx editing", "budget teams"],
     tags: ["audio", "open-source", "beginner-friendly", "tooling"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Reaper",
@@ -1140,6 +1414,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["UI less polished than some DAWs", "Requires setup for optimal workflow", "Audio-specialist learning curve"],
     bestFor: ["sound design", "music production", "voice editing"],
     tags: ["audio", "daw", "production", "tooling"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Soundly",
@@ -1153,6 +1430,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Subscription cost", "Library dependence", "Requires license management discipline"],
     bestFor: ["sfx sourcing", "rapid audio iteration", "small audio teams"],
     tags: ["audio", "library", "cloud", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "BFXR",
@@ -1166,6 +1446,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Narrow stylistic range", "Limited realism", "Simple feature set"],
     bestFor: ["game jams", "retro effects", "quick ui sounds"],
     tags: ["audio", "retro", "game-jam", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Eleven Labs TTS",
@@ -1179,6 +1462,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Ongoing subscription cost", "Rights/compliance checks required", "Final polish may need manual editing"],
     bestFor: ["narration prototypes", "temp npc voice", "localization experiments"],
     tags: ["audio", "ai", "tts", "narrative"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Suno Music",
@@ -1192,6 +1478,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Limited arrangement control", "Licensing review needed", "Not a replacement for final composition in many projects"],
     bestFor: ["temp soundtrack", "mood testing", "prototype audio"],
     tags: ["audio", "ai", "music", "rapid-prototyping"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // NETWORKING
   {
@@ -1206,6 +1495,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Network engineering complexity", "Recurring cost", "Advanced replication concepts required"],
     bestFor: ["real-time multiplayer", "competitive games", "cross-platform sessions"],
     tags: ["networking", "multiplayer", "realtime", "cloud"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Mirror Networking",
@@ -1219,6 +1511,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Requires backend ops decisions", "Performance tuning is team responsibility", "Smaller support footprint than managed services"],
     bestFor: ["indie multiplayer", "self-hosted networking", "unity online prototypes"],
     tags: ["networking", "multiplayer", "open-source", "unity"],
+
+    ecosystem: ["unity"],
+    popularityByArchetype: null,
   },
   {
     name: "Unity Netcode for GameObjects",
@@ -1232,6 +1527,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Unity-specific approach", "Still requires network architecture expertise", "Feature tradeoffs vs third-party stacks"],
     bestFor: ["unity multiplayer", "co-op games", "official-stack workflows"],
     tags: ["networking", "multiplayer", "unity", "realtime"],
+
+    ecosystem: ["unity"],
+    popularityByArchetype: null,
   },
   {
     name: "Nakama",
@@ -1245,6 +1543,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Infrastructure ownership burden", "Advanced backend setup", "Requires operational maturity"],
     bestFor: ["online games", "social features", "authoritative backends"],
     tags: ["networking", "backend", "realtime", "open-source", "cloud"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Colyseus",
@@ -1258,6 +1559,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Requires server deployment management", "Scaling strategy needed", "Less out-of-box enterprise tooling"],
     bestFor: ["web multiplayer", "indie real-time games", "typescript backends"],
     tags: ["networking", "realtime", "web", "open-source", "typescript"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Amazon GameLift",
@@ -1271,6 +1575,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Cloud cost management complexity", "AWS operational expertise required", "Vendor lock-in considerations"],
     bestFor: ["dedicated server games", "scalable multiplayer", "production live operations"],
     tags: ["networking", "cloud", "multiplayer", "backend"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // BACKEND SERVICES
   {
@@ -1285,6 +1592,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Service coupling", "Cost can grow with scale", "Integration complexity for custom flows"],
     bestFor: ["live service games", "player economy", "cross-platform backend features"],
     tags: ["backend", "cloud", "live-ops", "game-dev"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Unity Gaming Services",
@@ -1298,6 +1608,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Unity ecosystem lock-in", "Usage costs at scale", "Service maturity varies by module"],
     bestFor: ["unity live ops", "multiplayer support services", "cloud save and economy"],
     tags: ["backend", "unity", "cloud", "live-ops"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "GameSparks",
@@ -1311,6 +1624,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Platform roadmap dependency", "Cost considerations", "Customization limits compared with full custom backends"],
     bestFor: ["player data services", "economy systems", "managed backend workflows"],
     tags: ["backend", "cloud", "game-dev", "live-ops"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Firebase",
@@ -1324,6 +1640,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Game-specific features are limited", "Vendor lock-in risk", "Cost can spike with usage patterns"],
     bestFor: ["mvp backends", "mobile game services", "quick auth and data storage"],
     tags: ["backend", "cloud", "beginner-friendly", "mobile"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Supabase",
@@ -1337,6 +1656,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Needs schema/ops design discipline", "Not game-specific out of the box", "Realtime scaling planning required"],
     bestFor: ["custom backend features", "sql-first teams", "rapid service prototyping"],
     tags: ["backend", "cloud", "open-source", "realtime"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Beamable",
@@ -1350,6 +1672,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Service dependence", "Subscription cost", "Advanced custom flows may need deeper integration work"],
     bestFor: ["unity live services", "inventory and economy", "faster backend delivery"],
     tags: ["backend", "cloud", "unity", "live-ops"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // MONETIZATION
   {
@@ -1364,6 +1689,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Integration complexity", "Policy and compliance overhead", "Best fit mainly for ad-driven products"],
     bestFor: ["mobile f2p monetization", "ad mediation", "revenue optimization"],
     tags: ["monetization", "ads", "mobile", "analytics"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Unity LevelPlay",
@@ -1377,6 +1705,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Primarily mobile ad use cases", "Optimization requires iteration", "Platform coupling"],
     bestFor: ["unity mobile games", "ad monetization", "f2p optimization"],
     tags: ["monetization", "ads", "mobile", "unity"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "AdMob",
@@ -1390,6 +1721,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Revenue depends on fill and region mix", "Policy compliance requirements", "Limited outside mobile"],
     bestFor: ["mobile ad monetization", "indie f2p games", "rewarded ad flows"],
     tags: ["monetization", "ads", "mobile", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Xsolla",
@@ -1403,6 +1737,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Integration overhead", "Operational/legal setup complexity", "Best value in larger monetization programs"],
     bestFor: ["web shops", "cross-platform commerce", "live service monetization"],
     tags: ["monetization", "payments", "commerce", "cross-platform"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Stripe",
@@ -1416,6 +1753,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Not game-specific", "Compliance and tax workflows still needed", "Fees impact margins"],
     bestFor: ["web payments", "subscriptions", "creator storefronts"],
     tags: ["monetization", "payments", "web", "cloud"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // ANALYTICS
   {
@@ -1430,6 +1770,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Advanced custom analysis may need external tooling", "Event taxonomy design still required", "Feature depth varies by plan"],
     bestFor: ["indie analytics", "retention tracking", "game economy monitoring"],
     tags: ["analytics", "game-dev", "cloud", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "deltaDNA",
@@ -1443,6 +1786,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Advanced setup and strategy required", "Subscription cost", "Needs disciplined event design"],
     bestFor: ["live-ops optimization", "player segmentation", "personalized offers"],
     tags: ["analytics", "live-ops", "monetization", "cloud"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Amplitude",
@@ -1456,6 +1802,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Not game-specific by default", "Event schema planning required", "Cost at higher data volumes"],
     bestFor: ["feature analytics", "behavior analysis", "companion app metrics"],
     tags: ["analytics", "cloud", "experimentation", "product"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Mixpanel",
@@ -1469,6 +1818,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Generic analytics model", "Data governance work needed", "Scaling cost considerations"],
     bestFor: ["funnel analysis", "retention metrics", "feature adoption tracking"],
     tags: ["analytics", "cloud", "retention", "product"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Unity Analytics",
@@ -1482,6 +1834,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Unity-centric scope", "Advanced reporting may require additional tools", "Service-plan constraints"],
     bestFor: ["unity projects", "event tracking", "live-ops metrics"],
     tags: ["analytics", "unity", "cloud", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // NARRATIVE
   {
@@ -1496,6 +1851,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Limited for large runtime systems without custom integration", "UI/formatting constraints", "Needs export/integration planning"],
     bestFor: ["interactive fiction", "branching prototype writing", "narrative design exploration"],
     tags: ["narrative", "writing", "open-source", "beginner-friendly"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Ink (inkle)",
@@ -1509,6 +1867,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Scripting syntax learning curve", "Narrative architecture discipline required", "Non-writer teams may need onboarding"],
     bestFor: ["branching dialogue", "story-driven games", "narrative systems"],
     tags: ["narrative", "dialogue", "branching", "writing"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Yarn Spinner",
@@ -1522,6 +1883,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Integration work still required", "Narrative tooling setup takes planning", "Best for dialogue-centric use cases"],
     bestFor: ["dialogue-heavy games", "npc conversations", "unity narrative systems"],
     tags: ["narrative", "dialogue", "unity", "open-source"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Articy:draft 3",
@@ -1535,6 +1899,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Paid licensing", "Complex tooling for small projects", "Integration/export workflow overhead"],
     bestFor: ["large narrative projects", "quest design", "writer-designer pipelines"],
     tags: ["narrative", "writing", "quest-design", "professional"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "ChatMapper",
@@ -1548,6 +1915,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Paid software", "Legacy UX in some areas", "Integration work required per engine"],
     bestFor: ["branching dialogue trees", "narrative organization", "localized conversation content"],
     tags: ["narrative", "dialogue", "writing", "tooling"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   // BUILD / CI
   {
@@ -1562,6 +1932,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Subscription cost", "Unity-centric limitations", "Build pipeline customization constraints"],
     bestFor: ["unity ci", "automated builds", "small-to-mid teams"],
     tags: ["build", "ci-cd", "unity", "cloud"],
+
+    ecosystem: ["unity"],
+    popularityByArchetype: null,
   },
   {
     name: "GameCI (Docker)",
@@ -1575,6 +1948,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Advanced CI setup required", "Docker and licensing configuration complexity", "Maintenance burden on team"],
     bestFor: ["self-managed ci pipelines", "unity automation", "reproducible builds"],
     tags: ["build", "ci-cd", "open-source", "unity", "automation"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "GitHub Actions",
@@ -1588,6 +1964,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Minutes cost at scale", "Workflow debugging can be complex", "Requires CI design discipline"],
     bestFor: ["ci-cd automation", "build validation", "release workflows"],
     tags: ["build", "ci-cd", "automation", "cloud"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
   {
     name: "Buildkite",
@@ -1601,6 +1980,9 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
     weaknesses: ["Infrastructure management required", "Higher setup complexity", "Cost and ops overhead"],
     bestFor: ["studio-grade ci", "custom infrastructure", "high-control build pipelines"],
     tags: ["build", "ci-cd", "automation", "enterprise"],
+
+    ecosystem: ["engine_agnostic"],
+    popularityByArchetype: null,
   },
 ];
 

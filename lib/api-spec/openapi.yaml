@@ -223,6 +223,14 @@ components:
         otherConstraints:
           type: ["string", "null"]
           description: Any other constraints or notes
+        paidPriorityCategories:
+          type: array
+          items:
+            type: string
+          description: "Category ids where user accepts paid tools. Empty = prefer free."
+        adviseAnyway:
+          type: boolean
+          description: "Set true to bypass block-tier early-return"
       required:
         - projectIdea
         - budget
@@ -318,6 +326,36 @@ components:
         - scoreBreakdown
         - ragChunks
 
+    Archetype:
+      type: object
+      properties:
+        scope:
+          type: string
+          enum: [jam, prototype, indie, AA, AAA]
+      required:
+        - scope
+
+    CategoryResults:
+      type: object
+      properties:
+        locked:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryRecommendation"
+        flexible:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryRecommendation"
+        hidden:
+          type: array
+          items:
+            type: string
+          description: "Category ids hidden by projectMode (e.g. networking, backend_services)"
+      required:
+        - locked
+        - flexible
+        - hidden
+
     CategoryRecommendation:
       type: object
       properties:
@@ -347,31 +385,56 @@ components:
           type: integer
         projectSummary:
           type: string
-          description: AI-generated summary of the project
         detectedProjectType:
           type: string
-          description: Detected game genre/type
-        categories:
-          type: array
-          items:
-            $ref: "#/components/schemas/CategoryRecommendation"
+        categoryResults:
+          oneOf:
+            - $ref: "#/components/schemas/CategoryResults"
+            - type: "null"
+          description: "Null when ideaScoreTier == 'block' and adviseAnyway is false"
         overallConfidence:
           type: number
-          description: Overall confidence score 0-100
         finalSummary:
-          type: string
-          description: Final narrative explanation of the stack
+          type: ["string", "null"]
         stackOverview:
+          type: ["string", "null"]
+        ideaScore:
+          type: number
+          description: "0-100 feasibility score, may be decimal"
+        ideaScoreTier:
           type: string
-          description: One-liner overview of the recommended stack
+          enum: [pass, warn, block]
+        mismatchReasons:
+          type: array
+          items:
+            type: string
+        archetype:
+          type: object
+          properties:
+            implied:
+              $ref: "#/components/schemas/Archetype"
+            achievable:
+              $ref: "#/components/schemas/Archetype"
+          required:
+            - implied
+            - achievable
+        projectMode:
+          type: string
+          enum: [single_player, co_op_local, multiplayer_online, live_service]
+        feasibilityOverridden:
+          type: boolean
+          default: false
       required:
         - sessionId
         - projectSummary
         - detectedProjectType
-        - categories
         - overallConfidence
-        - finalSummary
-        - stackOverview
+        - ideaScore
+        - ideaScoreTier
+        - mismatchReasons
+        - archetype
+        - projectMode
+        - feasibilityOverridden
 
     SessionSummary:
       type: object

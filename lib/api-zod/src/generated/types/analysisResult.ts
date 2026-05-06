@@ -5,19 +5,27 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
-import type { CategoryRecommendation } from "./categoryRecommendation";
+import type { AnalysisResultArchetype } from "./analysisResultArchetype";
+import type { AnalysisResultIdeaScoreTier } from "./analysisResultIdeaScoreTier";
+import type { AnalysisResultProjectMode } from "./analysisResultProjectMode";
+import type { CategoryResults } from "./categoryResults";
 
 export interface AnalysisResult {
   sessionId: number;
-  /** AI-generated summary of the project */
   projectSummary: string;
-  /** Detected game genre/type */
   detectedProjectType: string;
-  categories: CategoryRecommendation[];
-  /** Overall confidence score 0-100 */
+  /** Null when ideaScoreTier == 'block' and adviseAnyway is false */
+  categoryResults?: CategoryResults | null;
   overallConfidence: number;
-  /** Final narrative explanation of the stack */
-  finalSummary: string;
-  /** One-liner overview of the recommended stack */
-  stackOverview: string;
+  /** @nullable */
+  finalSummary?: string | null;
+  /** @nullable */
+  stackOverview?: string | null;
+  /** 0-100 feasibility score, may be decimal */
+  ideaScore: number;
+  ideaScoreTier: AnalysisResultIdeaScoreTier;
+  mismatchReasons: string[];
+  archetype: AnalysisResultArchetype;
+  projectMode: AnalysisResultProjectMode;
+  feasibilityOverridden: boolean;
 }

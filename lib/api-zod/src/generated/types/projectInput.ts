@@ -31,4 +31,8 @@ export interface ProjectInput {
    * @nullable
    */
   otherConstraints?: string | null;
+  /** Category ids where user accepts paid tools. Empty = prefer free. */
+  paidPriorityCategories?: string[];
+  /** Set true to bypass block-tier early-return */
+  adviseAnyway?: boolean;
 }
