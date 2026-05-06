@@ -37,14 +37,14 @@ Plus one more, added late:
    ▼
 [LLM call #1 — extended metadata]
    prompt: project input + games-dataset summary + scope baselines
-   returns: impliedArchetype, achievableArchetype, ideaScoreLLM,
+   returns: impliedArchetype, achievableArchetype,
             mismatchReasons[], projectMode, projectSummary, ...
    │
    ▼
-[Heuristic cross-check]
-   ideaScoreHeuristic = 100 + sum(deductions for scope/budget/team/time mismatches)
-   ideaScore = 0.6 * heuristic + 0.4 * LLM
+[Heuristic idea-score]
+   ideaScore = 100 + sum(deductions for scope/budget/team/time mismatches)
    tier = ideaScore < 30 ? "block" : ideaScore < 60 ? "warn" : "pass"
+   (heuristic-only; LLM provides reasons text, not the score)
    │
    ▼
 [Block tier? Early return]
@@ -86,7 +86,7 @@ Plus one more, added late:
 
 ### 4.1 Tool catalog (`artifacts/api-server/src/lib/gameDevTools.ts`)
 
-Add three fields to `GameDevTool`:
+Add two fields to `GameDevTool`:
 
 ```ts
 ecosystem: string[]
@@ -96,31 +96,23 @@ ecosystem: string[]
   // "engine_agnostic" bypasses the cascade filter entirely
   // missing or empty array = treated as engine_agnostic (lenient default)
 
-isLockedByEngine: boolean
-  // shorthand: true for tools in programming/ui/vfx/build_ci/networking-engine-side
-  // controls whether the tool appears in the Locked vs Flexible UI section
-
 popularityByArchetype: {
-  jam: number,        // 0–1
-  prototype: number,  // 0–1
-  indie: number,      // 0–1
-  AA: number,         // 0–1
-  AAA: number,        // 0–1
+  jam: number, prototype: number, indie: number, AA: number, AAA: number,
 } | null
   // dataset-derived ratios (see §4.3); null = neutral (no signal)
   // only meaningful for engine + programming categories in v1
   // other categories: null is fine, scoring skips this term
-
-archetypeBias: {
-  jam: number,        // -3..+3
-  indie: number,
-  AA: number,
-  AAA: number,
-} | null
-  // hand-tuned override for cases where dataset is thin
-  // example: GameMaker { jam: +1.5, indie: +1, AA: -1, AAA: -3 }
-  // null = no bias
 ```
+
+Plus an optional hand-tuned override for tools where the dataset is thin (e.g. jam-favored tools that don't appear in commercial-game datasets):
+
+```ts
+archetypeBias?: { jam: number, indie: number, AA: number, AAA: number }
+  // -3..+3 each. example: GameMaker { jam: +1.5, indie: +1, AA: -1, AAA: -3 }
+  // omit for tools where popularityByArchetype is sufficient
+```
+
+Whether a category is locked is determined by a single backend constant `LOCKED_CATEGORIES = ["programming", "ui", "vfx", "build_ci"]`, not a per-tool flag.
 
 `pricing` enum unchanged (`free | freemium | paid | subscription | open_source`). No `priceUSD` field — paid-priority chips do the work.
 
@@ -153,7 +145,6 @@ New file. ~150–200 entries. Schema:
   {
     "name": "Cyberpunk 2077",
     "engine": "REDengine 4",
-    "engineFamily": "proprietary",
     "year": 2020,
     "scope": "AAA",
     "platforms": ["pc", "console"],
@@ -164,6 +155,8 @@ New file. ~150–200 entries. Schema:
   }
 ]
 ```
+
+Engines like REDengine 4, Frostbite, Decima are kept under the literal engine name. The dataset stays simple — bucketing into "proprietary" vs "off-the-shelf" is a v2 concern.
 
 Build script: `artifacts/api-server/src/scripts/buildPopularityFromDataset.ts`. On run:
 
@@ -181,10 +174,6 @@ Realistic collection time: ~4 hours manual entry. **Run in parallel with backend
 ### 4.4 OpenAPI spec (`lib/api-spec/openapi.yaml`)
 
 ```yaml
-ToolRecommendation:
-  + isLocked: boolean
-  + ecosystemReason: string | null     # "Unity ecosystem requires C#, not C++"
-
 CategoryResults:
   + locked: array[CategoryRecommendation]      # programming, ui, vfx, build_ci, networking-engine-side
   + flexible: array[CategoryRecommendation]    # art, audio, deployment, ai_tooling, ...
@@ -193,16 +182,14 @@ CategoryResults:
 AnalysisResult:
   + ideaScore: number                          # 0-100, may be decimal
   + ideaScoreTier: enum [pass, warn, block]
-  + mismatchReasons: array[string]             # human-readable, e.g. "$5K budget vs typical $50M+ for AAA"
+  + mismatchReasons: array[string]             # "$5K budget vs typical $50M+ for AAA"
   + archetype:
       implied: { scope, fidelity, genre }
       achievable: { scope, fidelity, genre }
-      editableScope: boolean                   # true in v1
-  + projectMode:
-      value: enum [single_player, co_op_local, multiplayer_online, live_service]
-      editable: boolean                        # true
-  + feasibilityOverridden: boolean             # set when adviseAnyway=true was used
+  + projectMode: enum [single_player, co_op_local, multiplayer_online, live_service]
 ```
+
+The "is this overridable?" UI affordance is a frontend concern — not an API field. The "was this overridden?" state is implied by the request body containing `adviseAnyway: true`; no DB column needed. The per-tool ecosystem-tooltip text ("Unity uses C#, not C++") is derived at render time from the engine pick + tool list, not stored on each tool.
 
 OpenAPI change is the first step of any implementation that touches API shape — `pnpm --filter @workspace/api-spec run codegen` regenerates `lib/api-zod` and `lib/api-client-react`.
 
@@ -243,16 +230,15 @@ function applyHardFilter(toolsByCategory, ctx): {
 
 ### 5.2 Archetype-weighted soft scoring
 
-Replaces current `scoreTool`. Weights table:
+Replaces current `scoreTool`. Archetype scope is one of `jam | prototype | indie | AA | AAA` (live-service is a project-mode concept, not a scope). Weights table:
 
 ```ts
-const WEIGHTS_BY_ARCHETYPE: Record<scope, Record<axis, number>> = {
+const WEIGHTS_BY_ARCHETYPE: Record<Scope, Record<Axis, number>> = {
   jam:        { budget: 0.6, skill: 1.2, platform: 0.8, time: 1.5, art: 1.0 },
   prototype:  { budget: 0.7, skill: 1.1, platform: 0.9, time: 1.3, art: 1.0 },
   indie:      { budget: 1.0, skill: 1.0, platform: 1.0, time: 1.0, art: 1.0 },  // baseline
   AA:         { budget: 0.9, skill: 0.9, platform: 1.1, time: 0.8, art: 1.1 },
   AAA:        { budget: 0.7, skill: 0.7, platform: 1.3, time: 0.6, art: 1.3 },
-  live_service: { budget: 0.9, skill: 0.9, platform: 1.2, time: 0.7, art: 1.0 },
 }
 ```
 
@@ -328,11 +314,11 @@ function heuristicIdeaScore(ctx): number {
 // Note: exact teamSize enum values are project-defined; the implementation plan must verify
 // against the current Zod schema and adjust the keys above accordingly.
 
-const ideaScore = 0.6 * heuristicIdeaScore(ctx) + 0.4 * llmIdeaScore
+const ideaScore = heuristicIdeaScore(ctx)
 const tier = ideaScore < 30 ? "block" : ideaScore < 60 ? "warn" : "pass"
 ```
 
-`mismatchReasons` is the **union** of LLM-generated reasons and heuristic-generated reasons (deduplicated). Heuristic reasons use the static dataset to ground ranges: `"AAA budget typically $50M–$300M, you have $5K (source: PCGamingWiki snapshot, n=47 AAA titles 2018–2024)"`.
+The score is **heuristic-only** for the tier decision — deterministic, testable, demo-stable. The LLM call still runs and produces `mismatchReasons[]` (human-readable explanations grounded in the dataset, e.g. *"AAA budget typically $50M–$300M, you have $5K (source: PCGamingWiki snapshot, n=47 AAA titles 2018–2024)"*); these are merged with any heuristic-derived reasons and deduplicated. Splitting concerns this way avoids LLM variance flipping a project across the Block/Warn boundary on rerun.
 
 ## 6. UI / UX
 
@@ -456,8 +442,8 @@ Implementation: scoring math (hard filter, archetype weights, jitter) needs to b
 ### Day 2 — 2026-05-07
 
 - **LLM prompt extension**
-  - Extend metadata-call prompt to return `impliedArchetype`, `achievableArchetype`, `ideaScoreLLM`, `mismatchReasons[]`, `projectMode`. Inject scope baselines + dataset summary into prompt.
-  - Implement `heuristicIdeaScore` + blend.
+  - Extend metadata-call prompt to return `impliedArchetype`, `achievableArchetype`, `mismatchReasons[]`, `projectMode`. Inject scope baselines + dataset summary into prompt.
+  - Implement `heuristicIdeaScore`.
   - Tier decision + early-return for Block.
 - **Three-tier UI**
   - Reality Check panel component (Block).
@@ -496,7 +482,7 @@ Implementation: scoring math (hard filter, archetype weights, jitter) needs to b
 | Risk | Likelihood | Mitigation |
 |---|---|---|
 | Dataset collection eats more than 4 hours | Medium | Time-box to 4 hours. If short on time, ship with 80 entries; popularityByArchetype values get a "low-confidence" flag and scoring weight is halved (`(p - 0.5) * 12.5` instead of `* 25`). |
-| LLM returns malformed archetype/idea-score JSON | Medium | Heuristic fallback (already 60% of blend). Schema is parsed with try/catch; any parse failure → rely on heuristic alone. |
+| LLM returns malformed archetype JSON | Medium | Heuristic provides the tier decision regardless. If archetype parse fails, fall back to deriving `achievableArchetype` from form fields (budget+team+time → scope) and skip `impliedArchetype` mismatch reasons from LLM. |
 | Client-side recompute drifts from server logic | Medium | Extract scoring into a single TypeScript module imported by both. If timeline is tight, duplicate the math (~150 LOC) and cover with a snapshot test that compares server vs client output for 10 sample inputs. |
 | Hard filter is too aggressive (e.g. legitimate cross-ecosystem tool gets hidden) | Medium | `engine_agnostic` is a wide net by default — tools explicitly tagged otherwise are vetted manually. Add a Cypress-style smoke test: each engine choice must yield ≥1 tool in every locked category. |
 | Idea Score Block annoys the user when they actually wanted advice | Low | Threshold is conservative (< 30). "Advise Anyway" is one click. UX copy is non-judgmental. |
