@@ -3,7 +3,42 @@ import { GAME_DEV_TOOLS, TOOL_CATEGORIES, type GameDevTool } from "./gameDevTool
 
 const LOCKED_CATEGORIES = ["programming", "ui", "vfx", "build_ci"] as const;
 
+export type Scope = "jam" | "prototype" | "indie" | "AA" | "AAA";
+export type IdeaScoreTier = "pass" | "warn" | "block";
 export type ProjectMode = "single_player" | "co_op_local" | "multiplayer_online" | "live_service";
+
+const SCOPE_ORDER: Scope[] = ["jam", "prototype", "indie", "AA", "AAA"];
+
+const BUDGET_USD: Record<string, number> = {
+  zero: 0,
+  low: 1_000,
+  medium: 25_000,
+  high: 500_000,
+  enterprise: 5_000_000,
+};
+
+const TEAM_COUNT: Record<string, number> = {
+  solo: 1,
+  small: 3,
+  medium: 8,
+  large: 30,
+};
+
+const BUDGET_MIN_BY_SCOPE: Record<Scope, number> = {
+  jam: 0,
+  prototype: 0,
+  indie: 1_000,
+  AA: 500_000,
+  AAA: 5_000_000,
+};
+
+const TEAM_MIN_BY_SCOPE: Record<Scope, number> = {
+  jam: 1,
+  prototype: 1,
+  indie: 1,
+  AA: 20,
+  AAA: 100,
+};
 
 function hiddenCategoriesForMode(mode: ProjectMode): string[] {
   if (mode === "single_player") return ["networking", "backend_services"];
@@ -26,6 +61,7 @@ export interface ProjectInput {
   platformTarget: string[];
   artCapability: string;
   otherConstraints?: string | null;
+  adviseAnyway?: boolean;
 }
 
 interface ToolScore {
@@ -87,6 +123,16 @@ export interface AnalysisMetadata {
   detectedProjectType: string;
   stackOverview: string;
   overallConfidence: number;
+  impliedScope: Scope;
+  achievableScope: Scope;
+  mismatchReasons: string[];
+  projectMode: ProjectMode;
+}
+
+export interface IdeaScoreContext {
+  input: ProjectInput;
+  impliedScope: Scope;
+  achievableScope: Scope;
 }
 
 function scoreTool(tool: GameDevTool, input: ProjectInput): { total: number; breakdown: ScoreBreakdown } {
@@ -168,6 +214,55 @@ function scoreTool(tool: GameDevTool, input: ProjectInput): { total: number; bre
       total,
     },
   };
+}
+
+export function heuristicIdeaScore(ctx: IdeaScoreContext): { score: number; reasons: string[] } {
+  let s = 100;
+  const reasons: string[] = [];
+
+  const gap = SCOPE_ORDER.indexOf(ctx.impliedScope) - SCOPE_ORDER.indexOf(ctx.achievableScope);
+  if (gap >= 3) {
+    s -= 50;
+    reasons.push(
+      `Implied scope (${ctx.impliedScope}) is far above what your resources support (${ctx.achievableScope}).`,
+    );
+  } else if (gap === 2) {
+    s -= 30;
+    reasons.push(
+      `Implied scope (${ctx.impliedScope}) is two tiers above what your resources support (${ctx.achievableScope}).`,
+    );
+  } else if (gap === 1) {
+    s -= 15;
+    reasons.push(
+      `Implied scope (${ctx.impliedScope}) is one tier above what your resources support (${ctx.achievableScope}).`,
+    );
+  }
+
+  const budgetUsd = BUDGET_USD[ctx.input.budget] ?? 0;
+  const budgetFloor = BUDGET_MIN_BY_SCOPE[ctx.impliedScope];
+  if (budgetUsd < budgetFloor) {
+    s -= 20;
+    reasons.push(
+      `Your budget (${ctx.input.budget}) is below the typical floor for ${ctx.impliedScope} projects.`,
+    );
+  }
+
+  const teamCount = TEAM_COUNT[ctx.input.teamSize] ?? 1;
+  const teamFloor = TEAM_MIN_BY_SCOPE[ctx.impliedScope];
+  if (teamCount < teamFloor) {
+    s -= 20;
+    reasons.push(
+      `Your team size (${ctx.input.teamSize}) is below the typical headcount for ${ctx.impliedScope} projects.`,
+    );
+  }
+
+  return { score: Math.max(0, Math.min(100, s)), reasons };
+}
+
+export function tierFromScore(score: number): IdeaScoreTier {
+  if (score < 30) return "block";
+  if (score < 60) return "warn";
+  return "pass";
 }
 
 function generateReasoning(tool: GameDevTool, input: ProjectInput, score: number): string {
@@ -379,14 +474,31 @@ ${topStackSummary}
 RETRIEVED KNOWLEDGE CONTEXT:
 ${retrievedKnowledgeContext}
 
-Use the pre-scored tool stack as the base ranking. When retrieved knowledge context is available, ground explanations in it and use source metadata to understand where each fact came from. Do not invent unsupported details about tools, pricing, capabilities, performance, or platform support. If retrieved knowledge is unavailable, rely only on the project details and pre-scored stack.
+SCOPE BASELINES (industry typical, USD):
+- jam:       budget ~ $0,         team 1,         time hours-days
+- prototype: budget ~ $0,         team 1-2,       time 1-3 months
+- indie:     budget $1K - $500K,  team 1-10,      time 6-24 months
+- AA:        budget $500K - $50M, team 20-100,    time 2-4 years
+- AAA:       budget $50M+,        team 100-500+,  time 3-7 years
 
-Respond with a JSON object with these exact keys:
+PROJECT MODE GUIDE:
+- single_player: no networked play
+- co_op_local: shared-screen / LAN-only multiplayer
+- multiplayer_online: matchmaking, dedicated servers, cross-region play
+- live_service: persistent online world with seasonal content
+
+Use the pre-scored tool stack as the base ranking. When retrieved knowledge context is available, ground explanations in it and use source metadata to understand where each fact came from. Do not invent unsupported details about tools, pricing, capabilities, performance, or platform support.
+
+Respond with a JSON object with these EXACT keys:
 {
-  "projectSummary": "2-3 sentence summary of what this game project is and what makes it interesting/challenging",
-  "detectedProjectType": "Brief label like '2D Platformer', 'Mobile Puzzle Game', 'FPS Shooter', 'RPG', 'Game Jam Entry' etc.",
-  "stackOverview": "One crisp sentence listing the core recommended tools, e.g. 'Godot + GDScript + Aseprite + itch.io'",
-  "overallConfidence": <number 0-100 representing how confident you are this stack fits the project>
+  "projectSummary": "2-3 sentence summary",
+  "detectedProjectType": "Brief label like '2D Platformer', 'Mobile Puzzle Game'",
+  "stackOverview": "One crisp sentence listing core recommended tools",
+  "overallConfidence": <0-100>,
+  "impliedScope": "<one of: jam | prototype | indie | AA | AAA - what scope the project IDEA suggests>",
+  "achievableScope": "<one of: jam | prototype | indie | AA | AAA - what scope the budget+team+time actually supports>",
+  "mismatchReasons": ["short bullet strings describing concrete scope/budget/team/time gaps"],
+  "projectMode": "<one of: single_player | co_op_local | multiplayer_online | live_service>"
 }`;
 }
 
@@ -439,28 +551,55 @@ export async function generateMetadataWithAI(
   });
 
   const content = response.choices[0]?.message?.content ?? "{}";
-  let parsed: AnalysisMetadata;
+  const fallbackAchievable = deriveAchievableScopeFromInput(input);
+  let parsed: Partial<AnalysisMetadata> = {};
 
   try {
     parsed = JSON.parse(content);
   } catch {
-    parsed = {
-      projectSummary: "A game development project with specific constraints and goals.",
-      detectedProjectType: "Indie Game",
-      stackOverview: [...categoryResults.locked, ...categoryResults.flexible]
+    parsed = {};
+  }
+
+  const impliedScope = isScope(parsed.impliedScope) ? parsed.impliedScope : fallbackAchievable;
+  const achievableScope = isScope(parsed.achievableScope) ? parsed.achievableScope : fallbackAchievable;
+  const projectMode = isProjectMode(parsed.projectMode) ? parsed.projectMode : "single_player";
+
+  return {
+    projectSummary:
+      parsed.projectSummary ?? "A game development project with specific constraints and goals.",
+    detectedProjectType: parsed.detectedProjectType ?? "Indie Game",
+    stackOverview:
+      parsed.stackOverview ??
+      [...categoryResults.locked, ...categoryResults.flexible]
         .map((entry) => entry.topTool.name)
         .slice(0, 4)
         .join(" + "),
-      overallConfidence: 72,
-    };
-  }
-
-  return {
-    projectSummary: parsed.projectSummary,
-    detectedProjectType: parsed.detectedProjectType,
-    stackOverview: parsed.stackOverview,
-    overallConfidence: parsed.overallConfidence,
+    overallConfidence: typeof parsed.overallConfidence === "number" ? parsed.overallConfidence : 72,
+    impliedScope,
+    achievableScope,
+    mismatchReasons: Array.isArray(parsed.mismatchReasons)
+      ? parsed.mismatchReasons.filter((r): r is string => typeof r === "string")
+      : [],
+    projectMode,
   };
+}
+
+function isScope(v: unknown): v is Scope {
+  return typeof v === "string" && (SCOPE_ORDER as string[]).includes(v);
+}
+
+function isProjectMode(v: unknown): v is ProjectMode {
+  return v === "single_player" || v === "co_op_local" || v === "multiplayer_online" || v === "live_service";
+}
+
+function deriveAchievableScopeFromInput(input: ProjectInput): Scope {
+  const budget = BUDGET_USD[input.budget] ?? 0;
+  const team = TEAM_COUNT[input.teamSize] ?? 1;
+  if (budget >= BUDGET_MIN_BY_SCOPE.AAA && team >= TEAM_MIN_BY_SCOPE.AAA) return "AAA";
+  if (budget >= BUDGET_MIN_BY_SCOPE.AA && team >= TEAM_MIN_BY_SCOPE.AA) return "AA";
+  if (budget >= BUDGET_MIN_BY_SCOPE.indie || team >= 2) return "indie";
+  if (input.timeLimit === "jam") return "jam";
+  return "prototype";
 }
 
 export async function streamFinalSummaryWithAI(
