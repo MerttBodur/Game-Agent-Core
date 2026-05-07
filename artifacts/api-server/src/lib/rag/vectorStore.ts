@@ -6,7 +6,7 @@ export async function similaritySearch(embedding: number[], topK: number): Promi
   const result = await pool.query<Row>(
     `SELECT content, metadata, 1 - (embedding <=> $1::vector) AS score
      FROM knowledge_chunks
-     WHERE metadata->>'sourceType' = 'catalog'
+     WHERE metadata->>'sourceType' IN ('catalog', 'game_dataset')
      ORDER BY embedding <=> $1::vector
      LIMIT $2`,
     [`[${embedding.join(",")}]`, topK],

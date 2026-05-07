@@ -9,18 +9,24 @@ export interface RagProjectQuery {
   otherConstraints?: string | null;
 }
 
-export type RagSourceType = "catalog";
+export type RagSourceType = "catalog" | "game_dataset";
 
-export type RagChunkKind = "tool_profile";
+export type RagChunkKind = "tool_profile" | "game_profile";
 
 export interface RagChunkMetadata extends Record<string, unknown> {
-  toolName: string;
-  category: string;
+  toolName?: string;
+  category?: string;
+  title?: string;
+  archetype?: "jam" | "prototype" | "indie" | "AA" | "AAA";
+  engine?: string;
+  language?: string;
+  year?: number;
+  source?: string;
   sourceType: RagSourceType;
   sourceId: string;
-  sourceUrl: string;
+  sourceUrl?: string;
   chunkKind: RagChunkKind;
-  tags: string[];
+  tags?: string[];
 }
 
 export interface RetrievedKnowledgeChunk {

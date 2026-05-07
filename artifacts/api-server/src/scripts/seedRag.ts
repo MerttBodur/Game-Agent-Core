@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { pool } from "@workspace/db";
-import { buildToolDocuments } from "../lib/rag/documents.js";
+import { buildAllDocuments } from "../lib/rag/documents.js";
 import { getEmbedding } from "../lib/rag/embeddings.js";
 import { upsertChunks, deleteChunks } from "../lib/rag/vectorStore.js";
 
@@ -8,7 +8,7 @@ async function main() {
   console.log("Preparing RAG seed...");
   await pool.query("CREATE EXTENSION IF NOT EXISTS vector");
 
-  const documents = buildToolDocuments();
+  const documents = buildAllDocuments();
   const ids = documents.map((d) => d.id);
 
   await deleteChunks(ids);
