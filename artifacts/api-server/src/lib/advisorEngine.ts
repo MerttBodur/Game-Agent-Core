@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { DATASET_HAS_POPULARITY_ROWS, GAME_DEV_TOOLS, TOOL_CATEGORIES, type GameDevTool } from "./gameDevTools.js";
 
-export const LOCKED_CATEGORIES = ["programming", "ui", "vfx", "build_ci"] as const;
+export const LOCKED_CATEGORIES = ["art_asset_creation"] as const;
 
 export type Scope = "jam" | "prototype" | "indie" | "AA" | "AAA";
 export type IdeaScoreTier = "pass" | "warn" | "block";
@@ -53,8 +53,8 @@ const WEIGHTS_BY_ARCHETYPE: Record<Scope, Record<ScoringAxis, number>> = {
 export const DATASET_IS_THIN = !DATASET_HAS_POPULARITY_ROWS;
 
 export function hiddenCategoriesForMode(mode: ProjectMode): string[] {
-  if (mode === "single_player") return ["networking", "backend_services"];
-  if (mode === "co_op_local") return ["backend_services"];
+  if (mode === "single_player") return [];
+  if (mode === "co_op_local") return [];
   return [];
 }
 
@@ -207,16 +207,18 @@ function timeDelta(tool: GameDevTool, input: ProjectInput): number {
 }
 
 function artDelta(tool: GameDevTool, input: ProjectInput): number {
-  if (tool.category !== "art" && tool.category !== "animation") return 0;
+  if (tool.category !== "art_asset_creation") return 0;
   const artMap: Record<string, string[]> = {
-    none: ["ai_tooling"],
-    basic: ["ai_tooling", "beginner"],
-    intermediate: ["ai_tooling", "beginner", "intermediate"],
-    advanced: ["ai_tooling", "beginner", "intermediate", "advanced"],
-    professional: ["ai_tooling", "beginner", "intermediate", "advanced", "expert"],
+    none: ["ai_coding_assistant"],
+    basic: ["ai_coding_assistant", "beginner"],
+    intermediate: ["ai_coding_assistant", "beginner", "intermediate"],
+    advanced: ["ai_coding_assistant", "beginner", "intermediate", "advanced"],
+    professional: ["ai_coding_assistant", "beginner", "intermediate", "advanced", "expert"],
   };
   const allowed = artMap[input.artCapability] ?? [];
-  return allowed.includes(tool.minSkillLevel) || allowed.includes("ai_tooling") ? 10 : -15;
+  return allowed.includes(tool.minSkillLevel) || allowed.includes("ai_coding_assistant")
+    ? 10
+    : -15;
 }
 
 export function scoreTool(
@@ -417,7 +419,7 @@ export function buildCategoryResults(
   const allCategoryIds = TOOL_CATEGORIES.map((c) => c.id);
 
   // 1. Score engine first to discover the ecosystem
-  const engineEntry = scoreCategory("engine", ctx);
+  const engineEntry = scoreCategory("game_engine", ctx);
   if (!engineEntry) {
     return { locked: [], flexible: [], hidden };
   }
@@ -428,7 +430,7 @@ export function buildCategoryResults(
   const flexible: CategoryEntry[] = [];
 
   for (const cat of allCategoryIds) {
-    if (cat === "engine") continue;
+    if (cat === "game_engine") continue;
     if (hidden.includes(cat)) continue;
 
     const isLocked = (LOCKED_CATEGORIES as readonly string[]).includes(cat);
