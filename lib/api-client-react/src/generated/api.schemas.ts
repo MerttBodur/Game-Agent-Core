@@ -243,44 +243,124 @@ export interface Session {
   createdAt: string;
 }
 
+export type ToolCategoryProperty =
+  (typeof ToolCategoryProperty)[keyof typeof ToolCategoryProperty];
+
+export const ToolCategoryProperty = {
+  game_engine: "game_engine",
+  ide: "ide",
+  version_control: "version_control",
+  art_asset_creation: "art_asset_creation",
+  audio: "audio",
+  ai_coding_assistant: "ai_coding_assistant",
+  deployment_publishing: "deployment_publishing",
+} as const;
+
+export type ToolSupportedPlatformsItem =
+  (typeof ToolSupportedPlatformsItem)[keyof typeof ToolSupportedPlatformsItem];
+
+export const ToolSupportedPlatformsItem = {
+  pc: "pc",
+  mobile: "mobile",
+  web: "web",
+  console: "console",
+  vr: "vr",
+  ar: "ar",
+} as const;
+
 export type ToolPricing = (typeof ToolPricing)[keyof typeof ToolPricing];
 
 export const ToolPricing = {
   free: "free",
+  open_source: "open_source",
   freemium: "freemium",
   paid: "paid",
   subscription: "subscription",
-  open_source: "open_source",
+  revenue_share: "revenue_share",
+  enterprise: "enterprise",
 } as const;
 
-export type ToolMinSkillLevel =
-  (typeof ToolMinSkillLevel)[keyof typeof ToolMinSkillLevel];
+export type ToolDifficultyLevel =
+  (typeof ToolDifficultyLevel)[keyof typeof ToolDifficultyLevel];
 
-export const ToolMinSkillLevel = {
+export const ToolDifficultyLevel = {
   beginner: "beginner",
   intermediate: "intermediate",
   advanced: "advanced",
-  expert: "expert",
+} as const;
+
+export type ToolTeamSizeFitItem =
+  (typeof ToolTeamSizeFitItem)[keyof typeof ToolTeamSizeFitItem];
+
+export const ToolTeamSizeFitItem = {
+  solo: "solo",
+  small: "small",
+  medium: "medium",
+  large: "large",
+} as const;
+
+export type ToolFit2d3d = (typeof ToolFit2d3d)[keyof typeof ToolFit2d3d];
+
+export const ToolFit2d3d = {
+  "2d": "2d",
+  "3d": "3d",
+  both: "both",
+} as const;
+
+export type ToolPhaseItem = (typeof ToolPhaseItem)[keyof typeof ToolPhaseItem];
+
+export const ToolPhaseItem = {
+  planning: "planning",
+  programming: "programming",
+  version_control: "version_control",
+  art_assets: "art_assets",
+  audio: "audio",
+  deployment_publishing: "deployment_publishing",
 } as const;
 
 export interface Tool {
-  id: number;
+  /** Stable snake_case slug */
+  id: string;
   name: string;
-  category: string;
+  category: ToolCategoryProperty;
+  /** @nullable */
+  subcategory?: string | null;
   description: string;
+  bestUseCase: string;
+  supportedPlatforms: ToolSupportedPlatformsItem[];
+  pricing: ToolPricing;
+  difficultyLevel: ToolDifficultyLevel;
+  /**
+   * @minimum 0
+   * @maximum 100
+   */
+  beginnerSuitability: number;
+  teamSizeFit: ToolTeamSizeFitItem[];
+  genreFit: string[];
+  fit2d3d: ToolFit2d3d;
+  pros: string[];
+  cons: string[];
+  alternatives: string[];
+  phase: ToolPhaseItem[];
   /** @nullable */
   website?: string | null;
-  pricing: ToolPricing;
-  minSkillLevel: ToolMinSkillLevel;
-  platforms: string[];
-  strengths: string[];
-  weaknesses: string[];
-  bestFor: string[];
-  tags: string[];
 }
 
+export type ToolCategoryId =
+  (typeof ToolCategoryId)[keyof typeof ToolCategoryId];
+
+export const ToolCategoryId = {
+  game_engine: "game_engine",
+  ide: "ide",
+  version_control: "version_control",
+  art_asset_creation: "art_asset_creation",
+  audio: "audio",
+  ai_coding_assistant: "ai_coding_assistant",
+  deployment_publishing: "deployment_publishing",
+} as const;
+
 export interface ToolCategory {
-  id: string;
+  id: ToolCategoryId;
   label: string;
   description: string;
   toolCount: number;
@@ -305,4 +385,9 @@ export interface AdvisorStats {
 
 export type ListToolsParams = {
   category?: string;
+  platform?: string;
+  pricing?: string;
+  difficulty?: string;
+  teamSize?: string;
+  fit2d3d?: string;
 };

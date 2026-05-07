@@ -10,8 +10,10 @@ export type ToolPricing = (typeof ToolPricing)[keyof typeof ToolPricing];
 
 export const ToolPricing = {
   free: "free",
+  open_source: "open_source",
   freemium: "freemium",
   paid: "paid",
   subscription: "subscription",
-  open_source: "open_source",
+  revenue_share: "revenue_share",
+  enterprise: "enterprise",
 } as const;

@@ -5,21 +5,38 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
-import type { ToolMinSkillLevel } from "./toolMinSkillLevel";
+import type { ToolCategoryProperty } from "./toolCategoryProperty";
+import type { ToolDifficultyLevel } from "./toolDifficultyLevel";
+import type { ToolFit2d3d } from "./toolFit2d3d";
+import type { ToolPhaseItem } from "./toolPhaseItem";
 import type { ToolPricing } from "./toolPricing";
+import type { ToolSupportedPlatformsItem } from "./toolSupportedPlatformsItem";
+import type { ToolTeamSizeFitItem } from "./toolTeamSizeFitItem";
 
 export interface Tool {
-  id: number;
+  /** Stable snake_case slug */
+  id: string;
   name: string;
-  category: string;
+  category: ToolCategoryProperty;
+  /** @nullable */
+  subcategory?: string | null;
   description: string;
+  bestUseCase: string;
+  supportedPlatforms: ToolSupportedPlatformsItem[];
+  pricing: ToolPricing;
+  difficultyLevel: ToolDifficultyLevel;
+  /**
+   * @minimum 0
+   * @maximum 100
+   */
+  beginnerSuitability: number;
+  teamSizeFit: ToolTeamSizeFitItem[];
+  genreFit: string[];
+  fit2d3d: ToolFit2d3d;
+  pros: string[];
+  cons: string[];
+  alternatives: string[];
+  phase: ToolPhaseItem[];
   /** @nullable */
   website?: string | null;
-  pricing: ToolPricing;
-  minSkillLevel: ToolMinSkillLevel;
-  platforms: string[];
-  strengths: string[];
-  weaknesses: string[];
-  bestFor: string[];
-  tags: string[];
 }

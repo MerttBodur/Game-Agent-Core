@@ -500,27 +500,65 @@ export const GetSessionResponse = zod.object({
  */
 export const ListToolsQueryParams = zod.object({
   category: zod.coerce.string().optional(),
+  platform: zod.coerce.string().optional(),
+  pricing: zod.coerce.string().optional(),
+  difficulty: zod.coerce.string().optional(),
+  teamSize: zod.coerce.string().optional(),
+  fit2d3d: zod.coerce.string().optional(),
 });
 
+export const listToolsResponseBeginnerSuitabilityMin = 0;
+export const listToolsResponseBeginnerSuitabilityMax = 100;
+
 export const ListToolsResponseItem = zod.object({
-  id: zod.number(),
+  id: zod.string().describe("Stable snake_case slug"),
   name: zod.string(),
-  category: zod.string(),
+  category: zod.enum([
+    "game_engine",
+    "ide",
+    "version_control",
+    "art_asset_creation",
+    "audio",
+    "ai_coding_assistant",
+    "deployment_publishing",
+  ]),
+  subcategory: zod.string().nullish(),
   description: zod.string(),
-  website: zod.string().nullish(),
+  bestUseCase: zod.string(),
+  supportedPlatforms: zod.array(
+    zod.enum(["pc", "mobile", "web", "console", "vr", "ar"]),
+  ),
   pricing: zod.enum([
     "free",
+    "open_source",
     "freemium",
     "paid",
     "subscription",
-    "open_source",
+    "revenue_share",
+    "enterprise",
   ]),
-  minSkillLevel: zod.enum(["beginner", "intermediate", "advanced", "expert"]),
-  platforms: zod.array(zod.string()),
-  strengths: zod.array(zod.string()),
-  weaknesses: zod.array(zod.string()),
-  bestFor: zod.array(zod.string()),
-  tags: zod.array(zod.string()),
+  difficultyLevel: zod.enum(["beginner", "intermediate", "advanced"]),
+  beginnerSuitability: zod
+    .number()
+    .min(listToolsResponseBeginnerSuitabilityMin)
+    .max(listToolsResponseBeginnerSuitabilityMax),
+  teamSizeFit: zod.array(zod.enum(["solo", "small", "medium", "large"])),
+  genreFit: zod.array(zod.string()),
+  fit2d3d: zod.enum(["2d", "3d", "both"]),
+  pros: zod.array(zod.string()),
+  cons: zod.array(zod.string()),
+  alternatives: zod.array(zod.string()),
+  phase: zod.array(
+    zod.enum([
+      "planning",
+      "programming",
+      "version_control",
+      "art_assets",
+      "audio",
+      "deployment_publishing",
+    ]),
+  ),
+  website: zod.string().nullish(),
 });
 export const ListToolsResponse = zod.array(ListToolsResponseItem);
 
@@ -528,35 +566,76 @@ export const ListToolsResponse = zod.array(ListToolsResponseItem);
  * @summary Get a specific tool by ID
  */
 export const GetToolParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
+export const getToolResponseBeginnerSuitabilityMin = 0;
+export const getToolResponseBeginnerSuitabilityMax = 100;
+
 export const GetToolResponse = zod.object({
-  id: zod.number(),
+  id: zod.string().describe("Stable snake_case slug"),
   name: zod.string(),
-  category: zod.string(),
+  category: zod.enum([
+    "game_engine",
+    "ide",
+    "version_control",
+    "art_asset_creation",
+    "audio",
+    "ai_coding_assistant",
+    "deployment_publishing",
+  ]),
+  subcategory: zod.string().nullish(),
   description: zod.string(),
-  website: zod.string().nullish(),
+  bestUseCase: zod.string(),
+  supportedPlatforms: zod.array(
+    zod.enum(["pc", "mobile", "web", "console", "vr", "ar"]),
+  ),
   pricing: zod.enum([
     "free",
+    "open_source",
     "freemium",
     "paid",
     "subscription",
-    "open_source",
+    "revenue_share",
+    "enterprise",
   ]),
-  minSkillLevel: zod.enum(["beginner", "intermediate", "advanced", "expert"]),
-  platforms: zod.array(zod.string()),
-  strengths: zod.array(zod.string()),
-  weaknesses: zod.array(zod.string()),
-  bestFor: zod.array(zod.string()),
-  tags: zod.array(zod.string()),
+  difficultyLevel: zod.enum(["beginner", "intermediate", "advanced"]),
+  beginnerSuitability: zod
+    .number()
+    .min(getToolResponseBeginnerSuitabilityMin)
+    .max(getToolResponseBeginnerSuitabilityMax),
+  teamSizeFit: zod.array(zod.enum(["solo", "small", "medium", "large"])),
+  genreFit: zod.array(zod.string()),
+  fit2d3d: zod.enum(["2d", "3d", "both"]),
+  pros: zod.array(zod.string()),
+  cons: zod.array(zod.string()),
+  alternatives: zod.array(zod.string()),
+  phase: zod.array(
+    zod.enum([
+      "planning",
+      "programming",
+      "version_control",
+      "art_assets",
+      "audio",
+      "deployment_publishing",
+    ]),
+  ),
+  website: zod.string().nullish(),
 });
 
 /**
  * @summary List all tool categories
  */
 export const GetToolCategoriesResponseItem = zod.object({
-  id: zod.string(),
+  id: zod.enum([
+    "game_engine",
+    "ide",
+    "version_control",
+    "art_asset_creation",
+    "audio",
+    "ai_coding_assistant",
+    "deployment_publishing",
+  ]),
   label: zod.string(),
   description: zod.string(),
   toolCount: zod.number(),

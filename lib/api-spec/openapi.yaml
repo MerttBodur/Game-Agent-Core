@@ -102,11 +102,12 @@ paths:
       tags: [tools]
       summary: List all tools in the catalog
       parameters:
-        - name: category
-          in: query
-          required: false
-          schema:
-            type: string
+        - { name: category, in: query, required: false, schema: { type: string } }
+        - { name: platform, in: query, required: false, schema: { type: string } }
+        - { name: pricing, in: query, required: false, schema: { type: string } }
+        - { name: difficulty, in: query, required: false, schema: { type: string } }
+        - { name: teamSize, in: query, required: false, schema: { type: string } }
+        - { name: fit2d3d, in: query, required: false, schema: { type: string } }
       responses:
         "200":
           description: Tool catalog list
@@ -127,7 +128,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Tool details
@@ -489,59 +490,89 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          description: Stable snake_case slug
         name:
           type: string
         category:
           type: string
+          enum: [game_engine, ide, version_control, art_asset_creation, audio, ai_coding_assistant, deployment_publishing]
+        subcategory:
+          type: ["string", "null"]
         description:
           type: string
-        website:
-          type: ["string", "null"]
+        bestUseCase:
+          type: string
+        supportedPlatforms:
+          type: array
+          items:
+            type: string
+            enum: [pc, mobile, web, console, vr, ar]
         pricing:
           type: string
-          enum: [free, freemium, paid, subscription, open_source]
-        minSkillLevel:
+          enum: [free, open_source, freemium, paid, subscription, revenue_share, enterprise]
+        difficultyLevel:
           type: string
-          enum: [beginner, intermediate, advanced, expert]
-        platforms:
+          enum: [beginner, intermediate, advanced]
+        beginnerSuitability:
+          type: integer
+          minimum: 0
+          maximum: 100
+        teamSizeFit:
           type: array
           items:
             type: string
-        strengths:
+            enum: [solo, small, medium, large]
+        genreFit:
           type: array
           items:
             type: string
-        weaknesses:
+        fit2d3d:
+          type: string
+          enum: [2d, 3d, both]
+        pros:
           type: array
           items:
             type: string
-        bestFor:
+        cons:
           type: array
           items:
             type: string
-        tags:
+        alternatives:
           type: array
           items:
             type: string
+        phase:
+          type: array
+          items:
+            type: string
+            enum: [planning, programming, version_control, art_assets, audio, deployment_publishing]
+        website:
+          type: ["string", "null"]
       required:
         - id
         - name
         - category
         - description
+        - bestUseCase
+        - supportedPlatforms
         - pricing
-        - minSkillLevel
-        - platforms
-        - strengths
-        - weaknesses
-        - bestFor
-        - tags
+        - difficultyLevel
+        - beginnerSuitability
+        - teamSizeFit
+        - genreFit
+        - fit2d3d
+        - pros
+        - cons
+        - alternatives
+        - phase
 
     ToolCategory:
       type: object
       properties:
         id:
           type: string
+          enum: [game_engine, ide, version_control, art_asset_creation, audio, ai_coding_assistant, deployment_publishing]
         label:
           type: string
         description:

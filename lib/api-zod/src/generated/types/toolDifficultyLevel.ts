@@ -6,12 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ToolMinSkillLevel =
-  (typeof ToolMinSkillLevel)[keyof typeof ToolMinSkillLevel];
+export type ToolDifficultyLevel =
+  (typeof ToolDifficultyLevel)[keyof typeof ToolDifficultyLevel];
 
-export const ToolMinSkillLevel = {
+export const ToolDifficultyLevel = {
   beginner: "beginner",
   intermediate: "intermediate",
   advanced: "advanced",
-  expert: "expert",
 } as const;

@@ -461,12 +461,12 @@ export function useListTools<
 /**
  * @summary Get a specific tool by ID
  */
-export const getGetToolUrl = (id: number) => {
+export const getGetToolUrl = (id: string) => {
   return `/api/tools/${id}`;
 };
 
 export const getTool = async (
-  id: number,
+  id: string,
   options?: RequestInit,
 ): Promise<Tool> => {
   return customFetch<Tool>(getGetToolUrl(id), {
@@ -475,7 +475,7 @@ export const getTool = async (
   });
 };
 
-export const getGetToolQueryKey = (id: number) => {
+export const getGetToolQueryKey = (id: string) => {
   return [`/api/tools/${id}`] as const;
 };
 
@@ -483,7 +483,7 @@ export const getGetToolQueryOptions = <
   TData = Awaited<ReturnType<typeof getTool>>,
   TError = ErrorType<ErrorResponse>,
 >(
-  id: number,
+  id: string,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getTool>>, TError, TData>;
     request?: SecondParameter<typeof customFetch>;
@@ -520,7 +520,7 @@ export function useGetTool<
   TData = Awaited<ReturnType<typeof getTool>>,
   TError = ErrorType<ErrorResponse>,
 >(
-  id: number,
+  id: string,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getTool>>, TError, TData>;
     request?: SecondParameter<typeof customFetch>;

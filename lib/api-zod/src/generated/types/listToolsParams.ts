@@ -8,4 +8,9 @@
 
 export type ListToolsParams = {
   category?: string;
+  platform?: string;
+  pricing?: string;
+  difficulty?: string;
+  teamSize?: string;
+  fit2d3d?: string;
 };

@@ -5,9 +5,10 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
+import type { ToolCategoryId } from "./toolCategoryId";
 
 export interface ToolCategory {
-  id: string;
+  id: ToolCategoryId;
   label: string;
   description: string;
   toolCount: number;
