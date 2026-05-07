@@ -28,6 +28,9 @@ Get-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess | Stop-Proc
 
 # Regenerate API client hooks and Zod types from OpenAPI spec
 pnpm --filter @workspace/api-spec run codegen
+
+# Regenerate the tree-of-contents from the tool catalog
+pnpm --filter @workspace/api-server run tree:build
 ```
 
 There are no test commands — the project currently has no test suite.
@@ -39,8 +42,8 @@ pnpm monorepo. Packages under `lib/` are shared libraries; `artifacts/` contains
 **Data flow for an analysis request:**
 1. Frontend (`artifacts/game-dev-advisor`) calls `POST /api/advisor/analyze` via the generated React Query hooks in `lib/api-client-react`
 2. The Express route (`artifacts/api-server/src/routes/advisor.ts`) validates the body with Zod schemas from `lib/api-zod`
-3. `advisorEngine.ts` scores every tool in `gameDevTools.ts` using a rule-based function (budget, skill, platform, time, art), then retrieves augmenting context from the RAG vector store
-4. OpenAI (`gpt-4o-mini`) generates the narrative summary grounded in the scored stack + retrieved chunks
+3. `advisorEngine.ts` scores every tool in `gameDevTools.ts` using a rule-based function (budget, skill, platform, time, art), then retrieves augmenting context from tree-of-contents retrieval
+4. OpenAI (`gpt-4o-mini`) generates the narrative summary grounded in the scored stack + retrieved context
 5. The session is persisted to MySQL via Drizzle ORM and the full `AnalysisResult` is returned
 
 **API contract:** `lib/api-spec/openapi.yaml` is the single source of truth. Orval reads it to generate:
@@ -49,7 +52,9 @@ pnpm monorepo. Packages under `lib/` are shared libraries; `artifacts/` contains
 
 **Whenever the OpenAPI spec changes, run codegen** to keep both packages in sync.
 
-**Catalog-first reads:** `/tools*` reads from `artifacts/api-server/src/data/toolCatalog.json` (loaded and validated at boot). MySQL is only used for `advisor_sessions`. The `tools` and `knowledge_chunks` Postgres tables and pgvector are gone.
+**Retrieval (vectorless tree-of-contents):** `artifacts/api-server/src/data/toolTree.json` is generated from `toolCatalog.json` at build time (`pnpm --filter @workspace/api-server run tree:build`). At request time, `lib/rag/treeNavigator.ts` makes a single `gpt-4o-mini` call with structured-output JSON schema to pick relevant categories and mark candidate tools. The result is a `RetrievedContextPackage` with `retrievalConfidence` and `fallbackStatus`.
+
+**Catalog-first reads:** `/tools*` reads from `artifacts/api-server/src/data/toolCatalog.json` (loaded and validated at boot). MySQL is only used for `advisor_sessions`.
 
 **DB schema packages:**
 - `lib/db/src/schema/sessions.ts` — analysis sessions
