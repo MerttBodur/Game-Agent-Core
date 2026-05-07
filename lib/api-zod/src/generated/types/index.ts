@@ -17,6 +17,8 @@ export * from "./archetype";
 export * from "./archetypeScope";
 export * from "./categoryRecommendation";
 export * from "./categoryResults";
+export * from "./categoryResultsCandidatePool";
+export * from "./categoryResultsCandidatePoolItem";
 export * from "./errorResponse";
 export * from "./evidence";
 export * from "./healthStatus";

@@ -157,6 +157,15 @@ export interface Archetype {
   scope: ArchetypeScope;
 }
 
+export type CategoryResultsCandidatePoolItem = { [key: string]: unknown };
+
+/**
+ * Per-category full candidate pool (pre-hard-filter), keyed by category id. Used by client-side recompute on Mode/Archetype edit.
+ */
+export type CategoryResultsCandidatePool = {
+  [key: string]: CategoryResultsCandidatePoolItem[];
+};
+
 export interface CategoryRecommendation {
   category: string;
   categoryLabel: string;
@@ -170,6 +179,8 @@ export interface CategoryResults {
   flexible: CategoryRecommendation[];
   /** Category ids hidden by projectMode (e.g. networking, backend_services) */
   hidden: string[];
+  /** Per-category full candidate pool (pre-hard-filter), keyed by category id. Used by client-side recompute on Mode/Archetype edit. */
+  candidatePool?: CategoryResultsCandidatePool;
 }
 
 export type AnalysisResultIdeaScoreTier =

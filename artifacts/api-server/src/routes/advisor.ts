@@ -5,14 +5,16 @@ import { AnalyzeProjectBody, GetSessionParams } from "@workspace/api-zod";
 import {
   buildCategoryResults,
   generateMetadataWithAI,
+  hiddenCategoriesForMode,
   heuristicIdeaScore,
   retrieveAdvisorKnowledge,
   streamFinalSummaryWithAI,
   tierFromScore,
   type CategoryResults,
+  type ProjectMode,
   type ProjectInput,
 } from "../lib/advisorEngine.js";
-import { TOOL_CATEGORIES } from "../lib/gameDevTools.js";
+import { GAME_DEV_TOOLS, TOOL_CATEGORIES, type GameDevTool } from "../lib/gameDevTools.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 
 const router: IRouter = Router();
@@ -59,11 +61,25 @@ function buildCategoryResultsResponse(
   categoryResults: CategoryResults,
   ragChunks: Array<{ text: string; source: string; score?: number | null }>,
   toolIdMap: Record<string, number>,
-): { locked: CategoryRecommendationDTO[]; flexible: CategoryRecommendationDTO[]; hidden: string[] } {
+  projectMode: ProjectMode,
+): {
+  locked: CategoryRecommendationDTO[];
+  flexible: CategoryRecommendationDTO[];
+  hidden: string[];
+  candidatePool: Record<string, GameDevTool[]>;
+} {
+  const hidden = new Set(hiddenCategoriesForMode(projectMode));
+  const candidatePool: Record<string, GameDevTool[]> = {};
+  for (const cat of TOOL_CATEGORIES) {
+    if (hidden.has(cat.id)) continue;
+    candidatePool[cat.id] = GAME_DEV_TOOLS.filter((t) => t.category === cat.id);
+  }
+
   return {
     locked: categoryResults.locked.map((e) => toRecommendationDTO(e, ragChunks, toolIdMap)),
     flexible: categoryResults.flexible.map((e) => toRecommendationDTO(e, ragChunks, toolIdMap)),
     hidden: categoryResults.hidden,
+    candidatePool,
   };
 }
 
@@ -172,7 +188,12 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
     for (const t of dbTools) toolIdMap[t.name] = t.id;
 
     send("scoring_complete", {
-      categoryResults: buildCategoryResultsResponse(categoryResults, [], toolIdMap),
+      categoryResults: buildCategoryResultsResponse(
+        categoryResults,
+        [],
+        toolIdMap,
+        metadata.projectMode,
+      ),
     });
 
     const finalSummary = await streamFinalSummaryWithAI(
@@ -183,7 +204,12 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
       (token) => send("narrative_chunk", { token }),
     );
 
-    const finalResults = buildCategoryResultsResponse(categoryResults, ragChunks, toolIdMap);
+    const finalResults = buildCategoryResultsResponse(
+      categoryResults,
+      ragChunks,
+      toolIdMap,
+      metadata.projectMode,
+    );
 
     const resultObj = {
       sessionId: 0,

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import type { AnalysisResult, ArchetypeScope } from "@workspace/api-client-react";
+import type { ReactNode } from "react";
 
 const INDUSTRY_BASELINES: Record<
   ArchetypeScope,
@@ -55,15 +56,25 @@ type HeaderResult = Pick<
 >;
 
 type Tier = AnalysisResult["ideaScoreTier"];
+type Mode = "single_player" | "co_op_local" | "multiplayer_online" | "live_service";
+type ScopeValue = "jam" | "prototype" | "indie" | "AA" | "AAA";
 
 export function FeasibilityHeader({
   result,
   onAdviseAnyway,
   isOverriding = false,
+  modeOverride,
+  scopeOverride,
+  onChangeMode,
+  onChangeScope,
 }: {
   result: HeaderResult;
   onAdviseAnyway?: () => void;
   isOverriding?: boolean;
+  modeOverride?: Mode;
+  scopeOverride?: ScopeValue;
+  onChangeMode?: (mode: Mode) => void;
+  onChangeScope?: (scope: ScopeValue) => void;
 }) {
   const tier: Tier = result.ideaScoreTier;
   const score = result.ideaScore.toFixed(1);
@@ -71,6 +82,40 @@ export function FeasibilityHeader({
   const achievable = result.archetype.achievable.scope;
   const reasons = result.mismatchReasons;
   const projectMode = result.projectMode;
+  const selectedMode = modeOverride ?? projectMode;
+  const selectedScope = scopeOverride ?? achievable;
+  const controls =
+    onChangeMode && onChangeScope ? (
+      <div className="mt-1 flex flex-wrap items-center gap-3">
+        <label className="text-[11px] opacity-70">
+          Mode:
+          <select
+            value={selectedMode}
+            onChange={(e) => onChangeMode(e.target.value as Mode)}
+            className="ml-1 rounded border border-current/30 bg-transparent px-1 py-0.5 text-[11px]"
+          >
+            <option value="single_player">single_player</option>
+            <option value="co_op_local">co_op_local</option>
+            <option value="multiplayer_online">multiplayer_online</option>
+            <option value="live_service">live_service</option>
+          </select>
+        </label>
+        <label className="text-[11px] opacity-70">
+          Scope:
+          <select
+            value={selectedScope}
+            onChange={(e) => onChangeScope(e.target.value as ScopeValue)}
+            className="ml-1 rounded border border-current/30 bg-transparent px-1 py-0.5 text-[11px]"
+          >
+            <option value="jam">jam</option>
+            <option value="prototype">prototype</option>
+            <option value="indie">indie</option>
+            <option value="AA">AA</option>
+            <option value="AAA">AAA</option>
+          </select>
+        </label>
+      </div>
+    ) : null;
 
   if (result.feasibilityOverridden) {
     return (
@@ -79,19 +124,26 @@ export function FeasibilityHeader({
           You proceeded despite feasibility concerns. Recommendations are best-effort but your project may not be
           deliverable.
         </div>
-        <PassPill score={score} implied={implied} projectMode={projectMode} variant="warn" />
+        <PassPill
+          score={score}
+          implied={implied}
+          projectMode={projectMode}
+          variant="warn"
+          controls={controls}
+        />
       </div>
     );
   }
 
   if (tier === "pass") {
-    return <PassPill score={score} implied={implied} projectMode={projectMode} variant="pass" />;
+    return <PassPill score={score} implied={implied} projectMode={projectMode} variant="pass" controls={controls} />;
   }
 
   if (tier === "warn") {
     return (
       <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/10 p-4">
         <p className="text-sm font-semibold text-yellow-300">Idea Score: {score} / 100 - Tight Fit</p>
+        {controls}
         {reasons.length > 0 && (
           <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-yellow-200/90">
             {reasons.map((reason) => (
@@ -108,6 +160,7 @@ export function FeasibilityHeader({
   return (
     <div className="space-y-4 rounded-xl border border-red-500/40 bg-red-500/10 p-6">
       <p className="text-base font-semibold text-red-300">Idea Score: {score} / 100 - Not Feasible</p>
+      {controls}
 
       {reasons.length > 0 && (
         <div>
@@ -165,11 +218,13 @@ function PassPill({
   implied,
   projectMode,
   variant,
+  controls,
 }: {
   score: string;
   implied: ArchetypeScope;
   projectMode: AnalysisResult["projectMode"];
   variant: "pass" | "warn";
+  controls: ReactNode;
 }) {
   const colorClass =
     variant === "pass"
@@ -177,16 +232,17 @@ function PassPill({
       : "border-yellow-500/30 bg-yellow-500/10 text-yellow-300";
 
   return (
-    <div
-      className={`flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border px-4 py-2 text-xs ${colorClass}`}
-    >
-      <span className="font-semibold">Idea Score: {score} / 100 - {variant === "pass" ? "Realistic" : "Override"}</span>
-      <span className="opacity-80">
-        Implied: <span className="font-mono">{implied}</span>
-      </span>
-      <span className="opacity-80">
-        Mode: <span className="font-mono">{projectMode}</span>
-      </span>
+    <div className={`rounded-lg border px-4 py-2 text-xs ${colorClass}`}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <span className="font-semibold">Idea Score: {score} / 100 - {variant === "pass" ? "Realistic" : "Override"}</span>
+        <span className="opacity-80">
+          Implied: <span className="font-mono">{implied}</span>
+        </span>
+        <span className="opacity-80">
+          Mode: <span className="font-mono">{projectMode}</span>
+        </span>
+      </div>
+      {controls}
     </div>
   );
 }

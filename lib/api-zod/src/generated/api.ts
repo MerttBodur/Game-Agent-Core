@@ -5,7 +5,7 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
-import * as zod from "zod/v4";
+import * as zod from "zod";
 
 /**
  * Returns server health status
@@ -206,6 +206,12 @@ export const AnalyzeProjectResponse = zod.object({
           .array(zod.string())
           .describe(
             "Category ids hidden by projectMode (e.g. networking, backend_services)",
+          ),
+        candidatePool: zod
+          .record(zod.string(), zod.array(zod.object({}).passthrough()))
+          .optional()
+          .describe(
+            "Per-category full candidate pool (pre-hard-filter), keyed by category id. Used by client-side recompute on Mode\/Archetype edit.",
           ),
       }),
       zod.null(),
@@ -450,6 +456,12 @@ export const GetSessionResponse = zod.object({
             .array(zod.string())
             .describe(
               "Category ids hidden by projectMode (e.g. networking, backend_services)",
+            ),
+          candidatePool: zod
+            .record(zod.string(), zod.array(zod.object({}).passthrough()))
+            .optional()
+            .describe(
+              "Per-category full candidate pool (pre-hard-filter), keyed by category id. Used by client-side recompute on Mode\/Archetype edit.",
             ),
         }),
         zod.null(),

@@ -351,6 +351,13 @@ components:
           items:
             type: string
           description: "Category ids hidden by projectMode (e.g. networking, backend_services)"
+        candidatePool:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: object
+          description: "Per-category full candidate pool (pre-hard-filter), keyed by category id. Used by client-side recompute on Mode/Archetype edit."
       required:
         - locked
         - flexible

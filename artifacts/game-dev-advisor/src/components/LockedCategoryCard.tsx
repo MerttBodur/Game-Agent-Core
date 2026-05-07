@@ -46,7 +46,7 @@ export function LockedCategoryCard({
       </div>
       <div className="flex items-center justify-between">
         <span className="text-foreground text-base font-bold">{cat.topPick.toolName}</span>
-        <span className="text-primary text-xs font-mono">{Math.round(cat.topPick.score)}</span>
+        <span className="text-primary text-xs font-mono">{cat.topPick.score.toFixed(1)}</span>
       </div>
       <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{cat.topPick.reasoning}</p>
     </Card>

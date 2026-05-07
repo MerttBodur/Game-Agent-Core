@@ -6,10 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { CategoryRecommendation } from "./categoryRecommendation";
+import type { CategoryResultsCandidatePool } from "./categoryResultsCandidatePool";
 
 export interface CategoryResults {
   locked: CategoryRecommendation[];
   flexible: CategoryRecommendation[];
   /** Category ids hidden by projectMode (e.g. networking, backend_services) */
   hidden: string[];
+  /** Per-category full candidate pool (pre-hard-filter), keyed by category id. Used by client-side recompute on Mode/Archetype edit. */
+  candidatePool?: CategoryResultsCandidatePool;
 }

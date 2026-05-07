@@ -15,6 +15,11 @@ import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { LockedCategoryCard } from "@/components/LockedCategoryCard";
 import { FeasibilityHeader } from "@/components/FeasibilityHeader";
+import {
+  recomputeCategoryResults,
+  type ProjectMode as Mode,
+  type Scope as ScopeValue,
+} from "@/lib/scoring";
 
 const BUDGET_OPTIONS = [
   { value: "zero", label: "Zero", desc: "No money at all" },
@@ -112,18 +117,30 @@ function EvidencePanel({ evidence }: { evidence: Evidence }) {
         <p className="mb-2 font-semibold text-foreground">Score Breakdown</p>
         <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
           <dt>Budget</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.budget}</dd>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.budget?.toFixed(1)}</dd>
           <dt>Skill</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.skill}</dd>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.skill?.toFixed(1)}</dd>
           <dt>Platform</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.platform}</dd>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.platform?.toFixed(1)}</dd>
           <dt>Time</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.timeLimit}</dd>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.timeLimit?.toFixed(1)}</dd>
           <dt>Art</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.artCapability}</dd>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.artCapability?.toFixed(1)}</dd>
+          <dt>Popularity</dt>
+          <dd className="text-right font-mono">
+            {(evidence.scoreBreakdown as { popularity?: number }).popularity?.toFixed(1) ?? "—"}
+          </dd>
+          <dt>Paid Priority</dt>
+          <dd className="text-right font-mono">
+            {(evidence.scoreBreakdown as { paidPriority?: number }).paidPriority?.toFixed(1) ?? "—"}
+          </dd>
+          <dt>Jitter</dt>
+          <dd className="text-right font-mono">
+            {(evidence.scoreBreakdown as { jitter?: number }).jitter?.toFixed(2) ?? "—"}
+          </dd>
         </dl>
         <p className="mt-2 text-[11px] text-muted-foreground/80">
-          Total: <span className="font-mono">{evidence.scoreBreakdown.total}</span>
+          Total: <span className="font-mono">{evidence.scoreBreakdown.total?.toFixed(1)}</span>
         </p>
       </div>
 
@@ -157,7 +174,7 @@ function CategoryCard({ cat }: { cat: CategoryRecommendation }) {
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1">
           <span className="text-lg font-bold text-foreground">{cat.topPick.toolName}</span>
-          <span className="text-sm font-mono text-primary">{Math.round(cat.topPick.score)}</span>
+          <span className="text-sm font-mono text-primary">{cat.topPick.score.toFixed(1)}</span>
         </div>
         <ScoreBar score={cat.topPick.score} />
       </div>
@@ -201,7 +218,7 @@ function CategoryCard({ cat }: { cat: CategoryRecommendation }) {
                 <div key={i} className="p-3 rounded-md bg-muted/40 border border-border">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-semibold text-foreground">{alt.toolName}</span>
-                    <span className="text-xs font-mono text-muted-foreground">{Math.round(alt.score)}</span>
+                    <span className="text-xs font-mono text-muted-foreground">{alt.score.toFixed(1)}</span>
                   </div>
                   <ScoreBar score={alt.score} />
                   <p className="text-xs text-muted-foreground mt-2">{alt.reasoning}</p>
@@ -287,14 +304,35 @@ function AnalysisView({
   result,
   onAdviseAnyway,
   isOverriding,
+  projectInput,
 }: {
   result: AnalysisResult;
   onAdviseAnyway: () => void;
   isOverriding: boolean;
+  projectInput: ProjectInput | null;
 }) {
-  const buckets = result.categoryResults ?? { locked: [], flexible: [], hidden: [] };
+  const buckets = result.categoryResults ?? { locked: [], flexible: [], hidden: [], candidatePool: {} };
   const tier = (result.ideaScoreTier ?? "pass") as "pass" | "warn" | "block";
   const blocked = tier === "block" && !result.feasibilityOverridden;
+  const baseMode = (result.projectMode ?? "single_player") as Mode;
+  const baseScope = (result.archetype?.achievable?.scope ?? "indie") as ScopeValue;
+  const [modeOverride, setModeOverride] = useState<Mode>(baseMode);
+  const [scopeOverride, setScopeOverride] = useState<ScopeValue>(baseScope);
+  const isOverridden = modeOverride !== baseMode || scopeOverride !== baseScope;
+
+  const recomputed = isOverridden && projectInput
+    ? recomputeCategoryResults({
+      input: projectInput,
+      modeOverride,
+      scopeOverride,
+      candidatePool: (buckets.candidatePool ?? {}) as never,
+      ragChunks: buckets.locked?.[0]?.topPick.evidence?.ragChunks ?? [],
+    })
+    : null;
+
+  const renderLocked = recomputed ? recomputed.locked : (buckets.locked ?? []);
+  const renderFlexible = recomputed ? recomputed.flexible : (buckets.flexible ?? []);
+  const renderHidden = recomputed ? recomputed.hidden : (buckets.hidden ?? []);
 
   return (
     <div className="space-y-8">
@@ -302,7 +340,17 @@ function AnalysisView({
         result={result}
         onAdviseAnyway={blocked ? onAdviseAnyway : undefined}
         isOverriding={isOverriding}
+        modeOverride={modeOverride}
+        scopeOverride={scopeOverride}
+        onChangeMode={setModeOverride}
+        onChangeScope={setScopeOverride}
       />
+
+      {isOverridden && (
+        <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-200">
+          Adjusted client-side. Submit the form again to regenerate the narrative.
+        </div>
+      )}
 
       {!blocked && (
         <>
@@ -324,9 +372,9 @@ function AnalysisView({
           </div>
 
           <StackSections
-            locked={buckets.locked ?? []}
-            flexible={buckets.flexible ?? []}
-            hidden={buckets.hidden ?? []}
+            locked={renderLocked}
+            flexible={renderFlexible}
+            hidden={renderHidden}
           />
 
           <div className="p-5 rounded-xl border border-border bg-card">
@@ -768,6 +816,7 @@ export default function Analyzer() {
               result={result}
               onAdviseAnyway={handleAdviseAnyway}
               isOverriding={isOverriding}
+              projectInput={lastInput}
             />
           </div>
         )}

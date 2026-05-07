@@ -1,5 +1,5 @@
 import { useGetSession, getGetSessionQueryKey } from "@workspace/api-client-react";
-import type { CategoryRecommendation, Evidence } from "@workspace/api-client-react";
+import type { CategoryRecommendation, Evidence, ProjectInput } from "@workspace/api-client-react";
 import { Link, useParams } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,11 @@ import { useEffect, useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { LockedCategoryCard } from "@/components/LockedCategoryCard";
 import { FeasibilityHeader } from "@/components/FeasibilityHeader";
+import {
+  recomputeCategoryResults,
+  type ProjectMode as Mode,
+  type Scope as ScopeValue,
+} from "@/lib/scoring";
 
 function EvidencePanel({ evidence }: { evidence: Evidence }) {
   const chunks = evidence.ragChunks.slice(0, 3);
@@ -18,18 +23,30 @@ function EvidencePanel({ evidence }: { evidence: Evidence }) {
         <p className="mb-2 font-semibold text-foreground">Score Breakdown</p>
         <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
           <dt>Budget</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.budget}</dd>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.budget?.toFixed(1)}</dd>
           <dt>Skill</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.skill}</dd>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.skill?.toFixed(1)}</dd>
           <dt>Platform</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.platform}</dd>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.platform?.toFixed(1)}</dd>
           <dt>Time</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.timeLimit}</dd>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.timeLimit?.toFixed(1)}</dd>
           <dt>Art</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.artCapability}</dd>
+          <dd className="text-right font-mono">{evidence.scoreBreakdown.artCapability?.toFixed(1)}</dd>
+          <dt>Popularity</dt>
+          <dd className="text-right font-mono">
+            {(evidence.scoreBreakdown as { popularity?: number }).popularity?.toFixed(1) ?? "—"}
+          </dd>
+          <dt>Paid Priority</dt>
+          <dd className="text-right font-mono">
+            {(evidence.scoreBreakdown as { paidPriority?: number }).paidPriority?.toFixed(1) ?? "—"}
+          </dd>
+          <dt>Jitter</dt>
+          <dd className="text-right font-mono">
+            {(evidence.scoreBreakdown as { jitter?: number }).jitter?.toFixed(2) ?? "—"}
+          </dd>
         </dl>
         <p className="mt-2 text-[11px] text-muted-foreground/80">
-          Total: <span className="font-mono">{evidence.scoreBreakdown.total}</span>
+          Total: <span className="font-mono">{evidence.scoreBreakdown.total?.toFixed(1)}</span>
         </p>
       </div>
       {chunks.length > 0 && (
@@ -68,7 +85,7 @@ function CategoryCard({ cat }: { cat: CategoryRecommendation }) {
       <div className="mb-3">
         <div className="mb-1 flex items-center justify-between">
           <span className="text-lg font-bold text-foreground">{cat.topPick.toolName}</span>
-          <span className="text-sm font-mono text-primary">{Math.round(cat.topPick.score)}</span>
+          <span className="text-sm font-mono text-primary">{cat.topPick.score.toFixed(1)}</span>
         </div>
         <ScoreBar score={cat.topPick.score} />
       </div>
@@ -104,7 +121,7 @@ function CategoryCard({ cat }: { cat: CategoryRecommendation }) {
                 <div key={i} className="rounded-md border border-border bg-muted/40 p-3">
                   <div className="mb-1 flex items-center justify-between">
                     <span className="text-sm font-semibold">{alt.toolName}</span>
-                    <span className="text-xs font-mono text-muted-foreground">{Math.round(alt.score)}</span>
+                    <span className="text-xs font-mono text-muted-foreground">{alt.score.toFixed(1)}</span>
                   </div>
                   <ScoreBar score={alt.score} />
                   <p className="mt-2 text-xs text-muted-foreground">{alt.reasoning}</p>
@@ -214,6 +231,7 @@ export default function SessionDetail() {
       locked?: CategoryRecommendation[];
       flexible?: CategoryRecommendation[];
       hidden?: string[];
+      candidatePool?: Record<string, unknown[]>;
     };
     categories?: CategoryRecommendation[];
     overallConfidence: number;
@@ -226,9 +244,26 @@ export default function SessionDetail() {
     projectMode?: string;
     feasibilityOverridden?: boolean;
   };
-  const locked = result.categoryResults?.locked ?? [];
-  const flexible = result.categoryResults?.flexible ?? [];
-  const hidden = result.categoryResults?.hidden ?? [];
+  const buckets = result.categoryResults ?? { locked: [], flexible: [], hidden: [], candidatePool: {} };
+  const baseMode = (result.projectMode ?? "single_player") as Mode;
+  const baseScope = (result.archetype?.achievable?.scope ?? "indie") as ScopeValue;
+  const [modeOverride, setModeOverride] = useState<Mode>(baseMode);
+  const [scopeOverride, setScopeOverride] = useState<ScopeValue>(baseScope);
+  const isOverridden = modeOverride !== baseMode || scopeOverride !== baseScope;
+  const projectInput = session.projectInput as unknown as ProjectInput;
+  const recomputed = isOverridden
+    ? recomputeCategoryResults({
+      input: projectInput,
+      modeOverride,
+      scopeOverride,
+      candidatePool: (buckets.candidatePool ?? {}) as never,
+      ragChunks: buckets.locked?.[0]?.topPick.evidence?.ragChunks ?? [],
+    })
+    : null;
+
+  const locked = recomputed ? recomputed.locked : (buckets.locked ?? []);
+  const flexible = recomputed ? recomputed.flexible : (buckets.flexible ?? []);
+  const hidden = recomputed ? recomputed.hidden : (buckets.hidden ?? []);
   const legacyFlat = !result.categoryResults && result.categories ? result.categories : [];
   const legacyFlexible = [...flexible, ...legacyFlat];
   const engineEntry = locked.find((c) => c.category === "engine");
@@ -274,11 +309,23 @@ export default function SessionDetail() {
         <Separator className="mb-8 bg-border" />
 
         <div className="mb-8">
-          <FeasibilityHeader result={result as never} />
+          <FeasibilityHeader
+            result={result as never}
+            modeOverride={modeOverride}
+            scopeOverride={scopeOverride}
+            onChangeMode={setModeOverride}
+            onChangeScope={setScopeOverride}
+          />
         </div>
 
         {!blocked && (
           <>
+            {isOverridden && (
+              <div className="mb-8 rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-200">
+                Adjusted client-side. Submit the form again to regenerate the narrative.
+              </div>
+            )}
+
             {locked.length > 0 && (
               <div className="mb-8">
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-widest text-muted-foreground">Locked</h3>

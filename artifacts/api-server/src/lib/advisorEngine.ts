@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { GAME_DEV_TOOLS, TOOL_CATEGORIES, type GameDevTool } from "./gameDevTools.js";
 
-const LOCKED_CATEGORIES = ["programming", "ui", "vfx", "build_ci"] as const;
+export const LOCKED_CATEGORIES = ["programming", "ui", "vfx", "build_ci"] as const;
 
 export type Scope = "jam" | "prototype" | "indie" | "AA" | "AAA";
 export type IdeaScoreTier = "pass" | "warn" | "block";
@@ -55,7 +55,7 @@ export function setDatasetThin(value: boolean): void {
   DATASET_IS_THIN = value;
 }
 
-function hiddenCategoriesForMode(mode: ProjectMode): string[] {
+export function hiddenCategoriesForMode(mode: ProjectMode): string[] {
   if (mode === "single_player") return ["networking", "backend_services"];
   if (mode === "co_op_local") return ["backend_services"];
   return [];
