@@ -1,0 +1,121 @@
+{
+  "Godot": {
+    "jam": 0.2,
+    "prototype": 0.2,
+    "indie": 0.03125,
+    "AA": 0,
+    "AAA": 0
+  },
+  "GDScript": {
+    "jam": 0.2,
+    "prototype": 0.2,
+    "indie": 0.03125,
+    "AA": 0,
+    "AAA": 0
+  },
+  "Unity": {
+    "jam": 0.2,
+    "prototype": 0.2,
+    "indie": 0.4375,
+    "AA": 0.13333333333333333,
+    "AAA": 0
+  },
+  "C# with .NET": {
+    "jam": 0.2,
+    "prototype": 0.2,
+    "indie": 0.5,
+    "AA": 0.13333333333333333,
+    "AAA": 0
+  },
+  "GameMaker": {
+    "jam": 0.1,
+    "prototype": 0.1,
+    "indie": 0.15625,
+    "AA": 0,
+    "AAA": 0
+  },
+  "Custom": {
+    "jam": 0.1,
+    "prototype": 0.1,
+    "indie": 0.5625,
+    "AA": 0.3333333333333333,
+    "AAA": 1
+  },
+  "Phaser": {
+    "jam": 0.1,
+    "prototype": 0.1,
+    "indie": 0.03125,
+    "AA": 0,
+    "AAA": 0
+  },
+  "JavaScript / TypeScript": {
+    "jam": 0.2,
+    "prototype": 0.2,
+    "indie": 0.03125,
+    "AA": 0,
+    "AAA": 0
+  },
+  "Construct 3": {
+    "jam": 0.1,
+    "prototype": 0,
+    "indie": 0,
+    "AA": 0,
+    "AAA": 0
+  },
+  "Unreal Engine": {
+    "jam": 0.1,
+    "prototype": 0.2,
+    "indie": 0,
+    "AA": 0.5333333333333333,
+    "AAA": 0
+  },
+  "C++": {
+    "jam": 0.1,
+    "prototype": 0.2,
+    "indie": 0.15625,
+    "AA": 0.8666666666666667,
+    "AAA": 1
+  },
+  "Defold": {
+    "jam": 0.1,
+    "prototype": 0,
+    "indie": 0,
+    "AA": 0,
+    "AAA": 0
+  },
+  "Lua": {
+    "jam": 0.2,
+    "prototype": 0,
+    "indie": 0.03125,
+    "AA": 0,
+    "AAA": 0
+  },
+  "LOVE": {
+    "jam": 0.1,
+    "prototype": 0,
+    "indie": 0.03125,
+    "AA": 0,
+    "AAA": 0
+  },
+  "Bevy": {
+    "jam": 0,
+    "prototype": 0.1,
+    "indie": 0,
+    "AA": 0,
+    "AAA": 0
+  },
+  "Rust": {
+    "jam": 0,
+    "prototype": 0.1,
+    "indie": 0,
+    "AA": 0,
+    "AAA": 0
+  },
+  "Cocos Creator": {
+    "jam": 0,
+    "prototype": 0.1,
+    "indie": 0,
+    "AA": 0,
+    "AAA": 0
+  }
+}
