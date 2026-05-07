@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { LockedCategoryCard } from "@/components/LockedCategoryCard";
+import { FeasibilityHeader } from "@/components/FeasibilityHeader";
 
 const BUDGET_OPTIONS = [
   { value: "zero", label: "Zero", desc: "No money at all" },
@@ -282,45 +283,58 @@ function StackSections({
   );
 }
 
-function AnalysisView({ result }: { result: AnalysisResult }) {
-  const confidenceColor = result.overallConfidence >= 75
-    ? "text-green-400"
-    : result.overallConfidence >= 55
-    ? "text-yellow-400"
-    : "text-red-400";
+function AnalysisView({
+  result,
+  onAdviseAnyway,
+  isOverriding,
+}: {
+  result: AnalysisResult;
+  onAdviseAnyway: () => void;
+  isOverriding: boolean;
+}) {
   const buckets = result.categoryResults ?? { locked: [], flexible: [], hidden: [] };
+  const tier = (result.ideaScoreTier ?? "pass") as "pass" | "warn" | "block";
+  const blocked = tier === "block" && !result.feasibilityOverridden;
 
   return (
     <div className="space-y-8">
-      <div className="p-6 rounded-xl border border-primary/30 bg-primary/5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
-                {result.detectedProjectType}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">{result.projectSummary}</p>
-          </div>
-          <div className="text-right shrink-0">
-            <div className={`text-4xl font-black ${confidenceColor}`}>{Math.round(result.overallConfidence)}</div>
-            <div className="text-xs text-muted-foreground">Fit Score</div>
-          </div>
-        </div>
-        <Separator className="my-4 bg-border" />
-        <p className="text-sm font-semibold text-primary">{result.stackOverview}</p>
-      </div>
-
-      <StackSections
-        locked={buckets.locked ?? []}
-        flexible={buckets.flexible ?? []}
-        hidden={buckets.hidden ?? []}
+      <FeasibilityHeader
+        result={result}
+        onAdviseAnyway={blocked ? onAdviseAnyway : undefined}
+        isOverriding={isOverriding}
       />
 
-      <div className="p-5 rounded-xl border border-border bg-card">
-        <h3 className="text-sm font-semibold text-foreground mb-2">Final Analysis</h3>
-        <p className="text-sm text-muted-foreground leading-relaxed">{result.finalSummary}</p>
-      </div>
+      {!blocked && (
+        <>
+          <div className="p-6 rounded-xl border border-primary/30 bg-primary/5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
+                  {result.detectedProjectType}
+                </Badge>
+                <p className="text-sm text-muted-foreground leading-relaxed mt-2">{result.projectSummary}</p>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="text-4xl font-black text-primary">{Math.round(result.overallConfidence)}</div>
+                <div className="text-xs text-muted-foreground">Fit Score</div>
+              </div>
+            </div>
+            <Separator className="my-4 bg-border" />
+            <p className="text-sm font-semibold text-primary">{result.stackOverview ?? ""}</p>
+          </div>
+
+          <StackSections
+            locked={buckets.locked ?? []}
+            flexible={buckets.flexible ?? []}
+            hidden={buckets.hidden ?? []}
+          />
+
+          <div className="p-5 rounded-xl border border-border bg-card">
+            <h3 className="text-sm font-semibold text-foreground mb-2">Final Analysis</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">{result.finalSummary}</p>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -406,6 +420,8 @@ export default function Analyzer() {
   const [narrativeTokens, setNarrativeTokens] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [lastInput, setLastInput] = useState<ProjectInput | null>(null);
+  const [isOverriding, setIsOverriding] = useState(false);
   const [metadata, setMetadata] = useState<{
     projectSummary: string;
     detectedProjectType: string;
@@ -476,6 +492,7 @@ export default function Analyzer() {
 
   const streamAnalysis = async (input: ProjectInput): Promise<void> => {
     setPhase("scoring");
+    setLastInput(input);
     setErrorMsg("");
     setResult(null);
     setMetadata(null);
@@ -550,6 +567,16 @@ export default function Analyzer() {
     } catch {
       setPhase("error");
       setErrorMsg("Something went wrong. Please try again.");
+    }
+  };
+
+  const handleAdviseAnyway = async () => {
+    if (!lastInput || isOverriding) return;
+    setIsOverriding(true);
+    try {
+      await streamAnalysis({ ...lastInput, adviseAnyway: true });
+    } finally {
+      setIsOverriding(false);
     }
   };
 
@@ -737,7 +764,11 @@ export default function Analyzer() {
         {result && phase === "done" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Separator className="mb-8 bg-border" />
-            <AnalysisView result={result} />
+            <AnalysisView
+              result={result}
+              onAdviseAnyway={handleAdviseAnyway}
+              isOverriding={isOverriding}
+            />
           </div>
         )}
       </div>

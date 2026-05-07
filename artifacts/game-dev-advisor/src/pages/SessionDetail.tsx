@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { LockedCategoryCard } from "@/components/LockedCategoryCard";
+import { FeasibilityHeader } from "@/components/FeasibilityHeader";
 
 function EvidencePanel({ evidence }: { evidence: Evidence }) {
   const chunks = evidence.ragChunks.slice(0, 3);
@@ -59,30 +60,36 @@ function CategoryCard({ cat }: { cat: CategoryRecommendation }) {
   const [showAlts, setShowAlts] = useState(false);
   return (
     <Card className="p-5 border-border bg-card">
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3 flex items-center justify-between">
         <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {cat.categoryLabel}
         </span>
       </div>
       <div className="mb-3">
-        <div className="flex items-center justify-between mb-1">
+        <div className="mb-1 flex items-center justify-between">
           <span className="text-lg font-bold text-foreground">{cat.topPick.toolName}</span>
           <span className="text-sm font-mono text-primary">{Math.round(cat.topPick.score)}</span>
         </div>
         <ScoreBar score={cat.topPick.score} />
       </div>
-      <p className="text-sm text-muted-foreground mb-3">{cat.topPick.reasoning}</p>
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <p className="mb-3 text-sm text-muted-foreground">{cat.topPick.reasoning}</p>
+      <div className="mb-3 grid grid-cols-2 gap-3">
         <div>
-          <p className="text-xs font-semibold text-green-400 mb-1">Strengths</p>
+          <p className="mb-1 text-xs font-semibold text-green-400">Strengths</p>
           {cat.topPick.strengths.slice(0, 3).map((s, i) => (
-            <p key={i} className="text-xs text-muted-foreground flex gap-1.5"><span className="text-green-500">+</span>{s}</p>
+            <p key={i} className="flex gap-1.5 text-xs text-muted-foreground">
+              <span className="text-green-500">+</span>
+              {s}
+            </p>
           ))}
         </div>
         <div>
-          <p className="text-xs font-semibold text-red-400 mb-1">Weaknesses</p>
+          <p className="mb-1 text-xs font-semibold text-red-400">Weaknesses</p>
           {cat.topPick.weaknesses.slice(0, 3).map((w, i) => (
-            <p key={i} className="text-xs text-muted-foreground flex gap-1.5"><span className="text-red-500">-</span>{w}</p>
+            <p key={i} className="flex gap-1.5 text-xs text-muted-foreground">
+              <span className="text-red-500">-</span>
+              {w}
+            </p>
           ))}
         </div>
       </div>
@@ -94,13 +101,13 @@ function CategoryCard({ cat }: { cat: CategoryRecommendation }) {
           {showAlts && (
             <div className="mt-3 space-y-2">
               {cat.alternatives.map((alt, i) => (
-                <div key={i} className="p-3 rounded-md bg-muted/40 border border-border">
-                  <div className="flex items-center justify-between mb-1">
+                <div key={i} className="rounded-md border border-border bg-muted/40 p-3">
+                  <div className="mb-1 flex items-center justify-between">
                     <span className="text-sm font-semibold">{alt.toolName}</span>
                     <span className="text-xs font-mono text-muted-foreground">{Math.round(alt.score)}</span>
                   </div>
                   <ScoreBar score={alt.score} />
-                  <p className="text-xs text-muted-foreground mt-2">{alt.reasoning}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">{alt.reasoning}</p>
                 </div>
               ))}
             </div>
@@ -109,9 +116,7 @@ function CategoryCard({ cat }: { cat: CategoryRecommendation }) {
       )}
       {cat.topPick.evidence && (
         <Collapsible className="mt-3">
-          <CollapsibleTrigger className="text-xs text-primary hover:underline">
-            Why this recommendation?
-          </CollapsibleTrigger>
+          <CollapsibleTrigger className="text-xs text-primary hover:underline">Why this recommendation?</CollapsibleTrigger>
           <CollapsibleContent>
             <EvidencePanel evidence={cat.topPick.evidence} />
           </CollapsibleContent>
@@ -170,18 +175,20 @@ export default function SessionDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
         <div className="text-center">
           <p className="text-muted-foreground">{getFriendlyErrorMessage(error)}</p>
-          <Link href="/sessions" className="text-primary hover:underline text-sm mt-2 inline-block">Back to History</Link>
+          <Link href="/sessions" className="mt-2 inline-block text-sm text-primary hover:underline">
+            Back to History
+          </Link>
         </div>
       </div>
     );
@@ -189,10 +196,12 @@ export default function SessionDetail() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <p className="text-muted-foreground">Not found.</p>
-          <Link href="/sessions" className="text-primary hover:underline text-sm mt-2 inline-block">Back to History</Link>
+          <Link href="/sessions" className="mt-2 inline-block text-sm text-primary hover:underline">
+            Back to History
+          </Link>
         </div>
       </div>
     );
@@ -208,8 +217,14 @@ export default function SessionDetail() {
     };
     categories?: CategoryRecommendation[];
     overallConfidence: number;
-    finalSummary: string;
-    stackOverview: string;
+    finalSummary: string | null;
+    stackOverview: string | null;
+    ideaScore?: number;
+    ideaScoreTier?: "pass" | "warn" | "block";
+    mismatchReasons?: string[];
+    archetype?: { implied?: { scope?: string }; achievable?: { scope?: string } };
+    projectMode?: string;
+    feasibilityOverridden?: boolean;
   };
   const locked = result.categoryResults?.locked ?? [];
   const flexible = result.categoryResults?.flexible ?? [];
@@ -222,21 +237,26 @@ export default function SessionDetail() {
 
   const input = session.projectInput as unknown as Record<string, unknown>;
   const confColor = result.overallConfidence >= 75 ? "text-green-400" : result.overallConfidence >= 55 ? "text-yellow-400" : "text-red-400";
+  const blocked = result.ideaScoreTier === "block" && !result.feasibilityOverridden;
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto px-4 py-12">
+      <div className="mx-auto max-w-5xl px-4 py-12">
         <div className="mb-6">
-          <Link href="/sessions" className="text-xs text-muted-foreground hover:text-primary">Back to History</Link>
+          <Link href="/sessions" className="text-xs text-muted-foreground hover:text-primary">
+            Back to History
+          </Link>
         </div>
 
         <div className="mb-8">
-          <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <Badge variant="secondary" className="mb-2">{result.detectedProjectType}</Badge>
+              <Badge variant="secondary" className="mb-2">
+                {result.detectedProjectType}
+              </Badge>
               <h1 className="text-xl font-black text-foreground">{(input.projectIdea as string) ?? ""}</h1>
             </div>
-            <div className="text-right shrink-0">
+            <div className="shrink-0 text-right">
               <div className={`text-4xl font-black ${confColor}`}>{Math.round(result.overallConfidence)}</div>
               <div className="text-xs text-muted-foreground">Fit Score</div>
             </div>
@@ -247,51 +267,53 @@ export default function SessionDetail() {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">{result.projectSummary}</p>
-          <p className="text-sm font-semibold text-primary mt-3">{result.stackOverview}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {new Date(session.createdAt).toLocaleString()}
-          </p>
+          <p className="mt-3 text-sm font-semibold text-primary">{result.stackOverview}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{new Date(session.createdAt).toLocaleString()}</p>
         </div>
 
         <Separator className="mb-8 bg-border" />
 
-        {locked.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-3">
-              🔒 Locked
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {engineEntry && <CategoryCard cat={engineEntry} />}
-              {lockedNonEngine.map((cat) => (
-                <LockedCategoryCard key={cat.category} cat={cat} engineName={engineName} />
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="mb-8">
+          <FeasibilityHeader result={result as never} />
+        </div>
 
-        {legacyFlexible.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-3">
-              {result.categoryResults ? "✎ Flexible" : "Stack Breakdown"}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {legacyFlexible.map((cat) => (
-                <CategoryCard key={cat.category} cat={cat} />
-              ))}
-            </div>
-          </div>
-        )}
+        {!blocked && (
+          <>
+            {locked.length > 0 && (
+              <div className="mb-8">
+                <h3 className="mb-3 text-sm font-semibold uppercase tracking-widest text-muted-foreground">Locked</h3>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {engineEntry && <CategoryCard cat={engineEntry} />}
+                  {lockedNonEngine.map((cat) => (
+                    <LockedCategoryCard key={cat.category} cat={cat} engineName={engineName} />
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {hidden.length > 0 && (
-          <p className="text-xs text-muted-foreground mb-8">
-            Hidden by project mode: {hidden.join(", ")}.
-          </p>
-        )}
+            {legacyFlexible.length > 0 && (
+              <div className="mb-8">
+                <h3 className="mb-3 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+                  {result.categoryResults ? "Flexible" : "Stack Breakdown"}
+                </h3>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {legacyFlexible.map((cat) => (
+                    <CategoryCard key={cat.category} cat={cat} />
+                  ))}
+                </div>
+              </div>
+            )}
 
-        <Card className="p-5 border-border bg-card">
-          <h3 className="text-sm font-semibold text-foreground mb-2">Final Analysis</h3>
-          <p className="text-sm text-muted-foreground">{result.finalSummary}</p>
-        </Card>
+            {hidden.length > 0 && (
+              <p className="mb-8 text-xs text-muted-foreground">Hidden by project mode: {hidden.join(", ")}.</p>
+            )}
+
+            <Card className="border-border bg-card p-5">
+              <h3 className="mb-2 text-sm font-semibold text-foreground">Final Analysis</h3>
+              <p className="text-sm text-muted-foreground">{result.finalSummary}</p>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );
