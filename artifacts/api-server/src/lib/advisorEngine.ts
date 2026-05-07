@@ -552,6 +552,7 @@ export async function generateMetadataWithAI(
 
   const content = response.choices[0]?.message?.content ?? "{}";
   const fallbackAchievable = deriveAchievableScopeFromInput(input);
+  const fallbackImplied = deriveImpliedScopeFromInput(input);
   let parsed: Partial<AnalysisMetadata> = {};
 
   try {
@@ -560,8 +561,10 @@ export async function generateMetadataWithAI(
     parsed = {};
   }
 
-  const impliedScope = isScope(parsed.impliedScope) ? parsed.impliedScope : fallbackAchievable;
-  const achievableScope = isScope(parsed.achievableScope) ? parsed.achievableScope : fallbackAchievable;
+  const parsedImpliedScope = isScope(parsed.impliedScope) ? parsed.impliedScope : fallbackImplied;
+  const parsedAchievableScope = isScope(parsed.achievableScope) ? parsed.achievableScope : fallbackAchievable;
+  const impliedScope = maxScope(parsedImpliedScope, fallbackImplied);
+  const achievableScope = minScope(parsedAchievableScope, fallbackAchievable);
   const projectMode = isProjectMode(parsed.projectMode) ? parsed.projectMode : "single_player";
 
   return {
@@ -592,14 +595,71 @@ function isProjectMode(v: unknown): v is ProjectMode {
   return v === "single_player" || v === "co_op_local" || v === "multiplayer_online" || v === "live_service";
 }
 
+function minScope(a: Scope, b: Scope): Scope {
+  return SCOPE_ORDER.indexOf(a) <= SCOPE_ORDER.indexOf(b) ? a : b;
+}
+
+function maxScope(a: Scope, b: Scope): Scope {
+  return SCOPE_ORDER.indexOf(a) >= SCOPE_ORDER.indexOf(b) ? a : b;
+}
+
+function deriveImpliedScopeFromInput(input: ProjectInput): Scope {
+  const idea = input.projectIdea.toLowerCase();
+
+  if (
+    /\baaa\b/.test(idea) ||
+    idea.includes("photoreal") ||
+    idea.includes("open-world") ||
+    idea.includes("open world") ||
+    idea.includes("mmo") ||
+    idea.includes("persistent online") ||
+    idea.includes("100+ hour") ||
+    idea.includes("full voice") ||
+    idea.includes("motion-capture") ||
+    idea.includes("cinematic")
+  ) {
+    return "AAA";
+  }
+
+  if (
+    idea.includes("20-hour") ||
+    idea.includes("20 hour") ||
+    (idea.includes("3d") &&
+      (idea.includes("rpg") ||
+        idea.includes("campaign") ||
+        idea.includes("branching") ||
+        idea.includes("full combat")))
+  ) {
+    return "AA";
+  }
+
+  if (idea.includes("2d") || idea.includes("pixel") || idea.includes("platformer") || idea.includes("puzzle")) {
+    return "indie";
+  }
+
+  if (input.timeLimit === "jam") return "jam";
+  return "prototype";
+}
+
 function deriveAchievableScopeFromInput(input: ProjectInput): Scope {
   const budget = BUDGET_USD[input.budget] ?? 0;
   const team = TEAM_COUNT[input.teamSize] ?? 1;
-  if (budget >= BUDGET_MIN_BY_SCOPE.AAA && team >= TEAM_MIN_BY_SCOPE.AAA) return "AAA";
-  if (budget >= BUDGET_MIN_BY_SCOPE.AA && team >= TEAM_MIN_BY_SCOPE.AA) return "AA";
-  if (budget >= BUDGET_MIN_BY_SCOPE.indie || team >= 2) return "indie";
-  if (input.timeLimit === "jam") return "jam";
-  return "prototype";
+  const resourceScope =
+    budget >= BUDGET_MIN_BY_SCOPE.AA && team >= TEAM_MIN_BY_SCOPE.AA
+      ? "AA"
+      : budget >= BUDGET_MIN_BY_SCOPE.indie || team >= 2
+        ? "indie"
+        : "prototype";
+  const timeScope: Scope =
+    input.timeLimit === "jam"
+      ? "jam"
+      : input.timeLimit === "month" || input.timeLimit === "quarter"
+        ? "prototype"
+        : input.timeLimit === "year"
+          ? "indie"
+          : "AA";
+
+  return minScope(resourceScope, timeScope);
 }
 
 export async function streamFinalSummaryWithAI(
