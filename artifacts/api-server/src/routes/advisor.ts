@@ -1,7 +1,8 @@
 import { Router, type IRouter } from "express";
-import { db, sessionsTable, toolsTable } from "@workspace/db";
+import { randomUUID } from "node:crypto";
+import { db, sessionsTable } from "@workspace/db";
 import { eq, desc, sql } from "drizzle-orm";
-import { AnalyzeProjectBody, GetSessionParams } from "@workspace/api-zod";
+import { AnalyzeProjectBody } from "@workspace/api-zod";
 import {
   buildCategoryResults,
   generateMetadataWithAI,
@@ -23,14 +24,14 @@ const dedup = <T>(items: T[]): T[] => Array.from(new Set(items));
 function toRecommendationDTO(
   entry: import("../lib/advisorEngine.js").CategoryEntry,
   ragChunks: Array<{ text: string; source: string; score?: number | null }>,
-  toolIdMap: Record<string, number>,
+  toolIdMap: Record<string, string>,
 ) {
   const label = TOOL_CATEGORIES.find((c) => c.id === entry.category)?.label ?? entry.category;
   return {
     category: entry.category,
     categoryLabel: label,
     topPick: {
-      toolId: toolIdMap[entry.topTool.name] ?? 0,
+      toolId: toolIdMap[entry.topTool.name] ?? "",
       toolName: entry.topTool.name,
       score: entry.topTool.score,
       reasoning: entry.topTool.reasoning,
@@ -41,7 +42,7 @@ function toRecommendationDTO(
       isTopPick: true,
     },
     alternatives: entry.alternatives.map((alt) => ({
-      toolId: toolIdMap[alt.name] ?? 0,
+      toolId: toolIdMap[alt.name] ?? "",
       toolName: alt.name,
       score: alt.score,
       reasoning: alt.reasoning,
@@ -60,7 +61,7 @@ type CategoryRecommendationDTO = ReturnType<typeof toRecommendationDTO>;
 function buildCategoryResultsResponse(
   categoryResults: CategoryResults,
   ragChunks: Array<{ text: string; source: string; score?: number | null }>,
-  toolIdMap: Record<string, number>,
+  toolIdMap: Record<string, string>,
   projectMode: ProjectMode,
 ): {
   locked: CategoryRecommendationDTO[];
@@ -140,7 +141,7 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
 
     if (ideaScoreTier === "block" && !input.adviseAnyway) {
       const blockedResult = {
-        sessionId: 0,
+        sessionId: "",
         projectSummary: metadata.projectSummary,
         detectedProjectType: metadata.detectedProjectType,
         categoryResults: null,
@@ -158,19 +159,13 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
         feasibilityOverridden: false,
       };
 
-      const [session] = await db
-        .insert(sessionsTable)
-        .values({
-          projectIdea: input.projectIdea,
-          projectInput: input as object,
-          detectedProjectType: metadata.detectedProjectType,
-          stackOverview: metadata.stackOverview,
-          overallConfidence: metadata.overallConfidence,
-          result: blockedResult as object,
-        })
-        .returning();
-
-      blockedResult.sessionId = session.id;
+      const sessionId = randomUUID();
+      blockedResult.sessionId = sessionId;
+      await db.insert(sessionsTable).values({
+        id: sessionId,
+        inputs: input as unknown as Record<string, unknown>,
+        result: blockedResult as Record<string, unknown>,
+      });
       send("done", blockedResult);
       res.end();
       return;
@@ -183,9 +178,9 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
       input.projectIdea.slice(0, 64),
     );
 
-    const dbTools = await db.select().from(toolsTable);
-    const toolIdMap: Record<string, number> = {};
-    for (const t of dbTools) toolIdMap[t.name] = t.id;
+    const toolIdMap: Record<string, string> = Object.fromEntries(
+      GAME_DEV_TOOLS.map((t) => [t.name, t.name.toLowerCase().replace(/[^a-z0-9]+/g, "_")]),
+    );
 
     send("scoring_complete", {
       categoryResults: buildCategoryResultsResponse(
@@ -212,7 +207,7 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
     );
 
     const resultObj = {
-      sessionId: 0,
+      sessionId: "",
       projectSummary: metadata.projectSummary,
       detectedProjectType: metadata.detectedProjectType,
       categoryResults: finalResults,
@@ -232,19 +227,13 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
       feasibilityOverridden: input.adviseAnyway === true && ideaScoreTier === "block",
     };
 
-    const [session] = await db
-      .insert(sessionsTable)
-      .values({
-        projectIdea: input.projectIdea,
-        projectInput: input as object,
-        detectedProjectType: metadata.detectedProjectType,
-        stackOverview: metadata.stackOverview,
-        overallConfidence: metadata.overallConfidence,
-        result: resultObj as object,
-      })
-      .returning();
-
-    resultObj.sessionId = session.id;
+    const sessionId = randomUUID();
+    resultObj.sessionId = sessionId;
+    await db.insert(sessionsTable).values({
+      id: sessionId,
+      inputs: input as unknown as Record<string, unknown>,
+      result: resultObj as Record<string, unknown>,
+    });
 
     send("done", resultObj);
     res.end();
@@ -259,30 +248,34 @@ router.get("/advisor/sessions", async (_req, res): Promise<void> => {
   const sessions = await db
     .select({
       id: sessionsTable.id,
-      projectIdea: sessionsTable.projectIdea,
-      detectedProjectType: sessionsTable.detectedProjectType,
-      stackOverview: sessionsTable.stackOverview,
-      overallConfidence: sessionsTable.overallConfidence,
+      inputs: sessionsTable.inputs,
+      trustScore: sessionsTable.trustScore,
+      trustTier: sessionsTable.trustTier,
       createdAt: sessionsTable.createdAt,
     })
     .from(sessionsTable)
     .orderBy(desc(sessionsTable.createdAt))
     .limit(50);
 
-  res.json(sessions);
+  res.json(
+    sessions.map((s) => ({
+      id: s.id,
+      projectIdea: (s.inputs as { projectIdea?: string }).projectIdea ?? "",
+      trustScore: s.trustScore,
+      trustTier: s.trustTier,
+      createdAt: s.createdAt,
+    })),
+  );
 });
 
 router.get("/advisor/sessions/:id", async (req, res): Promise<void> => {
-  const params = GetSessionParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+  const id = req.params.id;
+  if (typeof id !== "string" || id.length === 0) {
+    res.status(400).json({ error: "id is required" });
     return;
   }
 
-  const [session] = await db
-    .select()
-    .from(sessionsTable)
-    .where(eq(sessionsTable.id, params.data.id));
+  const [session] = await db.select().from(sessionsTable).where(eq(sessionsTable.id, id));
 
   if (!session) {
     res.status(404).json({ error: "Session not found" });
@@ -291,7 +284,7 @@ router.get("/advisor/sessions/:id", async (req, res): Promise<void> => {
 
   res.json({
     id: session.id,
-    projectInput: session.projectInput,
+    projectInput: session.inputs,
     result: session.result,
     createdAt: session.createdAt,
   });
