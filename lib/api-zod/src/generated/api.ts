@@ -49,198 +49,144 @@ export const AnalyzeProjectBody = zod.object({
     .describe(
       "Category ids where user accepts paid tools. Empty = prefer free.",
     ),
+  pinnedToolIds: zod
+    .array(zod.string())
+    .optional()
+    .describe(
+      "Tool ids the user explicitly wants kept; reasoning will adapt around them.",
+    ),
   adviseAnyway: zod
     .boolean()
     .optional()
     .describe("Set true to bypass block-tier early-return"),
 });
 
-export const analyzeProjectResponseFeasibilityOverriddenDefault = false;
+export const analyzeProjectResponseTrustScoreMin = 0;
+export const analyzeProjectResponseTrustScoreMax = 100;
+
+export const analyzeProjectResponseRetrievalRetrievalConfidenceMin = 0;
+export const analyzeProjectResponseRetrievalRetrievalConfidenceMax = 100;
+
+export const analyzeProjectResponseRecommendationsItemPrimaryScoreMin = 0;
+export const analyzeProjectResponseRecommendationsItemPrimaryScoreMax = 100;
+
+export const analyzeProjectResponseRecommendationsItemAlternativesItemScoreMin = 0;
+export const analyzeProjectResponseRecommendationsItemAlternativesItemScoreMax = 100;
+
+export const analyzeProjectResponseRecommendationsItemAlternativesMax = 2;
 
 export const AnalyzeProjectResponse = zod.object({
-  sessionId: zod.string(),
+  sessionId: zod.string().describe("Empty string when terminated is true"),
   projectSummary: zod.string(),
-  detectedProjectType: zod.string(),
-  categoryResults: zod
-    .union([
+  trustScore: zod
+    .number()
+    .min(analyzeProjectResponseTrustScoreMin)
+    .max(analyzeProjectResponseTrustScoreMax),
+  trustTier: zod.enum(["block", "warn", "pass"]),
+  terminated: zod.boolean(),
+  retrieval: zod.object({
+    relevantCategories: zod.array(
+      zod.enum([
+        "game_engine",
+        "ide",
+        "version_control",
+        "art_asset_creation",
+        "audio",
+        "ai_coding_assistant",
+        "deployment_publishing",
+      ]),
+    ),
+    candidateTools: zod.array(
       zod.object({
-        locked: zod.array(
-          zod.object({
-            category: zod.string(),
-            categoryLabel: zod.string(),
-            topPick: zod.object({
-              toolId: zod.string(),
-              toolName: zod.string(),
-              score: zod.number().describe("Fit score 0-100"),
-              reasoning: zod.string().describe("Why this tool was recommended"),
-              strengths: zod.array(zod.string()),
-              weaknesses: zod.array(zod.string()),
-              tradeoffs: zod.string(),
-              isTopPick: zod.boolean(),
-              evidence: zod
-                .object({
-                  scoreBreakdown: zod.object({
-                    budget: zod.number(),
-                    skill: zod.number(),
-                    platform: zod.number(),
-                    timeLimit: zod.number(),
-                    artCapability: zod.number(),
-                    total: zod.number(),
-                  }),
-                  ragChunks: zod.array(
-                    zod.object({
-                      text: zod.string(),
-                      source: zod.string(),
-                      score: zod.number().nullish(),
-                    }),
-                  ),
-                })
-                .optional(),
-            }),
-            alternatives: zod.array(
-              zod.object({
-                toolId: zod.string(),
-                toolName: zod.string(),
-                score: zod.number().describe("Fit score 0-100"),
-                reasoning: zod
-                  .string()
-                  .describe("Why this tool was recommended"),
-                strengths: zod.array(zod.string()),
-                weaknesses: zod.array(zod.string()),
-                tradeoffs: zod.string(),
-                isTopPick: zod.boolean(),
-                evidence: zod
-                  .object({
-                    scoreBreakdown: zod.object({
-                      budget: zod.number(),
-                      skill: zod.number(),
-                      platform: zod.number(),
-                      timeLimit: zod.number(),
-                      artCapability: zod.number(),
-                      total: zod.number(),
-                    }),
-                    ragChunks: zod.array(
-                      zod.object({
-                        text: zod.string(),
-                        source: zod.string(),
-                        score: zod.number().nullish(),
-                      }),
-                    ),
-                  })
-                  .optional(),
-              }),
-            ),
-            categoryReasoning: zod.string(),
-          }),
-        ),
-        flexible: zod.array(
-          zod.object({
-            category: zod.string(),
-            categoryLabel: zod.string(),
-            topPick: zod.object({
-              toolId: zod.string(),
-              toolName: zod.string(),
-              score: zod.number().describe("Fit score 0-100"),
-              reasoning: zod.string().describe("Why this tool was recommended"),
-              strengths: zod.array(zod.string()),
-              weaknesses: zod.array(zod.string()),
-              tradeoffs: zod.string(),
-              isTopPick: zod.boolean(),
-              evidence: zod
-                .object({
-                  scoreBreakdown: zod.object({
-                    budget: zod.number(),
-                    skill: zod.number(),
-                    platform: zod.number(),
-                    timeLimit: zod.number(),
-                    artCapability: zod.number(),
-                    total: zod.number(),
-                  }),
-                  ragChunks: zod.array(
-                    zod.object({
-                      text: zod.string(),
-                      source: zod.string(),
-                      score: zod.number().nullish(),
-                    }),
-                  ),
-                })
-                .optional(),
-            }),
-            alternatives: zod.array(
-              zod.object({
-                toolId: zod.string(),
-                toolName: zod.string(),
-                score: zod.number().describe("Fit score 0-100"),
-                reasoning: zod
-                  .string()
-                  .describe("Why this tool was recommended"),
-                strengths: zod.array(zod.string()),
-                weaknesses: zod.array(zod.string()),
-                tradeoffs: zod.string(),
-                isTopPick: zod.boolean(),
-                evidence: zod
-                  .object({
-                    scoreBreakdown: zod.object({
-                      budget: zod.number(),
-                      skill: zod.number(),
-                      platform: zod.number(),
-                      timeLimit: zod.number(),
-                      artCapability: zod.number(),
-                      total: zod.number(),
-                    }),
-                    ragChunks: zod.array(
-                      zod.object({
-                        text: zod.string(),
-                        source: zod.string(),
-                        score: zod.number().nullish(),
-                      }),
-                    ),
-                  })
-                  .optional(),
-              }),
-            ),
-            categoryReasoning: zod.string(),
-          }),
-        ),
-        hidden: zod
-          .array(zod.string())
-          .describe(
-            "Category ids hidden by projectMode (e.g. networking, backend_services)",
-          ),
-        candidatePool: zod
-          .record(zod.string(), zod.array(zod.object({}).passthrough()))
-          .optional()
-          .describe(
-            "Per-category full candidate pool (pre-hard-filter), keyed by category id. Used by client-side recompute on Mode\/Archetype edit.",
-          ),
+        toolId: zod.string(),
+        nodePath: zod.string(),
+        fitNote: zod.string(),
       }),
-      zod.null(),
-    ])
-    .optional()
-    .describe("Null when ideaScoreTier == 'block' and adviseAnyway is false"),
-  overallConfidence: zod.number(),
-  finalSummary: zod.string().nullish(),
-  stackOverview: zod.string().nullish(),
-  ideaScore: zod.number().describe("0-100 feasibility score, may be decimal"),
-  ideaScoreTier: zod.enum(["pass", "warn", "block"]),
-  mismatchReasons: zod.array(zod.string()),
-  archetype: zod.object({
-    implied: zod.object({
-      scope: zod.enum(["jam", "prototype", "indie", "AA", "AAA"]),
-    }),
-    achievable: zod.object({
-      scope: zod.enum(["jam", "prototype", "indie", "AA", "AAA"]),
-    }),
+    ),
+    rejectedTools: zod.array(
+      zod.object({
+        toolId: zod.string(),
+        reason: zod.string(),
+      }),
+    ),
+    missingInformationNotes: zod.array(zod.string()),
+    retrievalConfidence: zod
+      .number()
+      .min(analyzeProjectResponseRetrievalRetrievalConfidenceMin)
+      .max(analyzeProjectResponseRetrievalRetrievalConfidenceMax),
+    fallbackStatus: zod.enum([
+      "ok",
+      "weak_coverage",
+      "ambiguous_input",
+      "missing_domain",
+    ]),
   }),
-  projectMode: zod.enum([
-    "single_player",
-    "co_op_local",
-    "multiplayer_online",
-    "live_service",
-  ]),
-  feasibilityOverridden: zod
-    .boolean()
-    .default(analyzeProjectResponseFeasibilityOverriddenDefault),
+  recommendations: zod.array(
+    zod.object({
+      category: zod.enum([
+        "game_engine",
+        "ide",
+        "version_control",
+        "art_asset_creation",
+        "audio",
+        "ai_coding_assistant",
+        "deployment_publishing",
+      ]),
+      primary: zod.object({
+        toolId: zod.string(),
+        score: zod
+          .number()
+          .min(analyzeProjectResponseRecommendationsItemPrimaryScoreMin)
+          .max(analyzeProjectResponseRecommendationsItemPrimaryScoreMax),
+        reasoning: zod.string(),
+        pros: zod.array(zod.string()),
+        cons: zod.array(zod.string()),
+        compatibility: zod.string(),
+        useCaseJustification: zod.string(),
+        phase: zod.array(
+          zod.enum([
+            "planning",
+            "programming",
+            "version_control",
+            "art_assets",
+            "audio",
+            "deployment_publishing",
+          ]),
+        ),
+      }),
+      alternatives: zod
+        .array(
+          zod.object({
+            toolId: zod.string(),
+            score: zod
+              .number()
+              .min(
+                analyzeProjectResponseRecommendationsItemAlternativesItemScoreMin,
+              )
+              .max(
+                analyzeProjectResponseRecommendationsItemAlternativesItemScoreMax,
+              ),
+            reasoning: zod.string(),
+            pros: zod.array(zod.string()),
+            cons: zod.array(zod.string()),
+            compatibility: zod.string(),
+            useCaseJustification: zod.string(),
+            phase: zod.array(
+              zod.enum([
+                "planning",
+                "programming",
+                "version_control",
+                "art_assets",
+                "audio",
+                "deployment_publishing",
+              ]),
+            ),
+          }),
+        )
+        .max(analyzeProjectResponseRecommendationsItemAlternativesMax),
+    }),
+  ),
+  finalSummary: zod.string(),
 });
 
 /**
@@ -250,9 +196,8 @@ export const AnalyzeProjectResponse = zod.object({
 export const ListSessionsResponseItem = zod.object({
   id: zod.string(),
   projectIdea: zod.string(),
-  detectedProjectType: zod.string(),
-  stackOverview: zod.string(),
-  overallConfidence: zod.number(),
+  trustScore: zod.number(),
+  trustTier: zod.enum(["block", "warn", "pass"]),
   createdAt: zod.coerce.date(),
 });
 export const ListSessionsResponse = zod.array(ListSessionsResponseItem);
@@ -264,7 +209,19 @@ export const GetSessionParams = zod.object({
   id: zod.coerce.string(),
 });
 
-export const getSessionResponseResultFeasibilityOverriddenDefault = false;
+export const getSessionResponseResultTrustScoreMin = 0;
+export const getSessionResponseResultTrustScoreMax = 100;
+
+export const getSessionResponseResultRetrievalRetrievalConfidenceMin = 0;
+export const getSessionResponseResultRetrievalRetrievalConfidenceMax = 100;
+
+export const getSessionResponseResultRecommendationsItemPrimaryScoreMin = 0;
+export const getSessionResponseResultRecommendationsItemPrimaryScoreMax = 100;
+
+export const getSessionResponseResultRecommendationsItemAlternativesItemScoreMin = 0;
+export const getSessionResponseResultRecommendationsItemAlternativesItemScoreMax = 100;
+
+export const getSessionResponseResultRecommendationsItemAlternativesMax = 2;
 
 export const GetSessionResponse = zod.object({
   id: zod.string(),
@@ -298,199 +255,129 @@ export const GetSessionResponse = zod.object({
       .describe(
         "Category ids where user accepts paid tools. Empty = prefer free.",
       ),
+    pinnedToolIds: zod
+      .array(zod.string())
+      .optional()
+      .describe(
+        "Tool ids the user explicitly wants kept; reasoning will adapt around them.",
+      ),
     adviseAnyway: zod
       .boolean()
       .optional()
       .describe("Set true to bypass block-tier early-return"),
   }),
   result: zod.object({
-    sessionId: zod.string(),
+    sessionId: zod.string().describe("Empty string when terminated is true"),
     projectSummary: zod.string(),
-    detectedProjectType: zod.string(),
-    categoryResults: zod
-      .union([
+    trustScore: zod
+      .number()
+      .min(getSessionResponseResultTrustScoreMin)
+      .max(getSessionResponseResultTrustScoreMax),
+    trustTier: zod.enum(["block", "warn", "pass"]),
+    terminated: zod.boolean(),
+    retrieval: zod.object({
+      relevantCategories: zod.array(
+        zod.enum([
+          "game_engine",
+          "ide",
+          "version_control",
+          "art_asset_creation",
+          "audio",
+          "ai_coding_assistant",
+          "deployment_publishing",
+        ]),
+      ),
+      candidateTools: zod.array(
         zod.object({
-          locked: zod.array(
-            zod.object({
-              category: zod.string(),
-              categoryLabel: zod.string(),
-              topPick: zod.object({
-                toolId: zod.string(),
-                toolName: zod.string(),
-                score: zod.number().describe("Fit score 0-100"),
-                reasoning: zod
-                  .string()
-                  .describe("Why this tool was recommended"),
-                strengths: zod.array(zod.string()),
-                weaknesses: zod.array(zod.string()),
-                tradeoffs: zod.string(),
-                isTopPick: zod.boolean(),
-                evidence: zod
-                  .object({
-                    scoreBreakdown: zod.object({
-                      budget: zod.number(),
-                      skill: zod.number(),
-                      platform: zod.number(),
-                      timeLimit: zod.number(),
-                      artCapability: zod.number(),
-                      total: zod.number(),
-                    }),
-                    ragChunks: zod.array(
-                      zod.object({
-                        text: zod.string(),
-                        source: zod.string(),
-                        score: zod.number().nullish(),
-                      }),
-                    ),
-                  })
-                  .optional(),
-              }),
-              alternatives: zod.array(
-                zod.object({
-                  toolId: zod.string(),
-                  toolName: zod.string(),
-                  score: zod.number().describe("Fit score 0-100"),
-                  reasoning: zod
-                    .string()
-                    .describe("Why this tool was recommended"),
-                  strengths: zod.array(zod.string()),
-                  weaknesses: zod.array(zod.string()),
-                  tradeoffs: zod.string(),
-                  isTopPick: zod.boolean(),
-                  evidence: zod
-                    .object({
-                      scoreBreakdown: zod.object({
-                        budget: zod.number(),
-                        skill: zod.number(),
-                        platform: zod.number(),
-                        timeLimit: zod.number(),
-                        artCapability: zod.number(),
-                        total: zod.number(),
-                      }),
-                      ragChunks: zod.array(
-                        zod.object({
-                          text: zod.string(),
-                          source: zod.string(),
-                          score: zod.number().nullish(),
-                        }),
-                      ),
-                    })
-                    .optional(),
-                }),
-              ),
-              categoryReasoning: zod.string(),
-            }),
-          ),
-          flexible: zod.array(
-            zod.object({
-              category: zod.string(),
-              categoryLabel: zod.string(),
-              topPick: zod.object({
-                toolId: zod.string(),
-                toolName: zod.string(),
-                score: zod.number().describe("Fit score 0-100"),
-                reasoning: zod
-                  .string()
-                  .describe("Why this tool was recommended"),
-                strengths: zod.array(zod.string()),
-                weaknesses: zod.array(zod.string()),
-                tradeoffs: zod.string(),
-                isTopPick: zod.boolean(),
-                evidence: zod
-                  .object({
-                    scoreBreakdown: zod.object({
-                      budget: zod.number(),
-                      skill: zod.number(),
-                      platform: zod.number(),
-                      timeLimit: zod.number(),
-                      artCapability: zod.number(),
-                      total: zod.number(),
-                    }),
-                    ragChunks: zod.array(
-                      zod.object({
-                        text: zod.string(),
-                        source: zod.string(),
-                        score: zod.number().nullish(),
-                      }),
-                    ),
-                  })
-                  .optional(),
-              }),
-              alternatives: zod.array(
-                zod.object({
-                  toolId: zod.string(),
-                  toolName: zod.string(),
-                  score: zod.number().describe("Fit score 0-100"),
-                  reasoning: zod
-                    .string()
-                    .describe("Why this tool was recommended"),
-                  strengths: zod.array(zod.string()),
-                  weaknesses: zod.array(zod.string()),
-                  tradeoffs: zod.string(),
-                  isTopPick: zod.boolean(),
-                  evidence: zod
-                    .object({
-                      scoreBreakdown: zod.object({
-                        budget: zod.number(),
-                        skill: zod.number(),
-                        platform: zod.number(),
-                        timeLimit: zod.number(),
-                        artCapability: zod.number(),
-                        total: zod.number(),
-                      }),
-                      ragChunks: zod.array(
-                        zod.object({
-                          text: zod.string(),
-                          source: zod.string(),
-                          score: zod.number().nullish(),
-                        }),
-                      ),
-                    })
-                    .optional(),
-                }),
-              ),
-              categoryReasoning: zod.string(),
-            }),
-          ),
-          hidden: zod
-            .array(zod.string())
-            .describe(
-              "Category ids hidden by projectMode (e.g. networking, backend_services)",
-            ),
-          candidatePool: zod
-            .record(zod.string(), zod.array(zod.object({}).passthrough()))
-            .optional()
-            .describe(
-              "Per-category full candidate pool (pre-hard-filter), keyed by category id. Used by client-side recompute on Mode\/Archetype edit.",
-            ),
+          toolId: zod.string(),
+          nodePath: zod.string(),
+          fitNote: zod.string(),
         }),
-        zod.null(),
-      ])
-      .optional()
-      .describe("Null when ideaScoreTier == 'block' and adviseAnyway is false"),
-    overallConfidence: zod.number(),
-    finalSummary: zod.string().nullish(),
-    stackOverview: zod.string().nullish(),
-    ideaScore: zod.number().describe("0-100 feasibility score, may be decimal"),
-    ideaScoreTier: zod.enum(["pass", "warn", "block"]),
-    mismatchReasons: zod.array(zod.string()),
-    archetype: zod.object({
-      implied: zod.object({
-        scope: zod.enum(["jam", "prototype", "indie", "AA", "AAA"]),
-      }),
-      achievable: zod.object({
-        scope: zod.enum(["jam", "prototype", "indie", "AA", "AAA"]),
-      }),
+      ),
+      rejectedTools: zod.array(
+        zod.object({
+          toolId: zod.string(),
+          reason: zod.string(),
+        }),
+      ),
+      missingInformationNotes: zod.array(zod.string()),
+      retrievalConfidence: zod
+        .number()
+        .min(getSessionResponseResultRetrievalRetrievalConfidenceMin)
+        .max(getSessionResponseResultRetrievalRetrievalConfidenceMax),
+      fallbackStatus: zod.enum([
+        "ok",
+        "weak_coverage",
+        "ambiguous_input",
+        "missing_domain",
+      ]),
     }),
-    projectMode: zod.enum([
-      "single_player",
-      "co_op_local",
-      "multiplayer_online",
-      "live_service",
-    ]),
-    feasibilityOverridden: zod
-      .boolean()
-      .default(getSessionResponseResultFeasibilityOverriddenDefault),
+    recommendations: zod.array(
+      zod.object({
+        category: zod.enum([
+          "game_engine",
+          "ide",
+          "version_control",
+          "art_asset_creation",
+          "audio",
+          "ai_coding_assistant",
+          "deployment_publishing",
+        ]),
+        primary: zod.object({
+          toolId: zod.string(),
+          score: zod
+            .number()
+            .min(getSessionResponseResultRecommendationsItemPrimaryScoreMin)
+            .max(getSessionResponseResultRecommendationsItemPrimaryScoreMax),
+          reasoning: zod.string(),
+          pros: zod.array(zod.string()),
+          cons: zod.array(zod.string()),
+          compatibility: zod.string(),
+          useCaseJustification: zod.string(),
+          phase: zod.array(
+            zod.enum([
+              "planning",
+              "programming",
+              "version_control",
+              "art_assets",
+              "audio",
+              "deployment_publishing",
+            ]),
+          ),
+        }),
+        alternatives: zod
+          .array(
+            zod.object({
+              toolId: zod.string(),
+              score: zod
+                .number()
+                .min(
+                  getSessionResponseResultRecommendationsItemAlternativesItemScoreMin,
+                )
+                .max(
+                  getSessionResponseResultRecommendationsItemAlternativesItemScoreMax,
+                ),
+              reasoning: zod.string(),
+              pros: zod.array(zod.string()),
+              cons: zod.array(zod.string()),
+              compatibility: zod.string(),
+              useCaseJustification: zod.string(),
+              phase: zod.array(
+                zod.enum([
+                  "planning",
+                  "programming",
+                  "version_control",
+                  "art_assets",
+                  "audio",
+                  "deployment_publishing",
+                ]),
+              ),
+            }),
+          )
+          .max(getSessionResponseResultRecommendationsItemAlternativesMax),
+      }),
+    ),
+    finalSummary: zod.string(),
   }),
   createdAt: zod.coerce.date(),
 });

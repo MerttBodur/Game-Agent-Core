@@ -5,8 +5,9 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
-import type { ArchetypeScope } from "./archetypeScope";
 
-export interface Archetype {
-  scope: ArchetypeScope;
-}
+export type RetrievalCandidateToolsItem = {
+  toolId: string;
+  nodePath: string;
+  fitNote: string;
+};

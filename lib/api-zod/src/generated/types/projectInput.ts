@@ -33,6 +33,8 @@ export interface ProjectInput {
   otherConstraints?: string | null;
   /** Category ids where user accepts paid tools. Empty = prefer free. */
   paidPriorityCategories?: string[];
+  /** Tool ids the user explicitly wants kept; reasoning will adapt around them. */
+  pinnedToolIds?: string[];
   /** Set true to bypass block-tier early-return */
   adviseAnyway?: boolean;
 }

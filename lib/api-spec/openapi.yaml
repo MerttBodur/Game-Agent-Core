@@ -229,6 +229,11 @@ components:
           items:
             type: string
           description: "Category ids where user accepts paid tools. Empty = prefer free."
+        pinnedToolIds:
+          type: array
+          items:
+            type: string
+          description: "Tool ids the user explicitly wants kept; reasoning will adapt around them."
         adviseAnyway:
           type: boolean
           description: "Set true to bypass block-tier early-return"
@@ -241,208 +246,153 @@ components:
         - platformTarget
         - artCapability
 
-    ToolRecommendation:
+    Phase:
+      type: string
+      enum: [planning, programming, version_control, art_assets, audio, deployment_publishing]
+
+    RecommendationItem:
       type: object
       properties:
         toolId:
           type: string
-        toolName:
-          type: string
         score:
           type: number
-          description: Fit score 0-100
+          minimum: 0
+          maximum: 100
         reasoning:
           type: string
-          description: Why this tool was recommended
-        strengths:
+        pros:
           type: array
           items:
             type: string
-        weaknesses:
+        cons:
           type: array
           items:
             type: string
-        tradeoffs:
+        compatibility:
           type: string
-        isTopPick:
-          type: boolean
-        evidence:
-          $ref: "#/components/schemas/Evidence"
+        useCaseJustification:
+          type: string
+        phase:
+          type: array
+          items:
+            $ref: "#/components/schemas/Phase"
       required:
         - toolId
-        - toolName
         - score
         - reasoning
-        - strengths
-        - weaknesses
-        - tradeoffs
-        - isTopPick
+        - pros
+        - cons
+        - compatibility
+        - useCaseJustification
+        - phase
 
-    ScoreBreakdown:
-      type: object
-      properties:
-        budget:
-          type: number
-        skill:
-          type: number
-        platform:
-          type: number
-        timeLimit:
-          type: number
-        artCapability:
-          type: number
-        total:
-          type: number
-      required:
-        - budget
-        - skill
-        - platform
-        - timeLimit
-        - artCapability
-        - total
-
-    RagChunk:
-      type: object
-      properties:
-        text:
-          type: string
-        source:
-          type: string
-        score:
-          type: ["number", "null"]
-      required:
-        - text
-        - source
-
-    Evidence:
-      type: object
-      properties:
-        scoreBreakdown:
-          $ref: "#/components/schemas/ScoreBreakdown"
-        ragChunks:
-          type: array
-          items:
-            $ref: "#/components/schemas/RagChunk"
-      required:
-        - scoreBreakdown
-        - ragChunks
-
-    Archetype:
-      type: object
-      properties:
-        scope:
-          type: string
-          enum: [jam, prototype, indie, AA, AAA]
-      required:
-        - scope
-
-    CategoryResults:
-      type: object
-      properties:
-        locked:
-          type: array
-          items:
-            $ref: "#/components/schemas/CategoryRecommendation"
-        flexible:
-          type: array
-          items:
-            $ref: "#/components/schemas/CategoryRecommendation"
-        hidden:
-          type: array
-          items:
-            type: string
-          description: "Category ids hidden by projectMode (e.g. networking, backend_services)"
-        candidatePool:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              type: object
-          description: "Per-category full candidate pool (pre-hard-filter), keyed by category id. Used by client-side recompute on Mode/Archetype edit."
-      required:
-        - locked
-        - flexible
-        - hidden
-
-    CategoryRecommendation:
+    Recommendation:
       type: object
       properties:
         category:
           type: string
-        categoryLabel:
-          type: string
-        topPick:
-          $ref: "#/components/schemas/ToolRecommendation"
+          enum: [game_engine, ide, version_control, art_asset_creation, audio, ai_coding_assistant, deployment_publishing]
+        primary:
+          $ref: "#/components/schemas/RecommendationItem"
         alternatives:
           type: array
+          maxItems: 2
           items:
-            $ref: "#/components/schemas/ToolRecommendation"
-        categoryReasoning:
-          type: string
+            $ref: "#/components/schemas/RecommendationItem"
       required:
         - category
-        - categoryLabel
-        - topPick
+        - primary
         - alternatives
-        - categoryReasoning
+
+    Retrieval:
+      type: object
+      properties:
+        relevantCategories:
+          type: array
+          items:
+            type: string
+            enum: [game_engine, ide, version_control, art_asset_creation, audio, ai_coding_assistant, deployment_publishing]
+        candidateTools:
+          type: array
+          items:
+            type: object
+            properties:
+              toolId:
+                type: string
+              nodePath:
+                type: string
+              fitNote:
+                type: string
+            required:
+              - toolId
+              - nodePath
+              - fitNote
+        rejectedTools:
+          type: array
+          items:
+            type: object
+            properties:
+              toolId:
+                type: string
+              reason:
+                type: string
+            required:
+              - toolId
+              - reason
+        missingInformationNotes:
+          type: array
+          items:
+            type: string
+        retrievalConfidence:
+          type: number
+          minimum: 0
+          maximum: 100
+        fallbackStatus:
+          type: string
+          enum: [ok, weak_coverage, ambiguous_input, missing_domain]
+      required:
+        - relevantCategories
+        - candidateTools
+        - rejectedTools
+        - missingInformationNotes
+        - retrievalConfidence
+        - fallbackStatus
 
     AnalysisResult:
       type: object
       properties:
         sessionId:
           type: string
+          description: Empty string when terminated is true
         projectSummary:
           type: string
-        detectedProjectType:
+        trustScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        trustTier:
           type: string
-        categoryResults:
-          oneOf:
-            - $ref: "#/components/schemas/CategoryResults"
-            - type: "null"
-          description: "Null when ideaScoreTier == 'block' and adviseAnyway is false"
-        overallConfidence:
-          type: number
-        finalSummary:
-          type: ["string", "null"]
-        stackOverview:
-          type: ["string", "null"]
-        ideaScore:
-          type: number
-          description: "0-100 feasibility score, may be decimal"
-        ideaScoreTier:
-          type: string
-          enum: [pass, warn, block]
-        mismatchReasons:
+          enum: [block, warn, pass]
+        terminated:
+          type: boolean
+        retrieval:
+          $ref: "#/components/schemas/Retrieval"
+        recommendations:
           type: array
           items:
-            type: string
-        archetype:
-          type: object
-          properties:
-            implied:
-              $ref: "#/components/schemas/Archetype"
-            achievable:
-              $ref: "#/components/schemas/Archetype"
-          required:
-            - implied
-            - achievable
-        projectMode:
+            $ref: "#/components/schemas/Recommendation"
+        finalSummary:
           type: string
-          enum: [single_player, co_op_local, multiplayer_online, live_service]
-        feasibilityOverridden:
-          type: boolean
-          default: false
       required:
         - sessionId
         - projectSummary
-        - detectedProjectType
-        - overallConfidence
-        - ideaScore
-        - ideaScoreTier
-        - mismatchReasons
-        - archetype
-        - projectMode
-        - feasibilityOverridden
+        - trustScore
+        - trustTier
+        - terminated
+        - retrieval
+        - recommendations
+        - finalSummary
 
     SessionSummary:
       type: object
@@ -451,21 +401,19 @@ components:
           type: string
         projectIdea:
           type: string
-        detectedProjectType:
+        trustScore:
+          type: integer
+        trustTier:
           type: string
-        stackOverview:
-          type: string
-        overallConfidence:
-          type: number
+          enum: [block, warn, pass]
         createdAt:
           type: string
           format: date-time
       required:
         - id
         - projectIdea
-        - detectedProjectType
-        - stackOverview
-        - overallConfidence
+        - trustScore
+        - trustTier
         - createdAt
 
     Session:

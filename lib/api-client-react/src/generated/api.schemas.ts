@@ -103,136 +103,144 @@ export interface ProjectInput {
   otherConstraints?: string | null;
   /** Category ids where user accepts paid tools. Empty = prefer free. */
   paidPriorityCategories?: string[];
+  /** Tool ids the user explicitly wants kept; reasoning will adapt around them. */
+  pinnedToolIds?: string[];
   /** Set true to bypass block-tier early-return */
   adviseAnyway?: boolean;
 }
 
-export interface ScoreBreakdown {
-  budget: number;
-  skill: number;
-  platform: number;
-  timeLimit: number;
-  artCapability: number;
-  total: number;
-}
+export type Phase = (typeof Phase)[keyof typeof Phase];
 
-export interface RagChunk {
-  text: string;
-  source: string;
-  /** @nullable */
-  score?: number | null;
-}
+export const Phase = {
+  planning: "planning",
+  programming: "programming",
+  version_control: "version_control",
+  art_assets: "art_assets",
+  audio: "audio",
+  deployment_publishing: "deployment_publishing",
+} as const;
 
-export interface Evidence {
-  scoreBreakdown: ScoreBreakdown;
-  ragChunks: RagChunk[];
-}
-
-export interface ToolRecommendation {
+export interface RecommendationItem {
   toolId: string;
-  toolName: string;
-  /** Fit score 0-100 */
+  /**
+   * @minimum 0
+   * @maximum 100
+   */
   score: number;
-  /** Why this tool was recommended */
   reasoning: string;
-  strengths: string[];
-  weaknesses: string[];
-  tradeoffs: string;
-  isTopPick: boolean;
-  evidence?: Evidence;
+  pros: string[];
+  cons: string[];
+  compatibility: string;
+  useCaseJustification: string;
+  phase: Phase[];
 }
 
-export type ArchetypeScope =
-  (typeof ArchetypeScope)[keyof typeof ArchetypeScope];
+export type RecommendationCategory =
+  (typeof RecommendationCategory)[keyof typeof RecommendationCategory];
 
-export const ArchetypeScope = {
-  jam: "jam",
-  prototype: "prototype",
-  indie: "indie",
-  AA: "AA",
-  AAA: "AAA",
+export const RecommendationCategory = {
+  game_engine: "game_engine",
+  ide: "ide",
+  version_control: "version_control",
+  art_asset_creation: "art_asset_creation",
+  audio: "audio",
+  ai_coding_assistant: "ai_coding_assistant",
+  deployment_publishing: "deployment_publishing",
 } as const;
 
-export interface Archetype {
-  scope: ArchetypeScope;
+export interface Recommendation {
+  category: RecommendationCategory;
+  primary: RecommendationItem;
+  /** @maxItems 2 */
+  alternatives: RecommendationItem[];
 }
 
-export type CategoryResultsCandidatePoolItem = { [key: string]: unknown };
+export type RetrievalRelevantCategoriesItem =
+  (typeof RetrievalRelevantCategoriesItem)[keyof typeof RetrievalRelevantCategoriesItem];
 
-/**
- * Per-category full candidate pool (pre-hard-filter), keyed by category id. Used by client-side recompute on Mode/Archetype edit.
- */
-export type CategoryResultsCandidatePool = {
-  [key: string]: CategoryResultsCandidatePoolItem[];
+export const RetrievalRelevantCategoriesItem = {
+  game_engine: "game_engine",
+  ide: "ide",
+  version_control: "version_control",
+  art_asset_creation: "art_asset_creation",
+  audio: "audio",
+  ai_coding_assistant: "ai_coding_assistant",
+  deployment_publishing: "deployment_publishing",
+} as const;
+
+export type RetrievalCandidateToolsItem = {
+  toolId: string;
+  nodePath: string;
+  fitNote: string;
 };
 
-export interface CategoryRecommendation {
-  category: string;
-  categoryLabel: string;
-  topPick: ToolRecommendation;
-  alternatives: ToolRecommendation[];
-  categoryReasoning: string;
+export type RetrievalRejectedToolsItem = {
+  toolId: string;
+  reason: string;
+};
+
+export type RetrievalFallbackStatus =
+  (typeof RetrievalFallbackStatus)[keyof typeof RetrievalFallbackStatus];
+
+export const RetrievalFallbackStatus = {
+  ok: "ok",
+  weak_coverage: "weak_coverage",
+  ambiguous_input: "ambiguous_input",
+  missing_domain: "missing_domain",
+} as const;
+
+export interface Retrieval {
+  relevantCategories: RetrievalRelevantCategoriesItem[];
+  candidateTools: RetrievalCandidateToolsItem[];
+  rejectedTools: RetrievalRejectedToolsItem[];
+  missingInformationNotes: string[];
+  /**
+   * @minimum 0
+   * @maximum 100
+   */
+  retrievalConfidence: number;
+  fallbackStatus: RetrievalFallbackStatus;
 }
 
-export interface CategoryResults {
-  locked: CategoryRecommendation[];
-  flexible: CategoryRecommendation[];
-  /** Category ids hidden by projectMode (e.g. networking, backend_services) */
-  hidden: string[];
-  /** Per-category full candidate pool (pre-hard-filter), keyed by category id. Used by client-side recompute on Mode/Archetype edit. */
-  candidatePool?: CategoryResultsCandidatePool;
-}
+export type AnalysisResultTrustTier =
+  (typeof AnalysisResultTrustTier)[keyof typeof AnalysisResultTrustTier];
 
-export type AnalysisResultIdeaScoreTier =
-  (typeof AnalysisResultIdeaScoreTier)[keyof typeof AnalysisResultIdeaScoreTier];
-
-export const AnalysisResultIdeaScoreTier = {
-  pass: "pass",
-  warn: "warn",
+export const AnalysisResultTrustTier = {
   block: "block",
-} as const;
-
-export type AnalysisResultArchetype = {
-  implied: Archetype;
-  achievable: Archetype;
-};
-
-export type AnalysisResultProjectMode =
-  (typeof AnalysisResultProjectMode)[keyof typeof AnalysisResultProjectMode];
-
-export const AnalysisResultProjectMode = {
-  single_player: "single_player",
-  co_op_local: "co_op_local",
-  multiplayer_online: "multiplayer_online",
-  live_service: "live_service",
+  warn: "warn",
+  pass: "pass",
 } as const;
 
 export interface AnalysisResult {
+  /** Empty string when terminated is true */
   sessionId: string;
   projectSummary: string;
-  detectedProjectType: string;
-  /** Null when ideaScoreTier == 'block' and adviseAnyway is false */
-  categoryResults?: CategoryResults | null;
-  overallConfidence: number;
-  /** @nullable */
-  finalSummary?: string | null;
-  /** @nullable */
-  stackOverview?: string | null;
-  /** 0-100 feasibility score, may be decimal */
-  ideaScore: number;
-  ideaScoreTier: AnalysisResultIdeaScoreTier;
-  mismatchReasons: string[];
-  archetype: AnalysisResultArchetype;
-  projectMode: AnalysisResultProjectMode;
-  feasibilityOverridden: boolean;
+  /**
+   * @minimum 0
+   * @maximum 100
+   */
+  trustScore: number;
+  trustTier: AnalysisResultTrustTier;
+  terminated: boolean;
+  retrieval: Retrieval;
+  recommendations: Recommendation[];
+  finalSummary: string;
 }
+
+export type SessionSummaryTrustTier =
+  (typeof SessionSummaryTrustTier)[keyof typeof SessionSummaryTrustTier];
+
+export const SessionSummaryTrustTier = {
+  block: "block",
+  warn: "warn",
+  pass: "pass",
+} as const;
 
 export interface SessionSummary {
   id: string;
   projectIdea: string;
-  detectedProjectType: string;
-  stackOverview: string;
-  overallConfidence: number;
+  trustScore: number;
+  trustTier: SessionSummaryTrustTier;
   createdAt: string;
 }
 
