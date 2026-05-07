@@ -48,6 +48,7 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
 
     ecosystem: ["unity"],
     popularityByArchetype: null,
+    archetypeBias: { prototype: 2, indie: 4, AA: 5, AAA: 3 },
   },
   {
     name: "Unreal Engine",
@@ -64,6 +65,7 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
 
     ecosystem: ["unreal"],
     popularityByArchetype: null,
+    archetypeBias: { jam: -8, prototype: -4, indie: -1, AA: 6, AAA: 10 },
   },
   {
     name: "Godot",
@@ -80,6 +82,7 @@ export const GAME_DEV_TOOLS: GameDevTool[] = [
 
     ecosystem: ["godot"],
     popularityByArchetype: null,
+    archetypeBias: { jam: 8, prototype: 6, indie: 5, AA: -5, AAA: -10 },
   },
   {
     name: "GameMaker",

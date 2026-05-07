@@ -86,7 +86,12 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
 
   try {
     const { ragChunks, retrievedKnowledgeContext } = await retrieveAdvisorKnowledge(input);
-    const provisionalCategoryResults = buildCategoryResults(input, "single_player");
+    const provisionalCategoryResults = buildCategoryResults(
+      input,
+      "single_player",
+      "indie",
+      input.projectIdea.slice(0, 64),
+    );
     const metadata = await generateMetadataWithAI(
       input,
       provisionalCategoryResults,
@@ -155,10 +160,12 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
       return;
     }
 
-    const categoryResults =
-      metadata.projectMode === "single_player"
-        ? provisionalCategoryResults
-        : buildCategoryResults(input, metadata.projectMode);
+    const categoryResults = buildCategoryResults(
+      input,
+      metadata.projectMode,
+      metadata.achievableScope,
+      input.projectIdea.slice(0, 64),
+    );
 
     const dbTools = await db.select().from(toolsTable);
     const toolIdMap: Record<string, number> = {};

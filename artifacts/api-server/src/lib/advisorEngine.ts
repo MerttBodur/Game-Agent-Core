@@ -40,6 +40,21 @@ const TEAM_MIN_BY_SCOPE: Record<Scope, number> = {
   AAA: 100,
 };
 
+type ScoringAxis = "budget" | "skill" | "platform" | "time" | "art";
+
+const WEIGHTS_BY_ARCHETYPE: Record<Scope, Record<ScoringAxis, number>> = {
+  jam: { budget: 0.6, skill: 1.2, platform: 0.8, time: 1.5, art: 1.0 },
+  prototype: { budget: 0.7, skill: 1.1, platform: 0.9, time: 1.3, art: 1.0 },
+  indie: { budget: 1.0, skill: 1.0, platform: 1.0, time: 1.0, art: 1.0 },
+  AA: { budget: 0.9, skill: 0.9, platform: 1.1, time: 0.8, art: 1.1 },
+  AAA: { budget: 0.7, skill: 0.7, platform: 1.3, time: 0.6, art: 1.3 },
+};
+
+export let DATASET_IS_THIN = true;
+export function setDatasetThin(value: boolean): void {
+  DATASET_IS_THIN = value;
+}
+
 function hiddenCategoriesForMode(mode: ProjectMode): string[] {
   if (mode === "single_player") return ["networking", "backend_services"];
   if (mode === "co_op_local") return ["backend_services"];
@@ -60,6 +75,7 @@ export interface ProjectInput {
   teamSize: string;
   platformTarget: string[];
   artCapability: string;
+  paidPriorityCategories?: string[];
   otherConstraints?: string | null;
   adviseAnyway?: boolean;
 }
@@ -77,6 +93,9 @@ export interface ScoreBreakdown {
   platform: number;
   timeLimit: number;
   artCapability: number;
+  popularity: number;
+  paidPriority: number;
+  jitter: number;
   total: number;
 }
 
@@ -135,15 +154,26 @@ export interface IdeaScoreContext {
   achievableScope: Scope;
 }
 
-function scoreTool(tool: GameDevTool, input: ProjectInput): { total: number; breakdown: ScoreBreakdown } {
-  const baseScore = 50;
-  let budgetDelta = 0;
-  let skillDelta = 0;
-  let platformDelta = 0;
-  let timeLimitDelta = 0;
-  let artCapabilityDelta = 0;
+export interface ScoringContext {
+  input: ProjectInput;
+  achievableScope: Scope;
+  projectIdSeed: string;
+}
 
-  // Budget fit
+function djb2(str: string): number {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+function injectJitter(score: number, toolName: string, projectIdSeed: string): number {
+  const jitter = (djb2(`${toolName}::${projectIdSeed}`) % 1000) / 1000 - 0.5;
+  return Math.max(0, Math.min(100, score + jitter));
+}
+
+function budgetDelta(tool: GameDevTool, input: ProjectInput): number {
   const budgetMap: Record<string, string[]> = {
     zero: ["open_source", "free"],
     low: ["open_source", "free", "freemium"],
@@ -151,66 +181,90 @@ function scoreTool(tool: GameDevTool, input: ProjectInput): { total: number; bre
     high: ["open_source", "free", "freemium", "paid", "subscription"],
     enterprise: ["open_source", "free", "freemium", "paid", "subscription"],
   };
-  const allowedPricing = budgetMap[input.budget] || [];
-  if (allowedPricing.includes(tool.pricing)) {
-    budgetDelta += 15;
-  } else {
-    budgetDelta -= 20;
-  }
+  return (budgetMap[input.budget] ?? []).includes(tool.pricing) ? 15 : -20;
+}
 
-  // Skill fit
-  const skillLevels = ["beginner", "intermediate", "advanced", "expert"];
-  const userSkillIdx = skillLevels.indexOf(input.skillLevel);
-  const toolSkillIdx = skillLevels.indexOf(tool.minSkillLevel);
-  if (userSkillIdx >= toolSkillIdx) {
-    skillDelta += 10;
-    if (userSkillIdx - toolSkillIdx >= 2) skillDelta += 5; // Comfortable with tool
-  } else {
-    skillDelta -= 15 * (toolSkillIdx - userSkillIdx);
-  }
+function skillDelta(tool: GameDevTool, input: ProjectInput): number {
+  const levels = ["beginner", "intermediate", "advanced", "expert"];
+  const userIdx = levels.indexOf(input.skillLevel);
+  const toolIdx = levels.indexOf(tool.minSkillLevel);
+  if (userIdx >= toolIdx) return userIdx - toolIdx >= 2 ? 15 : 10;
+  return -15 * (toolIdx - userIdx);
+}
 
-  // Platform fit
+function platformDelta(tool: GameDevTool, input: ProjectInput): number {
+  if (input.platformTarget.length === 0) return 0;
   const userPlatforms = input.platformTarget.map((p) => p.toLowerCase());
   const toolPlatforms = tool.platforms.map((p) => p.toLowerCase());
   const overlap = userPlatforms.filter((p) => toolPlatforms.includes(p));
-  if (overlap.length > 0) {
-    platformDelta += 10 + (overlap.length - 1) * 3;
-  } else if (userPlatforms.length > 0) {
-    platformDelta -= 25;
+  if (overlap.length > 0) return 10 + (overlap.length - 1) * 3;
+  return -25;
+}
+
+function timeDelta(tool: GameDevTool, input: ProjectInput): number {
+  if (input.timeLimit !== "jam") return 0;
+  let d = 0;
+  if (tool.tags.includes("beginner-friendly") || tool.tags.includes("game-jam")) d += 15;
+  if (tool.minSkillLevel === "expert" || tool.minSkillLevel === "advanced") d -= 10;
+  return d;
+}
+
+function artDelta(tool: GameDevTool, input: ProjectInput): number {
+  if (tool.category !== "art" && tool.category !== "animation") return 0;
+  const artMap: Record<string, string[]> = {
+    none: ["ai_tooling"],
+    basic: ["ai_tooling", "beginner"],
+    intermediate: ["ai_tooling", "beginner", "intermediate"],
+    advanced: ["ai_tooling", "beginner", "intermediate", "advanced"],
+    professional: ["ai_tooling", "beginner", "intermediate", "advanced", "expert"],
+  };
+  const allowed = artMap[input.artCapability] ?? [];
+  return allowed.includes(tool.minSkillLevel) || allowed.includes("ai_tooling") ? 10 : -15;
+}
+
+export function scoreTool(
+  tool: GameDevTool,
+  ctx: ScoringContext,
+): { total: number; breakdown: ScoreBreakdown } {
+  const w = WEIGHTS_BY_ARCHETYPE[ctx.achievableScope];
+
+  const budget = budgetDelta(tool, ctx.input) * w.budget;
+  const skill = skillDelta(tool, ctx.input) * w.skill;
+  const platform = platformDelta(tool, ctx.input) * w.platform;
+  const time = timeDelta(tool, ctx.input) * w.time;
+  const art = artDelta(tool, ctx.input) * w.art;
+
+  let popularity = 0;
+  if (tool.popularityByArchetype) {
+    const p = tool.popularityByArchetype[ctx.achievableScope] ?? 0.5;
+    const range = DATASET_IS_THIN ? 12.5 : 25;
+    popularity = (p - 0.5) * range;
   }
 
-  // Time limit fit for MVPs (fast iteration tools preferred for jams)
-  if (input.timeLimit === "jam") {
-    if (tool.tags.includes("beginner-friendly") || tool.tags.includes("game-jam")) timeLimitDelta += 15;
-    if (tool.minSkillLevel === "expert" || tool.minSkillLevel === "advanced") timeLimitDelta -= 10;
-  }
+  const isPaid = ["paid", "subscription", "freemium"].includes(tool.pricing);
+  const flagged = ctx.input.paidPriorityCategories?.includes(tool.category) ?? false;
+  let paidPriority = 0;
+  if (isPaid && flagged) paidPriority = 8;
+  else if (isPaid && !flagged) paidPriority = -6;
+  else if (!isPaid && !flagged) paidPriority = 4;
 
-  // Art capability fit
-  if (tool.category === "art" || tool.category === "animation") {
-    const artMap: Record<string, string[]> = {
-      none: ["ai_tooling"],
-      basic: ["ai_tooling", "beginner"],
-      intermediate: ["ai_tooling", "beginner", "intermediate"],
-      advanced: ["ai_tooling", "beginner", "intermediate", "advanced"],
-      professional: ["ai_tooling", "beginner", "intermediate", "advanced", "expert"],
-    };
-    const allowedArt = artMap[input.artCapability] || [];
-    if (allowedArt.includes(tool.minSkillLevel) || allowedArt.includes("ai_tooling")) {
-      artCapabilityDelta += 10;
-    } else {
-      artCapabilityDelta -= 15;
-    }
-  }
+  const archetypeBiasDelta = tool.archetypeBias?.[ctx.achievableScope] ?? 0;
 
-  const total = Math.min(100, Math.max(0, baseScore + budgetDelta + skillDelta + platformDelta + timeLimitDelta + artCapabilityDelta));
+  const preJitter = 50 + budget + skill + platform + time + art + popularity + paidPriority + archetypeBiasDelta;
+  const total = injectJitter(preJitter, tool.name, ctx.projectIdSeed);
+  const jitter = total - Math.max(0, Math.min(100, preJitter));
+
   return {
     total,
     breakdown: {
-      budget: budgetDelta,
-      skill: skillDelta,
-      platform: platformDelta,
-      timeLimit: timeLimitDelta,
-      artCapability: artCapabilityDelta,
+      budget,
+      skill,
+      platform,
+      timeLimit: time,
+      artCapability: art,
+      popularity,
+      paidPriority,
+      jitter,
       total,
     },
   };
@@ -358,12 +412,15 @@ function formatRetrievedKnowledgeContext(retrieved: RetrievedKnowledgeResponse |
 export function buildCategoryResults(
   input: ProjectInput,
   projectMode: ProjectMode = "single_player", // TODO Step 4: pass LLM-derived projectMode
+  achievableScope: Scope = "indie",
+  projectIdSeed: string = input.projectIdea.slice(0, 64),
 ): CategoryResults {
+  const ctx: ScoringContext = { input, achievableScope, projectIdSeed };
   const hidden = hiddenCategoriesForMode(projectMode);
   const allCategoryIds = TOOL_CATEGORIES.map((c) => c.id);
 
   // 1. Score engine first to discover the ecosystem
-  const engineEntry = scoreCategory("engine", input);
+  const engineEntry = scoreCategory("engine", ctx);
   if (!engineEntry) {
     return { locked: [], flexible: [], hidden };
   }
@@ -386,7 +443,7 @@ export function buildCategoryResults(
         )
       : GAME_DEV_TOOLS.filter((t) => t.category === cat);
 
-    const entry = scoreCategoryFromPool(cat, candidatePool, input);
+    const entry = scoreCategoryFromPool(cat, candidatePool, ctx);
     if (!entry) continue;
 
     (isLocked ? locked : flexible).push(entry);
@@ -400,24 +457,24 @@ function pickEcosystem(engineTool: CategoryResultTool): string {
   return specific ?? "engine_agnostic";
 }
 
-function scoreCategory(cat: string, input: ProjectInput): CategoryEntry | null {
-  return scoreCategoryFromPool(cat, GAME_DEV_TOOLS.filter((t) => t.category === cat), input);
+function scoreCategory(cat: string, ctx: ScoringContext): CategoryEntry | null {
+  return scoreCategoryFromPool(cat, GAME_DEV_TOOLS.filter((t) => t.category === cat), ctx);
 }
 
 function scoreCategoryFromPool(
   cat: string,
   pool: GameDevTool[],
-  input: ProjectInput,
+  ctx: ScoringContext,
 ): CategoryEntry | null {
   if (pool.length === 0) return null;
 
   const scored: ToolScore[] = pool.map((tool) => {
-    const scoredTool = scoreTool(tool, input);
+    const scoredTool = scoreTool(tool, ctx);
     return {
       tool,
       score: scoredTool.total,
       scoreBreakdown: scoredTool.breakdown,
-      reasoning: generateReasoning(tool, input, scoredTool.total),
+      reasoning: generateReasoning(tool, ctx.input, scoredTool.total),
     };
   });
   scored.sort((a, b) => b.score - a.score);
