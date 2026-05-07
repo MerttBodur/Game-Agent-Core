@@ -39,28 +39,24 @@ There are no test commands — the project currently has no test suite.
 
 pnpm monorepo. Packages under `lib/` are shared libraries; `artifacts/` contains the deployable apps.
 
-**Data flow for an analysis request:**
-1. Frontend posts `POST /api/advisor/analyze` (Zod-validated body)
-2. `routes/advisor.ts` calls `treeNavigator.retrieveContext` (Sprint 3) -> `RetrievedContextPackage`
-3. `services/scoringService.ts` ranks each category's candidate tools deterministically
-4. `services/reasoningService.ts` makes ONE `gpt-4o-mini` structured-output call to produce per-category recommendations + a trust score 0-100
-5. The trust gate: `trustTier = trustTierFor(trustScore)`. Below `TRUST_SCORE_BLOCK_THRESHOLD` (default 25, env-overridable) the response is `terminated: true` and the session is **not** persisted.
-6. Otherwise the session is persisted to MySQL and the full `AnalysisResult` is returned.
+**API server (`artifacts/api-server/src`):**
+- `routes/` — thin Express routers that delegate to controllers.
+- `controllers/` — request/response shaping only.
+- `orchestrators/advisorOrchestrator.ts` — owns the analyze pipeline (validate -> retrieve -> score -> reason -> trust gate -> persist).
+- `services/` — `scoringService` (deterministic), `reasoningService` (single LLM call), `catalogService` (filters), `sessionService` (MySQL persistence).
+- `middleware/` — `rateLimit`, `validateBody(schema)`, `errorHandler` (single global sink, never leaks internals).
+- `data/` — `toolCatalog.json` (Section 2 source of truth), `toolTree.json` (generated tree-of-contents).
+- `lib/rag/treeNavigator.ts` — vectorless retrieval using a single structured-output LLM call against the tree.
+- `types/` — `pdd.ts`, `tree.ts`, `recommendation.ts` (canonical TypeScript + Zod surface).
 
-**API contract:** `lib/api-spec/openapi.yaml` is the single source of truth. Orval reads it to generate:
-- `lib/api-client-react` — TanStack Query hooks for the frontend
-- `lib/api-zod` — Zod validation schemas for the backend
+**Single sources of truth:**
+- API contract: `lib/api-spec/openapi.yaml` -> Orval codegen -> `lib/api-zod`, `lib/api-client-react`.
+- Tool catalog: `artifacts/api-server/src/data/toolCatalog.json` (validated by `ToolCatalogSchema` at boot).
+- Tool tree: regenerate via `pnpm --filter @workspace/api-server run tree:build` after editing the catalog.
 
-**Whenever the OpenAPI spec changes, run codegen** to keep both packages in sync.
+**Persistence:** MySQL 8.4 (Docker for local dev). Only the `advisor_sessions` table exists. Sessions are persisted only when `result.terminated === false`.
 
-**Retrieval (vectorless tree-of-contents):** `artifacts/api-server/src/data/toolTree.json` is generated from `toolCatalog.json` at build time (`pnpm --filter @workspace/api-server run tree:build`). At request time, `lib/rag/treeNavigator.ts` makes a single `gpt-4o-mini` call with structured-output JSON schema to pick relevant categories and mark candidate tools. The result is a `RetrievedContextPackage` with `retrievalConfidence` and `fallbackStatus`.
-
-**Catalog-first reads:** `/tools*` reads from `artifacts/api-server/src/data/toolCatalog.json` (loaded and validated at boot). MySQL is only used for `advisor_sessions`.
-
-**DB schema packages:**
-- `lib/db/src/schema/sessions.ts` — analysis sessions
-
-**Tool catalog** lives in `artifacts/api-server/src/data/toolCatalog.json` (27 tools across 9 categories: engine, programming, art, animation, ui, vfx, version_control, deployment, ai_tooling). Adding a new tool: edit `toolCatalog.json` and re-run `pnpm run typecheck` (the loader will reject malformed entries at boot).
+**Trust gate:** `TRUST_SCORE_BLOCK_THRESHOLD` (env, default 25). Below this, response is `terminated: true`, recommendations are absent, and no row is written.
 
 ## Git Convention
 
