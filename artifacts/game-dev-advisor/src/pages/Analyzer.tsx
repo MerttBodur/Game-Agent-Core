@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { LockedCategoryCard } from "@/components/LockedCategoryCard";
 
 const BUDGET_OPTIONS = [
   { value: "zero", label: "Zero", desc: "No money at all" },
@@ -78,6 +79,17 @@ const CATEGORY_LABELS: Record<string, string> = {
   narrative: "Narrative Tools",
   build_ci: "Build & CI",
 };
+
+const PAID_PRIORITY_OPTIONS = [
+  { value: "ai_tooling", label: "AI Tooling" },
+  { value: "art", label: "Art & Assets" },
+  { value: "audio", label: "Audio & Music" },
+  { value: "vfx", label: "VFX" },
+  { value: "networking", label: "Networking" },
+  { value: "backend_services", label: "Backend Services" },
+  { value: "analytics", label: "Analytics" },
+  { value: "monetization", label: "Monetization" },
+];
 
 function ScoreBar({ score }: { score: number }) {
   const cls = score >= 75 ? "" : score >= 55 ? " score-bar-fill-medium" : " score-bar-fill-low";
@@ -213,12 +225,70 @@ function CategoryCard({ cat }: { cat: CategoryRecommendation }) {
   );
 }
 
+function StackSections({
+  locked,
+  flexible,
+  hidden,
+}: {
+  locked: CategoryRecommendation[];
+  flexible: CategoryRecommendation[];
+  hidden: string[];
+}) {
+  const engineEntry = locked.find((c) => c.category === "engine");
+  const engineName = engineEntry?.topPick.toolName;
+  const lockedNonEngine = locked.filter((c) => c.category !== "engine");
+
+  return (
+    <div className="space-y-8">
+      {engineEntry && (
+        <div>
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+            🔒 Locked
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <CategoryCard cat={engineEntry} />
+            {lockedNonEngine.map((cat) => (
+              <LockedCategoryCard key={cat.category} cat={cat} engineName={engineName} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {flexible.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+            ✎ Flexible
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {flexible.map((cat) => (
+              <CategoryCard key={cat.category} cat={cat} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {hidden.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          Hidden by project mode: {hidden.join(", ")}.
+        </p>
+      )}
+
+      {locked.length === 0 && flexible.length === 0 && (
+        <div className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+          No recommendations available for this category yet.
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AnalysisView({ result }: { result: AnalysisResult }) {
   const confidenceColor = result.overallConfidence >= 75
     ? "text-green-400"
     : result.overallConfidence >= 55
     ? "text-yellow-400"
     : "text-red-400";
+  const buckets = result.categoryResults ?? { locked: [], flexible: [], hidden: [] };
 
   return (
     <div className="space-y-8">
@@ -241,20 +311,11 @@ function AnalysisView({ result }: { result: AnalysisResult }) {
         <p className="text-sm font-semibold text-primary">{result.stackOverview}</p>
       </div>
 
-      <div>
-        <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">Stack Breakdown</h3>
-        {result.categories.length === 0 ? (
-          <div className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
-            No recommendations available for this category yet.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {result.categories.map((cat, i) => (
-              <CategoryCard key={i} cat={cat} />
-            ))}
-          </div>
-        )}
-      </div>
+      <StackSections
+        locked={buckets.locked ?? []}
+        flexible={buckets.flexible ?? []}
+        hidden={buckets.hidden ?? []}
+      />
 
       <div className="p-5 rounded-xl border border-border bg-card">
         <h3 className="text-sm font-semibold text-foreground mb-2">Final Analysis</h3>
@@ -335,8 +396,13 @@ export default function Analyzer() {
   const [platformTarget, setPlatformTarget] = useState<string[]>(["pc"]);
   const [artCapability, setArtCapability] = useState<ProjectInput["artCapability"]>(ProjectInputArtCapability.basic);
   const [otherConstraints, setOtherConstraints] = useState("");
+  const [paidPriorityCategories, setPaidPriorityCategories] = useState<string[]>([]);
   const [phase, setPhase] = useState<AnalyzerPhase>("idle");
-  const [partialCategories, setPartialCategories] = useState<CategoryRecommendation[]>([]);
+  const [partialCategoryResults, setPartialCategoryResults] = useState<{
+    locked: CategoryRecommendation[];
+    flexible: CategoryRecommendation[];
+    hidden: string[];
+  }>({ locked: [], flexible: [], hidden: [] });
   const [narrativeTokens, setNarrativeTokens] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -360,8 +426,14 @@ export default function Analyzer() {
     }
 
     if (eventName === "scoring_complete") {
-      const payload = parsed as { categories?: CategoryRecommendation[] };
-      setPartialCategories(payload.categories ?? []);
+      const payload = parsed as {
+        categoryResults?: { locked?: CategoryRecommendation[]; flexible?: CategoryRecommendation[]; hidden?: string[] };
+      };
+      setPartialCategoryResults({
+        locked: payload.categoryResults?.locked ?? [],
+        flexible: payload.categoryResults?.flexible ?? [],
+        hidden: payload.categoryResults?.hidden ?? [],
+      });
       setPhase("metadata_ready");
       return;
     }
@@ -408,7 +480,7 @@ export default function Analyzer() {
     setResult(null);
     setMetadata(null);
     setNarrativeTokens("");
-    setPartialCategories([]);
+    setPartialCategoryResults({ locked: [], flexible: [], hidden: [] });
 
     try {
       const res = await fetch("/api/advisor/analyze", {
@@ -494,6 +566,7 @@ export default function Analyzer() {
       platformTarget,
       artCapability,
       otherConstraints: otherConstraints || null,
+      paidPriorityCategories: paidPriorityCategories.length > 0 ? paidPriorityCategories : undefined,
     };
 
     await streamAnalysis(input);
@@ -567,6 +640,40 @@ export default function Analyzer() {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-semibold text-foreground mb-2">
+              Paid-Priority Categories <span className="text-muted-foreground text-xs font-normal">(optional)</span>
+            </label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Categories where you accept paid tools. Empty = the advisor prefers free.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {PAID_PRIORITY_OPTIONS.map((opt) => {
+                const active = paidPriorityCategories.includes(opt.value);
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() =>
+                      setPaidPriorityCategories(
+                        active
+                          ? paidPriorityCategories.filter((c) => c !== opt.value)
+                          : [...paidPriorityCategories, opt.value],
+                      )
+                    }
+                    className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
+                      active
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-muted/30 text-muted-foreground hover:border-muted-foreground"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <Button
             type="submit"
             disabled={isBusy || !projectIdea.trim() || platformTarget.length === 0}
@@ -587,7 +694,7 @@ export default function Analyzer() {
           </div>
         )}
 
-        {(phase === "metadata_ready" || phase === "streaming") && partialCategories.length > 0 && (
+        {(phase === "metadata_ready" || phase === "streaming") && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <Separator className="bg-border" />
 
@@ -612,20 +719,11 @@ export default function Analyzer() {
               </div>
             )}
 
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">Stack Breakdown</h3>
-              {partialCategories.length === 0 ? (
-                <div className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
-                  No recommendations available for this category yet.
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {partialCategories.map((cat, i) => (
-                    <CategoryCard key={i} cat={cat} />
-                  ))}
-                </div>
-              )}
-            </div>
+            <StackSections
+              locked={partialCategoryResults.locked}
+              flexible={partialCategoryResults.flexible}
+              hidden={partialCategoryResults.hidden}
+            />
 
             <div className="p-5 rounded-xl border border-border bg-card">
               <h3 className="text-sm font-semibold text-foreground mb-2">Final Analysis</h3>

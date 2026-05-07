@@ -1,4 +1,5 @@
 import { useGetSession, getGetSessionQueryKey } from "@workspace/api-client-react";
+import type { CategoryRecommendation, Evidence } from "@workspace/api-client-react";
 import { Link, useParams } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,44 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-
-type Evidence = {
-  scoreBreakdown: {
-    budget: number;
-    skill: number;
-    platform: number;
-    timeLimit: number;
-    artCapability: number;
-    total: number;
-  };
-  ragChunks: Array<{
-    text: string;
-    source: string;
-    score?: number | null;
-  }>;
-};
-
-type CategoryRecommendation = {
-  category: string;
-  categoryLabel: string;
-  topPick: {
-    toolName: string;
-    score: number;
-    reasoning: string;
-    strengths: string[];
-    weaknesses: string[];
-    isTopPick: boolean;
-    evidence?: Evidence;
-  };
-  alternatives: Array<{
-    toolName: string;
-    score: number;
-    reasoning: string;
-    strengths: string[];
-    weaknesses: string[];
-  }>;
-  categoryReasoning: string;
-};
+import { LockedCategoryCard } from "@/components/LockedCategoryCard";
 
 function EvidencePanel({ evidence }: { evidence: Evidence }) {
   const chunks = evidence.ragChunks.slice(0, 3);
@@ -237,11 +201,24 @@ export default function SessionDetail() {
   const result = session.result as {
     projectSummary: string;
     detectedProjectType: string;
-    categories: CategoryRecommendation[];
+    categoryResults?: {
+      locked?: CategoryRecommendation[];
+      flexible?: CategoryRecommendation[];
+      hidden?: string[];
+    };
+    categories?: CategoryRecommendation[];
     overallConfidence: number;
     finalSummary: string;
     stackOverview: string;
   };
+  const locked = result.categoryResults?.locked ?? [];
+  const flexible = result.categoryResults?.flexible ?? [];
+  const hidden = result.categoryResults?.hidden ?? [];
+  const legacyFlat = !result.categoryResults && result.categories ? result.categories : [];
+  const legacyFlexible = [...flexible, ...legacyFlat];
+  const engineEntry = locked.find((c) => c.category === "engine");
+  const engineName = engineEntry?.topPick.toolName;
+  const lockedNonEngine = locked.filter((c) => c.category !== "engine");
 
   const input = session.projectInput as unknown as Record<string, unknown>;
   const confColor = result.overallConfidence >= 75 ? "text-green-400" : result.overallConfidence >= 55 ? "text-yellow-400" : "text-red-400";
@@ -278,11 +255,38 @@ export default function SessionDetail() {
 
         <Separator className="mb-8 bg-border" />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
-          {result.categories.map((cat, i) => (
-            <CategoryCard key={i} cat={cat} />
-          ))}
-        </div>
+        {locked.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              🔒 Locked
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {engineEntry && <CategoryCard cat={engineEntry} />}
+              {lockedNonEngine.map((cat) => (
+                <LockedCategoryCard key={cat.category} cat={cat} engineName={engineName} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {legacyFlexible.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              {result.categoryResults ? "✎ Flexible" : "Stack Breakdown"}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {legacyFlexible.map((cat) => (
+                <CategoryCard key={cat.category} cat={cat} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {hidden.length > 0 && (
+          <p className="text-xs text-muted-foreground mb-8">
+            Hidden by project mode: {hidden.join(", ")}.
+          </p>
+        )}
 
         <Card className="p-5 border-border bg-card">
           <h3 className="text-sm font-semibold text-foreground mb-2">Final Analysis</h3>
