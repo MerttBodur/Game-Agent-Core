@@ -1,42 +1,43 @@
 import { Router, type IRouter } from "express";
-import { GAME_DEV_TOOLS, TOOL_CATEGORIES } from "../lib/gameDevTools.js";
-import { db, toolsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
-import { ListToolsQueryParams, GetToolParams } from "@workspace/api-zod";
+import { TOOL_CATALOG, TOOL_CATEGORIES } from "../lib/gameDevTools.js";
+import type { ToolEntry } from "../types/pdd.js";
 
 const router: IRouter = Router();
 
-router.get("/tools/categories", async (_req, res): Promise<void> => {
-  const catCounts = TOOL_CATEGORIES.map((cat) => ({
+router.get("/tools/categories", (_req, res): void => {
+  const counts = TOOL_CATEGORIES.map((cat) => ({
     ...cat,
-    toolCount: GAME_DEV_TOOLS.filter((t) => t.category === cat.id).length,
+    toolCount: TOOL_CATALOG.filter((t) => t.category === cat.id).length,
   }));
-  res.json(catCounts);
+  res.json(counts);
 });
 
-router.get("/tools", async (req, res): Promise<void> => {
-  const query = ListToolsQueryParams.safeParse(req.query);
+router.get("/tools", (req, res): void => {
+  const { category, platform, pricing, difficulty, teamSize, fit2d3d } = req.query;
 
-  const tools = await db.select().from(toolsTable);
-
-  let result = tools;
-  if (query.success && query.data.category) {
-    result = tools.filter((t) => t.category === query.data.category);
+  let result: ToolEntry[] = [...TOOL_CATALOG];
+  if (typeof category === "string") result = result.filter((t) => t.category === category);
+  if (typeof platform === "string") {
+    result = result.filter((t) =>
+      t.supportedPlatforms.includes(platform as ToolEntry["supportedPlatforms"][number]),
+    );
   }
-
+  if (typeof pricing === "string") result = result.filter((t) => t.pricing === pricing);
+  if (typeof difficulty === "string") {
+    result = result.filter((t) => t.difficultyLevel === difficulty);
+  }
+  if (typeof teamSize === "string") {
+    result = result.filter((t) =>
+      t.teamSizeFit.includes(teamSize as ToolEntry["teamSizeFit"][number]),
+    );
+  }
+  if (typeof fit2d3d === "string") result = result.filter((t) => t.fit2d3d === fit2d3d);
   res.json(result);
 });
 
-router.get("/tools/:id", async (req, res): Promise<void> => {
-  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const id = parseInt(raw, 10);
-
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Invalid tool ID" });
-    return;
-  }
-
-  const [tool] = await db.select().from(toolsTable).where(eq(toolsTable.id, id));
+router.get("/tools/:id", (req, res): void => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const tool = TOOL_CATALOG.find((t) => t.id === id);
   if (!tool) {
     res.status(404).json({ error: "Tool not found" });
     return;
