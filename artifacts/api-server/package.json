@@ -8,8 +8,7 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "rag:seed": "tsx ./src/scripts/seedRag.ts",
-    "dataset:popularity": "tsx ./src/scripts/buildPopularityFromDataset.ts"
+    "rag:seed": "tsx ./src/scripts/seedRag.ts"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",
