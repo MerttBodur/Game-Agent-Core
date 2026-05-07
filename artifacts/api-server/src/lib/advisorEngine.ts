@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { GAME_DEV_TOOLS, TOOL_CATEGORIES, type GameDevTool } from "./gameDevTools.js";
+import { DATASET_HAS_POPULARITY_ROWS, GAME_DEV_TOOLS, TOOL_CATEGORIES, type GameDevTool } from "./gameDevTools.js";
 
 export const LOCKED_CATEGORIES = ["programming", "ui", "vfx", "build_ci"] as const;
 
@@ -50,10 +50,7 @@ const WEIGHTS_BY_ARCHETYPE: Record<Scope, Record<ScoringAxis, number>> = {
   AAA: { budget: 0.7, skill: 0.7, platform: 1.3, time: 0.6, art: 1.3 },
 };
 
-export let DATASET_IS_THIN = true;
-export function setDatasetThin(value: boolean): void {
-  DATASET_IS_THIN = value;
-}
+export const DATASET_IS_THIN = !DATASET_HAS_POPULARITY_ROWS;
 
 export function hiddenCategoriesForMode(mode: ProjectMode): string[] {
   if (mode === "single_player") return ["networking", "backend_services"];

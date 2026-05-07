@@ -1,3 +1,7 @@
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
 export type Ecosystem =
   | "unity"
   | "unreal"
@@ -2007,3 +2011,26 @@ export const TOOL_CATEGORIES = [
   { id: "narrative", label: "Narrative", description: "Interactive story, dialogue, and quest authoring tools" },
   { id: "build_ci", label: "Build & CI", description: "Build automation, continuous integration, and release pipeline tools" },
 ];
+
+type PopularityMap = Record<string, Record<ArchetypeScope, number>>;
+
+function loadPopularityMap(): PopularityMap {
+  try {
+    const here = dirname(fileURLToPath(import.meta.url));
+    const raw = readFileSync(resolve(here, "./games-dataset/popularity.json"), "utf8");
+    return JSON.parse(raw) as PopularityMap;
+  } catch {
+    return {};
+  }
+}
+
+const popularityMap = loadPopularityMap();
+let mergedPopularityRows = 0;
+for (const tool of GAME_DEV_TOOLS) {
+  const row = popularityMap[tool.name];
+  if (!row) continue;
+  tool.popularityByArchetype = row;
+  mergedPopularityRows += 1;
+}
+
+export const DATASET_HAS_POPULARITY_ROWS = mergedPopularityRows > 0;
