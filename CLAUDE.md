@@ -40,11 +40,12 @@ There are no test commands — the project currently has no test suite.
 pnpm monorepo. Packages under `lib/` are shared libraries; `artifacts/` contains the deployable apps.
 
 **Data flow for an analysis request:**
-1. Frontend (`artifacts/game-dev-advisor`) calls `POST /api/advisor/analyze` via the generated React Query hooks in `lib/api-client-react`
-2. The Express route (`artifacts/api-server/src/routes/advisor.ts`) validates the body with Zod schemas from `lib/api-zod`
-3. `advisorEngine.ts` scores every tool in `gameDevTools.ts` using a rule-based function (budget, skill, platform, time, art), then retrieves augmenting context from tree-of-contents retrieval
-4. OpenAI (`gpt-4o-mini`) generates the narrative summary grounded in the scored stack + retrieved context
-5. The session is persisted to MySQL via Drizzle ORM and the full `AnalysisResult` is returned
+1. Frontend posts `POST /api/advisor/analyze` (Zod-validated body)
+2. `routes/advisor.ts` calls `treeNavigator.retrieveContext` (Sprint 3) -> `RetrievedContextPackage`
+3. `services/scoringService.ts` ranks each category's candidate tools deterministically
+4. `services/reasoningService.ts` makes ONE `gpt-4o-mini` structured-output call to produce per-category recommendations + a trust score 0-100
+5. The trust gate: `trustTier = trustTierFor(trustScore)`. Below `TRUST_SCORE_BLOCK_THRESHOLD` (default 25, env-overridable) the response is `terminated: true` and the session is **not** persisted.
+6. Otherwise the session is persisted to MySQL and the full `AnalysisResult` is returned.
 
 **API contract:** `lib/api-spec/openapi.yaml` is the single source of truth. Orval reads it to generate:
 - `lib/api-client-react` — TanStack Query hooks for the frontend
