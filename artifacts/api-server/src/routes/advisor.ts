@@ -15,46 +15,53 @@ import { rateLimit } from "../middleware/rateLimit.js";
 
 const router: IRouter = Router();
 
-function buildResponseCategories(
+function toRecommendationDTO(
+  entry: import("../lib/advisorEngine.js").CategoryEntry,
+  ragChunks: Array<{ text: string; source: string; score?: number | null }>,
+  toolIdMap: Record<string, number>,
+) {
+  const label = TOOL_CATEGORIES.find((c) => c.id === entry.category)?.label ?? entry.category;
+  return {
+    category: entry.category,
+    categoryLabel: label,
+    topPick: {
+      toolId: toolIdMap[entry.topTool.name] ?? 0,
+      toolName: entry.topTool.name,
+      score: entry.topTool.score,
+      reasoning: entry.topTool.reasoning,
+      evidence: { scoreBreakdown: entry.topTool.scoreBreakdown, ragChunks },
+      strengths: entry.topTool.strengths,
+      weaknesses: entry.topTool.weaknesses,
+      tradeoffs: entry.topTool.weaknesses[0] ?? "",
+      isTopPick: true,
+    },
+    alternatives: entry.alternatives.map((alt) => ({
+      toolId: toolIdMap[alt.name] ?? 0,
+      toolName: alt.name,
+      score: alt.score,
+      reasoning: alt.reasoning,
+      evidence: { scoreBreakdown: alt.scoreBreakdown, ragChunks },
+      strengths: alt.strengths,
+      weaknesses: alt.weaknesses,
+      tradeoffs: alt.weaknesses[0] ?? "",
+      isTopPick: false,
+    })),
+    categoryReasoning: entry.topTool.reasoning,
+  };
+}
+
+type CategoryRecommendationDTO = ReturnType<typeof toRecommendationDTO>;
+
+function buildCategoryResultsResponse(
   categoryResults: CategoryResults,
   ragChunks: Array<{ text: string; source: string; score?: number | null }>,
-) {
-  return TOOL_CATEGORIES.filter((cat) => categoryResults[cat.id]).map((cat) => {
-    const cr = categoryResults[cat.id];
-    return {
-      category: cat.id,
-      categoryLabel: cat.label,
-      topPick: {
-        toolId: 0,
-        toolName: cr.topTool.name,
-        score: cr.topTool.score,
-        reasoning: cr.topTool.reasoning,
-        evidence: {
-          scoreBreakdown: cr.topTool.scoreBreakdown,
-          ragChunks,
-        },
-        strengths: cr.topTool.strengths,
-        weaknesses: cr.topTool.weaknesses,
-        tradeoffs: cr.topTool.weaknesses[0] ?? "",
-        isTopPick: true,
-      },
-      alternatives: cr.alternatives.map((alt) => ({
-        toolId: 0,
-        toolName: alt.name,
-        score: alt.score,
-        reasoning: alt.reasoning,
-        evidence: {
-          scoreBreakdown: alt.scoreBreakdown,
-          ragChunks,
-        },
-        strengths: alt.strengths,
-        weaknesses: alt.weaknesses,
-        tradeoffs: alt.weaknesses[0] ?? "",
-        isTopPick: false,
-      })),
-      categoryReasoning: cr.topTool.reasoning,
-    };
-  });
+  toolIdMap: Record<string, number>,
+): { locked: CategoryRecommendationDTO[]; flexible: CategoryRecommendationDTO[]; hidden: string[] } {
+  return {
+    locked: categoryResults.locked.map((e) => toRecommendationDTO(e, ragChunks, toolIdMap)),
+    flexible: categoryResults.flexible.map((e) => toRecommendationDTO(e, ragChunks, toolIdMap)),
+    hidden: categoryResults.hidden,
+  };
 }
 
 router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
@@ -75,9 +82,13 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
   };
 
   try {
-    const categoryResults = buildCategoryResults(input);
-    const earlyCategories = buildResponseCategories(categoryResults, []);
-    send("scoring_complete", { categories: earlyCategories });
+    const categoryResults = buildCategoryResults(input); // projectMode default = single_player
+    const dbTools = await db.select().from(toolsTable);
+    const toolIdMap: Record<string, number> = {};
+    for (const t of dbTools) toolIdMap[t.name] = t.id;
+
+    const earlyResults = buildCategoryResultsResponse(categoryResults, [], toolIdMap);
+    send("scoring_complete", { categoryResults: earlyResults });
 
     const { ragChunks, retrievedKnowledgeContext } = await retrieveAdvisorKnowledge(input);
     const metadata = await generateMetadataWithAI(input, categoryResults, retrievedKnowledgeContext);
@@ -91,32 +102,30 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
       (token) => send("narrative_chunk", { token }),
     );
 
-    const categories = buildResponseCategories(categoryResults, ragChunks);
-
-    // Resolve tool IDs from DB
-    const dbTools = await db.select().from(toolsTable);
-    const toolIdMap: Record<string, number> = {};
-    for (const t of dbTools) {
-      toolIdMap[t.name] = t.id;
-    }
-
-    for (const cat of categories) {
-      cat.topPick.toolId = toolIdMap[cat.topPick.toolName] ?? 0;
-      for (const alt of cat.alternatives) {
-        alt.toolId = toolIdMap[alt.toolName] ?? 0;
-      }
-    }
+    const finalResults = buildCategoryResultsResponse(categoryResults, ragChunks, toolIdMap);
 
     const resultObj = {
+      sessionId: 0,
       projectSummary: metadata.projectSummary,
       detectedProjectType: metadata.detectedProjectType,
-      categories,
+      categoryResults: finalResults,
       overallConfidence: metadata.overallConfidence,
       finalSummary:
         finalSummary ||
         "This stack has been selected based on your budget, skill level, and platform targets.",
       stackOverview: metadata.stackOverview,
-      sessionId: 0,
+      // Step 4 will populate the feasibility fields with real heuristic output. Stubbed
+      // pass-through values keep the OpenAPI-required fields satisfied without changing
+      // tier behavior - score 100 / tier "pass" means nothing gets blocked yet.
+      ideaScore: 100,
+      ideaScoreTier: "pass",
+      mismatchReasons: [] as string[],
+      archetype: {
+        implied: { scope: "indie" },
+        achievable: { scope: "indie" },
+      },
+      projectMode: "single_player",
+      feasibilityOverridden: false,
     };
 
     const [session] = await db
@@ -196,16 +205,25 @@ router.get("/advisor/stats", async (_req, res): Promise<void> => {
   let totalConfidence = 0;
 
   for (const s of sessions) {
-    const result = s.result as { categories?: { category: string; topPick: { toolName: string } }[]; overallConfidence?: number };
+    const result = s.result as {
+      categories?: { category: string; topPick: { toolName: string } }[];
+      categoryResults?: {
+        locked?: { category: string; topPick: { toolName: string } }[];
+        flexible?: { category: string; topPick: { toolName: string } }[];
+      };
+      overallConfidence?: number;
+    };
     if (result?.overallConfidence) totalConfidence += result.overallConfidence;
-    if (result?.categories) {
-      for (const cat of result.categories) {
-        const toolName = cat.topPick?.toolName;
-        if (toolName) {
-          toolCounts[toolName] = (toolCounts[toolName] ?? 0) + 1;
-        }
-        catCounts[cat.category] = (catCounts[cat.category] ?? 0) + 1;
-      }
+
+    const cats = [
+      ...(result?.categories ?? []),
+      ...(result?.categoryResults?.locked ?? []),
+      ...(result?.categoryResults?.flexible ?? []),
+    ];
+    for (const cat of cats) {
+      const toolName = cat.topPick?.toolName;
+      if (toolName) toolCounts[toolName] = (toolCounts[toolName] ?? 0) + 1;
+      catCounts[cat.category] = (catCounts[cat.category] ?? 0) + 1;
     }
   }
 

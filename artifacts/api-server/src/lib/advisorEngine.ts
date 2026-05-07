@@ -1,6 +1,16 @@
 import OpenAI from "openai";
 import { GAME_DEV_TOOLS, TOOL_CATEGORIES, type GameDevTool } from "./gameDevTools.js";
 
+const LOCKED_CATEGORIES = ["programming", "ui", "vfx", "build_ci"] as const;
+
+export type ProjectMode = "single_player" | "co_op_local" | "multiplayer_online" | "live_service";
+
+function hiddenCategoriesForMode(mode: ProjectMode): string[] {
+  if (mode === "single_player") return ["networking", "backend_services"];
+  if (mode === "co_op_local") return ["backend_services"];
+  return [];
+}
+
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
@@ -60,7 +70,17 @@ export interface CategoryResultTool extends GameDevTool {
   reasoning: string;
 }
 
-export type CategoryResults = Record<string, { topTool: CategoryResultTool; alternatives: CategoryResultTool[] }>;
+export interface CategoryEntry {
+  category: string;
+  topTool: CategoryResultTool;
+  alternatives: CategoryResultTool[];
+}
+
+export interface CategoryResults {
+  locked: CategoryEntry[];
+  flexible: CategoryEntry[];
+  hidden: string[];
+}
 
 export interface AnalysisMetadata {
   projectSummary: string;
@@ -240,40 +260,86 @@ function formatRetrievedKnowledgeContext(retrieved: RetrievedKnowledgeResponse |
   return chunks.map((chunk, index) => `${index + 1}. ${chunk.text}\n   Source metadata: ${chunk.sourceMetadata}`).join("\n");
 }
 
-export function buildCategoryResults(input: ProjectInput): CategoryResults {
-  const categories = TOOL_CATEGORIES.map((cat) => cat.id);
-  const categoryResults: CategoryResults = {};
+export function buildCategoryResults(
+  input: ProjectInput,
+  projectMode: ProjectMode = "single_player", // TODO Step 4: pass LLM-derived projectMode
+): CategoryResults {
+  const hidden = hiddenCategoriesForMode(projectMode);
+  const allCategoryIds = TOOL_CATEGORIES.map((c) => c.id);
 
-  for (const cat of categories) {
-    const toolsInCat = GAME_DEV_TOOLS.filter((t) => t.category === cat);
-    if (toolsInCat.length === 0) continue;
+  // 1. Score engine first to discover the ecosystem
+  const engineEntry = scoreCategory("engine", input);
+  if (!engineEntry) {
+    return { locked: [], flexible: [], hidden };
+  }
+  const ecosystem = pickEcosystem(engineEntry.topTool);
 
-    const scored: ToolScore[] = toolsInCat.map((tool) => {
-      const scoredTool = scoreTool(tool, input);
-      return {
-        tool,
-        score: scoredTool.total,
-        scoreBreakdown: scoredTool.breakdown,
-        reasoning: generateReasoning(tool, input, scoredTool.total),
-      };
-    });
-    scored.sort((a, b) => b.score - a.score);
+  // 2. Walk every other category; apply hard filter to LOCKED_CATEGORIES
+  const locked: CategoryEntry[] = [engineEntry]; // engine always sits in locked
+  const flexible: CategoryEntry[] = [];
 
-    const top = scored[0];
-    const alts = scored.slice(1, 3);
+  for (const cat of allCategoryIds) {
+    if (cat === "engine") continue;
+    if (hidden.includes(cat)) continue;
 
-    categoryResults[cat] = {
-      topTool: { ...top.tool, score: top.score, scoreBreakdown: top.scoreBreakdown, reasoning: top.reasoning },
-      alternatives: alts.map((a) => ({ ...a.tool, score: a.score, scoreBreakdown: a.scoreBreakdown, reasoning: a.reasoning })),
-    };
+    const isLocked = (LOCKED_CATEGORIES as readonly string[]).includes(cat);
+    const candidatePool = isLocked
+      ? GAME_DEV_TOOLS.filter(
+          (t) =>
+            t.category === cat &&
+            (t.ecosystem.includes(ecosystem as never) || t.ecosystem.includes("engine_agnostic")),
+        )
+      : GAME_DEV_TOOLS.filter((t) => t.category === cat);
+
+    const entry = scoreCategoryFromPool(cat, candidatePool, input);
+    if (!entry) continue;
+
+    (isLocked ? locked : flexible).push(entry);
   }
 
-  return categoryResults;
+  return { locked, flexible, hidden };
+}
+
+function pickEcosystem(engineTool: CategoryResultTool): string {
+  const specific = engineTool.ecosystem.find((e) => e !== "engine_agnostic");
+  return specific ?? "engine_agnostic";
+}
+
+function scoreCategory(cat: string, input: ProjectInput): CategoryEntry | null {
+  return scoreCategoryFromPool(cat, GAME_DEV_TOOLS.filter((t) => t.category === cat), input);
+}
+
+function scoreCategoryFromPool(
+  cat: string,
+  pool: GameDevTool[],
+  input: ProjectInput,
+): CategoryEntry | null {
+  if (pool.length === 0) return null;
+
+  const scored: ToolScore[] = pool.map((tool) => {
+    const scoredTool = scoreTool(tool, input);
+    return {
+      tool,
+      score: scoredTool.total,
+      scoreBreakdown: scoredTool.breakdown,
+      reasoning: generateReasoning(tool, input, scoredTool.total),
+    };
+  });
+  scored.sort((a, b) => b.score - a.score);
+
+  const top = scored[0];
+  const alts = scored.slice(1, 3);
+
+  return {
+    category: cat,
+    topTool: { ...top.tool, score: top.score, scoreBreakdown: top.scoreBreakdown, reasoning: top.reasoning },
+    alternatives: alts.map((a) => ({ ...a.tool, score: a.score, scoreBreakdown: a.scoreBreakdown, reasoning: a.reasoning })),
+  };
 }
 
 export function buildTopStackSummary(categoryResults: CategoryResults): string {
-  return Object.entries(categoryResults)
-    .map(([cat, res]) => `${cat}: ${res.topTool.name} (score: ${res.topTool.score})`)
+  return [...categoryResults.locked, ...categoryResults.flexible]
+    .map((entry) => `${entry.category}: ${entry.topTool.name} (score: ${entry.topTool.score})`)
     .join(", ");
 }
 
@@ -381,8 +447,8 @@ export async function generateMetadataWithAI(
     parsed = {
       projectSummary: "A game development project with specific constraints and goals.",
       detectedProjectType: "Indie Game",
-      stackOverview: Object.values(categoryResults)
-        .map((r) => r.topTool.name)
+      stackOverview: [...categoryResults.locked, ...categoryResults.flexible]
+        .map((entry) => entry.topTool.name)
         .slice(0, 4)
         .join(" + "),
       overallConfidence: 72,
