@@ -8,7 +8,7 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "rag:seed": "tsx ./src/scripts/seedRag.ts"
+    "tree:build": "tsx ./src/scripts/buildTree.ts"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",

@@ -1,0 +1,599 @@
+{
+  "node_id": "root",
+  "title": "Game Development Tools",
+  "summary": "Top-level catalog covering the 7 PDD MVP categories.",
+  "nodes": [
+    {
+      "node_id": "cat.game_engine",
+      "title": "Game Engine",
+      "summary": "Core engines for 2D/3D production. (10 tools)",
+      "category": "game_engine",
+      "nodes": [
+        {
+          "node_id": "tool.bevy",
+          "title": "Bevy",
+          "summary": "Modern open-source Rust game engine built around ECS architecture. High performance and strong systems-level control for teams comfortable with Rust. | advanced difficulty | platforms: pc, web, mobile | both | open_source",
+          "ref": {
+            "toolId": "bevy"
+          }
+        },
+        {
+          "node_id": "tool.cocos_creator",
+          "title": "Cocos Creator",
+          "summary": "Open-source engine focused on 2D and lightweight 3D with a component workflow and TypeScript scripting. Popular for mobile and web games, especially in Asia. | intermediate difficulty | platforms: pc, mobile, web | both | open_source",
+          "ref": {
+            "toolId": "cocos_creator"
+          }
+        },
+        {
+          "node_id": "tool.construct_3",
+          "title": "Construct 3",
+          "summary": "Browser-based no-code/low-code 2D game engine with event-sheet scripting. Fast onboarding for non-programmers and educators with web-first deployment. | beginner difficulty | platforms: web, mobile, pc | 2d | subscription",
+          "ref": {
+            "toolId": "construct_3"
+          }
+        },
+        {
+          "node_id": "tool.defold",
+          "title": "Defold",
+          "summary": "Lightweight free engine with Lua scripting and strong 2D capabilities. Uses a component-based architecture and supports native, web, and mobile exports. | beginner difficulty | platforms: pc, mobile, web | 2d | free",
+          "ref": {
+            "toolId": "defold"
+          }
+        },
+        {
+          "node_id": "tool.gamemaker",
+          "title": "GameMaker",
+          "summary": "Specialized 2D game engine with GML scripting. Used to make classics like Undertale and Hotline Miami. Fast prototyping, beginner-friendly. | beginner difficulty | platforms: pc, mobile, web, console | 2d | freemium",
+          "ref": {
+            "toolId": "gamemaker"
+          }
+        },
+        {
+          "node_id": "tool.godot",
+          "title": "Godot",
+          "summary": "Free and open-source game engine with GDScript (Python-like) and C# support. Lightweight, excellent for 2D games, rapidly improving 3D pipeline. | beginner difficulty | platforms: pc, mobile, web, console | both | open_source",
+          "ref": {
+            "toolId": "godot"
+          }
+        },
+        {
+          "node_id": "tool.love",
+          "title": "LOVE",
+          "summary": "Minimal open-source 2D framework using Lua. Code-first approach with a very fast feedback loop and excellent fit for prototyping and game jams. | intermediate difficulty | platforms: pc, mobile, web | 2d | open_source",
+          "ref": {
+            "toolId": "love"
+          }
+        },
+        {
+          "node_id": "tool.phaser",
+          "title": "Phaser",
+          "summary": "HTML5 game framework for browser-based 2D games using JavaScript/TypeScript. Excellent for web-native games and game jams. | intermediate difficulty | platforms: web | 2d | open_source",
+          "ref": {
+            "toolId": "phaser"
+          }
+        },
+        {
+          "node_id": "tool.unity",
+          "title": "Unity",
+          "summary": "The world's most popular cross-platform game engine, used for 2D, 3D, VR, and AR games. C# scripting, massive asset store, excellent beginner support. | beginner difficulty | platforms: pc, mobile, web, console, vr | both | freemium",
+          "ref": {
+            "toolId": "unity"
+          }
+        },
+        {
+          "node_id": "tool.unreal_engine",
+          "title": "Unreal Engine",
+          "summary": "AAA-quality 3D game engine by Epic Games. Industry standard for realistic graphics, large-scale games, and cinematics. Blueprints + C++ workflow. | intermediate difficulty | platforms: pc, console, mobile, vr | 3d | free",
+          "ref": {
+            "toolId": "unreal_engine"
+          }
+        }
+      ]
+    },
+    {
+      "node_id": "cat.ide",
+      "title": "IDE",
+      "summary": "Code editors and integrated development environments. (5 tools)",
+      "category": "ide",
+      "nodes": [
+        {
+          "node_id": "tool.jetbrains_intellij",
+          "title": "IntelliJ IDEA",
+          "summary": "JetBrains IDE focused on JVM and polyglot development with top-tier navigation, inspections, and plugin extensibility. | intermediate difficulty | platforms: pc | both | freemium",
+          "ref": {
+            "toolId": "jetbrains_intellij"
+          }
+        },
+        {
+          "node_id": "tool.rider",
+          "title": "JetBrains Rider",
+          "summary": "Cross-platform .NET and C# IDE with strong refactoring, Unity support, and code analysis designed for professional workflows. | intermediate difficulty | platforms: pc | both | subscription",
+          "ref": {
+            "toolId": "rider"
+          }
+        },
+        {
+          "node_id": "tool.sublime_text",
+          "title": "Sublime Text",
+          "summary": "Fast, lightweight text editor with extensibility and multi-cursor editing suited to scripting and quick code changes. | beginner difficulty | platforms: pc | both | paid",
+          "ref": {
+            "toolId": "sublime_text"
+          }
+        },
+        {
+          "node_id": "tool.visual_studio",
+          "title": "Visual Studio",
+          "summary": "Full-featured Microsoft IDE with deep C# and C++ tooling, advanced debugging, profiling, and native Unity workflows. | intermediate difficulty | platforms: pc | both | freemium",
+          "ref": {
+            "toolId": "visual_studio"
+          }
+        },
+        {
+          "node_id": "tool.vs_code",
+          "title": "Visual Studio Code",
+          "summary": "Free, extensible code editor with first-class TypeScript and C# support, debugging, and a deep extension marketplace. | beginner difficulty | platforms: pc | both | free",
+          "ref": {
+            "toolId": "vs_code"
+          }
+        }
+      ]
+    },
+    {
+      "node_id": "cat.version_control",
+      "title": "Version Control",
+      "summary": "Source control and code collaboration. (5 tools)",
+      "category": "version_control",
+      "nodes": [
+        {
+          "node_id": "tool.diversion",
+          "title": "Diversion",
+          "summary": "Game-focused source control aimed at artist-friendly binary workflows and simpler collaboration UX than traditional Git setups. | beginner difficulty | platforms: pc | both | freemium",
+          "ref": {
+            "toolId": "diversion"
+          }
+        },
+        {
+          "node_id": "tool.git_github",
+          "title": "Git + GitHub",
+          "summary": "The standard version control system for code. GitHub provides hosting, pull requests, and CI/CD integrations. | beginner difficulty | platforms: pc | both | freemium",
+          "ref": {
+            "toolId": "git_github"
+          }
+        },
+        {
+          "node_id": "tool.gitlab",
+          "title": "GitLab",
+          "summary": "Git hosting platform with integrated CI/CD, issue tracking, and self-hosting options. Useful for teams needing all-in-one DevOps workflows. | intermediate difficulty | platforms: pc | both | freemium",
+          "ref": {
+            "toolId": "gitlab"
+          }
+        },
+        {
+          "node_id": "tool.perforce_helix_core",
+          "title": "Perforce Helix Core",
+          "summary": "Enterprise version control system widely used in AAA game studios for very large binary assets and multi-site collaboration. | advanced difficulty | platforms: pc | both | subscription",
+          "ref": {
+            "toolId": "perforce_helix_core"
+          }
+        },
+        {
+          "node_id": "tool.plastic_scm",
+          "title": "Plastic SCM (Unity DevOps)",
+          "summary": "Version control designed for game development with large binary file support. Now integrated into Unity DevOps. | intermediate difficulty | platforms: pc | both | freemium",
+          "ref": {
+            "toolId": "plastic_scm"
+          }
+        }
+      ]
+    },
+    {
+      "node_id": "cat.art_asset_creation",
+      "title": "Art & Asset Creation",
+      "summary": "2D art, 3D modelling, animation, UI, and VFX. (25 tools)",
+      "category": "art_asset_creation",
+      "nodes": [
+        {
+          "node_id": "tool.adobe_photoshop",
+          "title": "Adobe Photoshop",
+          "summary": "Industry-standard raster image editor. Used for texture creation, UI assets, concept art, and post-processing. | intermediate difficulty | platforms: pc | both | subscription",
+          "ref": {
+            "toolId": "adobe_photoshop"
+          }
+        },
+        {
+          "node_id": "tool.after_effects",
+          "title": "After Effects",
+          "summary": "Adobe's motion graphics and compositing tool. Used for cinematic cutscene VFX and UI animations. Not real-time but exports to sprite sheets. | intermediate difficulty | platforms: pc | 2d | subscription",
+          "ref": {
+            "toolId": "after_effects"
+          }
+        },
+        {
+          "node_id": "tool.aseprite",
+          "title": "Aseprite",
+          "summary": "The industry-standard pixel art and animation tool for game developers. Tilemaps, spritesheet export, frame-by-frame animation. | beginner difficulty | platforms: pc | 2d | paid",
+          "ref": {
+            "toolId": "aseprite"
+          }
+        },
+        {
+          "node_id": "tool.autodesk_maya",
+          "title": "Autodesk Maya",
+          "summary": "Comprehensive DCC suite for 3D modeling, rigging, and pipeline integration. Widely used in AAA and studio production environments. | advanced difficulty | platforms: pc | 3d | subscription",
+          "ref": {
+            "toolId": "autodesk_maya"
+          }
+        },
+        {
+          "node_id": "tool.blender",
+          "title": "Blender",
+          "summary": "Free open-source 3D modeling, rigging, animation, and rendering suite. Used by indie studios worldwide for game assets. | intermediate difficulty | platforms: pc | 3d | open_source",
+          "ref": {
+            "toolId": "blender"
+          }
+        },
+        {
+          "node_id": "tool.cascadeur",
+          "title": "Cascadeur",
+          "summary": "3D keyframe animation software with physics-assisted posing and auto-physics features. Useful for more natural character motion without full mocap sessions. | intermediate difficulty | platforms: pc | 3d | freemium",
+          "ref": {
+            "toolId": "cascadeur"
+          }
+        },
+        {
+          "node_id": "tool.dragonbones",
+          "title": "DragonBones",
+          "summary": "Free 2D skeletal animation tool similar to Spine. Good for mobile game character animation with engine integrations. | intermediate difficulty | platforms: pc | 2d | free",
+          "ref": {
+            "toolId": "dragonbones"
+          }
+        },
+        {
+          "node_id": "tool.embergen",
+          "title": "EmberGen",
+          "summary": "Real-time volumetric fluid and smoke simulation tool used to author explosions, fire, and clouds. Exports baked assets for engine use. | intermediate difficulty | platforms: pc | 3d | paid",
+          "ref": {
+            "toolId": "embergen"
+          }
+        },
+        {
+          "node_id": "tool.godot_control_nodes",
+          "title": "Godot Control Nodes",
+          "summary": "Godot's built-in UI system using Control nodes in the scene tree. Straightforward, integrated with everything Godot. | beginner difficulty | platforms: pc, mobile, web | both | open_source",
+          "ref": {
+            "toolId": "godot_control_nodes"
+          }
+        },
+        {
+          "node_id": "tool.godot_particles",
+          "title": "Godot Particles",
+          "summary": "Godot's built-in particle system for 2D and 3D effects. CPU and GPU modes available, integrated with Godot's scene system. | beginner difficulty | platforms: pc, mobile, web | 3d | open_source",
+          "ref": {
+            "toolId": "godot_particles"
+          }
+        },
+        {
+          "node_id": "tool.houdini",
+          "title": "Houdini",
+          "summary": "Procedural 3D and VFX suite used for advanced simulations, destruction, and technical art pipelines. Houdini Engine enables integration into game editors. | advanced difficulty | platforms: pc | 3d | subscription",
+          "ref": {
+            "toolId": "houdini"
+          }
+        },
+        {
+          "node_id": "tool.krita",
+          "title": "Krita",
+          "summary": "Free open-source digital painting application. Great for concept art, textures, and 2D game art with a professional brush engine. | beginner difficulty | platforms: pc | 2d | open_source",
+          "ref": {
+            "toolId": "krita"
+          }
+        },
+        {
+          "node_id": "tool.live2d_cubism",
+          "title": "Live2D Cubism",
+          "summary": "2D mesh deformation and rigging system used for anime-style character motion. Common in visual novels, mobile RPGs, and VTuber-adjacent workflows. | intermediate difficulty | platforms: pc, mobile, web | 2d | subscription",
+          "ref": {
+            "toolId": "live2d_cubism"
+          }
+        },
+        {
+          "node_id": "tool.mixamo",
+          "title": "Mixamo",
+          "summary": "Adobe service for automatic character rigging and a large library of mocap animations. Speeds up prototyping and placeholder animation work. | beginner difficulty | platforms: pc | 3d | free",
+          "ref": {
+            "toolId": "mixamo"
+          }
+        },
+        {
+          "node_id": "tool.niagara_ue5",
+          "title": "Niagara (UE5)",
+          "summary": "Unreal Engine 5's advanced node-based VFX framework for particles, simulations, and gameplay-reactive effects. Built for high-fidelity real-time visuals. | advanced difficulty | platforms: pc, console, mobile, vr | 3d | free",
+          "ref": {
+            "toolId": "niagara_ue5"
+          }
+        },
+        {
+          "node_id": "tool.noesisgui",
+          "title": "NoesisGUI",
+          "summary": "XAML-based retained-mode UI middleware for games with strong runtime performance and tooling. Used when teams want scalable app-like UI patterns in games. | advanced difficulty | platforms: pc, mobile, console | both | paid",
+          "ref": {
+            "toolId": "noesisgui"
+          }
+        },
+        {
+          "node_id": "tool.procreate",
+          "title": "Procreate",
+          "summary": "iPad-first digital painting app popular for concept sketches, UI mockups, and stylized 2D art ideation. Fast and intuitive for portable workflows. | beginner difficulty | platforms: mobile | 2d | paid",
+          "ref": {
+            "toolId": "procreate"
+          }
+        },
+        {
+          "node_id": "tool.pyxel_edit",
+          "title": "Pyxel Edit",
+          "summary": "Tile-focused pixel art editor built for fast environment and tileset creation. Popular in retro and top-down indie projects. | beginner difficulty | platforms: pc | 2d | paid",
+          "ref": {
+            "toolId": "pyxel_edit"
+          }
+        },
+        {
+          "node_id": "tool.rive",
+          "title": "Rive",
+          "summary": "Real-time interactive animation and UI tool for runtime motion graphics. Useful for polished menus, onboarding flows, and animated HUD elements. | intermediate difficulty | platforms: web, mobile, pc | both | freemium",
+          "ref": {
+            "toolId": "rive"
+          }
+        },
+        {
+          "node_id": "tool.spine",
+          "title": "Spine",
+          "summary": "Professional 2D skeletal animation tool widely used in game development. Runtime available for Unity, Godot, and more. | intermediate difficulty | platforms: pc | 2d | paid",
+          "ref": {
+            "toolId": "spine"
+          }
+        },
+        {
+          "node_id": "tool.substance_designer",
+          "title": "Substance Designer",
+          "summary": "Node-based procedural material authoring tool for creating reusable PBR materials. Widely used in production pipelines for scalable asset generation. | advanced difficulty | platforms: pc | 3d | subscription",
+          "ref": {
+            "toolId": "substance_designer"
+          }
+        },
+        {
+          "node_id": "tool.substance_painter",
+          "title": "Substance Painter",
+          "summary": "Industry-standard texture painting suite for PBR materials on 3D assets. Offers real-time viewport feedback and exports tuned for major engines. | intermediate difficulty | platforms: pc | 3d | subscription",
+          "ref": {
+            "toolId": "substance_painter"
+          }
+        },
+        {
+          "node_id": "tool.unity_ui_toolkit",
+          "title": "Unity UI Toolkit",
+          "summary": "Unity's modern UI system using UXML/USS (similar to HTML/CSS). Best for complex, scalable game UI and tooling. | intermediate difficulty | platforms: pc, mobile, console | both | freemium",
+          "ref": {
+            "toolId": "unity_ui_toolkit"
+          }
+        },
+        {
+          "node_id": "tool.unity_vfx_graph",
+          "title": "Unity VFX Graph",
+          "summary": "Node-based visual effects editor for Unity's High Definition and Universal Render Pipelines. GPU-accelerated particle systems. | intermediate difficulty | platforms: pc, console | 3d | freemium",
+          "ref": {
+            "toolId": "unity_vfx_graph"
+          }
+        },
+        {
+          "node_id": "tool.zbrush",
+          "title": "ZBrush",
+          "summary": "Digital sculpting package used for high-detail character and creature creation. Commonly used to produce high-poly sculpts for bake-down game assets. | advanced difficulty | platforms: pc | 3d | paid",
+          "ref": {
+            "toolId": "zbrush"
+          }
+        }
+      ]
+    },
+    {
+      "node_id": "cat.audio",
+      "title": "Audio",
+      "summary": "Sound design, music, and audio middleware. (8 tools)",
+      "category": "audio",
+      "nodes": [
+        {
+          "node_id": "tool.audacity",
+          "title": "Audacity",
+          "summary": "Free open-source audio editor for waveform editing, cleanup, and quick mastering tasks. Useful for indie teams handling simple sound effects and voice prep. | beginner difficulty | platforms: pc | both | open_source",
+          "ref": {
+            "toolId": "audacity"
+          }
+        },
+        {
+          "node_id": "tool.bfxr",
+          "title": "BFXR",
+          "summary": "Retro sound effect generator focused on quick arcade-style bleeps, impacts, and UI cues. Commonly used in game jams and pixel-art projects. | beginner difficulty | platforms: pc | both | free",
+          "ref": {
+            "toolId": "bfxr"
+          }
+        },
+        {
+          "node_id": "tool.eleven_labs_tts",
+          "title": "Eleven Labs TTS",
+          "summary": "Text-to-speech platform for generating narration and character voice placeholders with expressive output. Useful for iterating dialogue timing before final recording. | beginner difficulty | platforms: web, pc | both | subscription",
+          "ref": {
+            "toolId": "eleven_labs_tts"
+          }
+        },
+        {
+          "node_id": "tool.fmod_studio",
+          "title": "FMOD Studio",
+          "summary": "Professional interactive audio middleware used to author adaptive music and sound behavior in games. Integrates with major engines and supports parameter-driven mixing. | intermediate difficulty | platforms: pc, mobile, console, vr | both | subscription",
+          "ref": {
+            "toolId": "fmod_studio"
+          }
+        },
+        {
+          "node_id": "tool.reaper",
+          "title": "Reaper",
+          "summary": "Lightweight full-featured DAW widely used for game audio production and editing. Offers deep routing, scripting, and plugin support at a relatively low cost. | intermediate difficulty | platforms: pc | both | paid",
+          "ref": {
+            "toolId": "reaper"
+          }
+        },
+        {
+          "node_id": "tool.soundly",
+          "title": "Soundly",
+          "summary": "Cloud-connected sound effects library and browsing tool designed for fast search and drag-drop workflow. Helps teams source and organize production-ready SFX quickly. | beginner difficulty | platforms: pc | both | subscription",
+          "ref": {
+            "toolId": "soundly"
+          }
+        },
+        {
+          "node_id": "tool.suno_music",
+          "title": "Suno Music",
+          "summary": "AI music generation tool for quickly drafting soundtrack ideas and mood references. Useful in early production for testing pacing and tone before bespoke composition. | beginner difficulty | platforms: web | both | freemium",
+          "ref": {
+            "toolId": "suno_music"
+          }
+        },
+        {
+          "node_id": "tool.wwise",
+          "title": "Wwise",
+          "summary": "Industry-standard game audio middleware for interactive music, voice, and effects with deep profiling tools. Common in mid-size and AAA production pipelines. | advanced difficulty | platforms: pc, mobile, console, vr | both | subscription",
+          "ref": {
+            "toolId": "wwise"
+          }
+        }
+      ]
+    },
+    {
+      "node_id": "cat.ai_coding_assistant",
+      "title": "AI Coding Assistant",
+      "summary": "AI tools that help write code. (5 tools)",
+      "category": "ai_coding_assistant",
+      "nodes": [
+        {
+          "node_id": "tool.chatgpt_gpt4",
+          "title": "ChatGPT / GPT-4",
+          "summary": "General-purpose AI assistant by OpenAI. Useful for game design brainstorming, dialog writing, game mechanics analysis, and code debugging. | beginner difficulty | platforms: web | both | freemium",
+          "ref": {
+            "toolId": "chatgpt_gpt4"
+          }
+        },
+        {
+          "node_id": "tool.claude_code",
+          "title": "Claude Code",
+          "summary": "Agentic coding workflow centered on repository-aware planning and code edits. It is useful for larger refactors, debugging sessions, and implementation tasks that span multiple files. | intermediate difficulty | platforms: pc | both | subscription",
+          "ref": {
+            "toolId": "claude_code"
+          }
+        },
+        {
+          "node_id": "tool.cursor",
+          "title": "Cursor",
+          "summary": "AI-first code editor built on VS Code with context-aware code generation and refactoring workflows. Useful for rapid scripting, codebase navigation, and implementation planning in game projects. | beginner difficulty | platforms: pc | both | subscription",
+          "ref": {
+            "toolId": "cursor"
+          }
+        },
+        {
+          "node_id": "tool.github_copilot",
+          "title": "GitHub Copilot",
+          "summary": "AI pair programmer integrated into VS Code, Visual Studio, JetBrains IDEs. Autocompletes code, suggests implementations, writes tests. | beginner difficulty | platforms: pc | both | subscription",
+          "ref": {
+            "toolId": "github_copilot"
+          }
+        },
+        {
+          "node_id": "tool.windsurf",
+          "title": "Windsurf",
+          "summary": "AI coding environment with integrated chat and command-style editing workflows. It helps teams iterate on gameplay logic, utility scripts, and project tooling quickly. | beginner difficulty | platforms: pc | both | subscription",
+          "ref": {
+            "toolId": "windsurf"
+          }
+        }
+      ]
+    },
+    {
+      "node_id": "cat.deployment_publishing",
+      "title": "Deployment & Publishing",
+      "summary": "Stores and distribution platforms. (9 tools)",
+      "category": "deployment_publishing",
+      "nodes": [
+        {
+          "node_id": "tool.apple_app_store",
+          "title": "Apple App Store",
+          "summary": "iOS and macOS app marketplace. Required for commercial iOS game distribution. Strict review process. | intermediate difficulty | platforms: mobile | both | subscription",
+          "ref": {
+            "toolId": "apple_app_store"
+          }
+        },
+        {
+          "node_id": "tool.crazygames",
+          "title": "CrazyGames",
+          "summary": "Web game platform for instant-play HTML5 games with built-in distribution and monetization opportunities. Strong for rapid browser game launches. | beginner difficulty | platforms: web | both | free",
+          "ref": {
+            "toolId": "crazygames"
+          }
+        },
+        {
+          "node_id": "tool.epic_games_store",
+          "title": "Epic Games Store",
+          "summary": "PC game storefront by Epic with favorable revenue share terms and growing audience. Includes developer portal tooling and store integrations. | intermediate difficulty | platforms: pc | both | paid",
+          "ref": {
+            "toolId": "epic_games_store"
+          }
+        },
+        {
+          "node_id": "tool.gog_galaxy",
+          "title": "GOG Connect / GOG Galaxy",
+          "summary": "GOG distribution ecosystem focused on DRM-free PC releases and community trust. GOG Galaxy provides launcher and user account integration. | intermediate difficulty | platforms: pc | both | paid",
+          "ref": {
+            "toolId": "gog_galaxy"
+          }
+        },
+        {
+          "node_id": "tool.google_play_store",
+          "title": "Google Play Store",
+          "summary": "Android's primary app and game marketplace. Required for commercial Android game distribution. | intermediate difficulty | platforms: mobile | both | paid",
+          "ref": {
+            "toolId": "google_play_store"
+          }
+        },
+        {
+          "node_id": "tool.itch_io",
+          "title": "itch.io",
+          "summary": "Open indie game marketplace. Zero upfront cost, flexible revenue sharing, excellent for game jams and indie releases. | beginner difficulty | platforms: pc, web | both | free",
+          "ref": {
+            "toolId": "itch_io"
+          }
+        },
+        {
+          "node_id": "tool.poki",
+          "title": "Poki",
+          "summary": "Web game publishing platform with a focus on polished, quick-loading browser experiences. Offers access to a broad casual audience. | beginner difficulty | platforms: web | both | free",
+          "ref": {
+            "toolId": "poki"
+          }
+        },
+        {
+          "node_id": "tool.steam",
+          "title": "Steam",
+          "summary": "The dominant PC gaming platform by Valve. Required for most commercial PC game releases. Steamworks SDK for DRM, achievements, leaderboards. | intermediate difficulty | platforms: pc | both | paid",
+          "ref": {
+            "toolId": "steam"
+          }
+        },
+        {
+          "node_id": "tool.console_partner_portals",
+          "title": "Xbox / PlayStation / Nintendo Partner Portals",
+          "summary": "Official console publishing portals and certification pipelines for Xbox, PlayStation, and Nintendo platforms. Required path for commercial console releases. | advanced difficulty | platforms: console | both | paid",
+          "ref": {
+            "toolId": "console_partner_portals"
+          }
+        }
+      ]
+    }
+  ]
+}
