@@ -102,7 +102,7 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
   };
 
   try {
-    const { ragChunks, retrievedKnowledgeContext } = await retrieveAdvisorKnowledge(input);
+    const { ragChunks, retrievedKnowledgeContext, retrieval } = await retrieveAdvisorKnowledge(input);
     const provisionalCategoryResults = buildCategoryResults(
       input,
       "single_player",
@@ -157,6 +157,7 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
         },
         projectMode: metadata.projectMode,
         feasibilityOverridden: false,
+        retrieval,
       };
 
       const sessionId = randomUUID();
@@ -225,6 +226,7 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
       },
       projectMode: metadata.projectMode,
       feasibilityOverridden: input.adviseAnyway === true && ideaScoreTier === "block",
+      retrieval,
     };
 
     const sessionId = randomUUID();

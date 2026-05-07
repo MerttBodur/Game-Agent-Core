@@ -1,5 +1,7 @@
 import OpenAI from "openai";
 import { DATASET_HAS_POPULARITY_ROWS, GAME_DEV_TOOLS, TOOL_CATEGORIES, type GameDevTool } from "./gameDevTools.js";
+import { retrieveContext } from "./rag/treeNavigator.js";
+import type { RetrievedContextPackage } from "../types/tree.js";
 
 export const LOCKED_CATEGORIES = ["art_asset_creation"] as const;
 
@@ -62,7 +64,6 @@ const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
-import { retrieveRelevantKnowledge } from "./rag/index.js";
 
 export interface ProjectInput {
   projectIdea: string;
@@ -95,26 +96,6 @@ export interface ScoreBreakdown {
   jitter: number;
   total: number;
 }
-
-interface RetrievedKnowledgeChunk {
-  content?: string;
-  text?: string;
-  chunk?: string;
-  pageContent?: string;
-  score?: number;
-  source?: string | Record<string, unknown>;
-  metadata?: Record<string, unknown> | null;
-  [key: string]: unknown;
-}
-
-type RetrievedKnowledgeResponse =
-  | RetrievedKnowledgeChunk[]
-  | {
-      chunks?: RetrievedKnowledgeChunk[];
-      results?: RetrievedKnowledgeChunk[];
-      items?: RetrievedKnowledgeChunk[];
-      documents?: RetrievedKnowledgeChunk[];
-    };
 
 export interface CategoryResultTool extends GameDevTool {
   score: number;
@@ -342,71 +323,7 @@ function generateReasoning(tool: GameDevTool, input: ProjectInput, score: number
   return parts.join(" ");
 }
 
-async function retrieveKnowledgeForAdvisor(input: ProjectInput): Promise<RetrievedKnowledgeResponse | null> {
-  try {
-    return await retrieveRelevantKnowledge(input, { topK: 5 });
-  } catch (error) {
-    console.warn("RAG retrieval failed; continuing with scoring-only advisor flow.", error);
-    return null;
-  }
-}
-
-function compactText(value: string, maxLength: number): string {
-  const compacted = value.replace(/\s+/g, " ").trim();
-  if (compacted.length <= maxLength) return compacted;
-  return `${compacted.slice(0, maxLength - 1).trimEnd()}...`;
-}
-
-function getRetrievedKnowledgeChunks(retrieved: RetrievedKnowledgeResponse | null): RetrievedKnowledgeChunk[] {
-  if (!retrieved) return [];
-  if (Array.isArray(retrieved)) return retrieved;
-
-  return retrieved.chunks ?? retrieved.results ?? retrieved.items ?? retrieved.documents ?? [];
-}
-
-function getChunkText(chunk: RetrievedKnowledgeChunk): string {
-  const text = chunk.content ?? chunk.text ?? chunk.chunk ?? chunk.pageContent;
-  return typeof text === "string" ? text : "";
-}
-
-function getSourceMetadata(chunk: RetrievedKnowledgeChunk): string {
-  const parts: string[] = [];
-
-  if (typeof chunk.source === "string" && chunk.source.trim()) {
-    parts.push(`source=${compactText(chunk.source, 120)}`);
-  } else if (typeof chunk.source === "object" && chunk.source !== null) {
-    for (const key of ["title", "name", "url", "path", "id"]) {
-      const value = chunk.source[key];
-      if (typeof value === "string" && value.trim()) parts.push(`${key}=${compactText(value, 120)}`);
-    }
-  }
-
-  if (chunk.metadata) {
-    for (const key of ["title", "source", "url", "path", "section", "tool", "category"]) {
-      const value = chunk.metadata[key];
-      if (typeof value === "string" && value.trim()) parts.push(`${key}=${compactText(value, 120)}`);
-    }
-  }
-
-  if (typeof chunk.score === "number") parts.push(`score=${chunk.score.toFixed(3)}`);
-
-  return parts.length > 0 ? parts.join("; ") : "source=unknown";
-}
-
-function formatRetrievedKnowledgeContext(retrieved: RetrievedKnowledgeResponse | null): string {
-  const chunks = getRetrievedKnowledgeChunks(retrieved)
-    .map((chunk) => ({
-      text: compactText(getChunkText(chunk), 900),
-      sourceMetadata: getSourceMetadata(chunk),
-    }))
-    .filter((chunk) => chunk.text.length > 0);
-
-  if (chunks.length === 0) {
-    return "No retrieved knowledge context was available.";
-  }
-
-  return chunks.map((chunk, index) => `${index + 1}. ${chunk.text}\n   Source metadata: ${chunk.sourceMetadata}`).join("\n");
-}
+export type { RetrievedContextPackage };
 
 export function buildCategoryResults(
   input: ProjectInput,
@@ -497,17 +414,32 @@ export function buildTopStackSummary(categoryResults: CategoryResults): string {
 export async function retrieveAdvisorKnowledge(input: ProjectInput): Promise<{
   ragChunks: Array<{ text: string; source: string; score?: number | null }>;
   retrievedKnowledgeContext: string;
+  retrieval: RetrievedContextPackage;
 }> {
-  const retrievedKnowledge = await retrieveKnowledgeForAdvisor(input);
+  const retrieval = await retrieveContext({
+    projectIdea: input.projectIdea,
+    budget: input.budget,
+    timeLimit: input.timeLimit,
+    skillLevel: input.skillLevel,
+    teamSize: input.teamSize,
+    platformTarget: input.platformTarget,
+    artCapability: input.artCapability,
+    otherConstraints: input.otherConstraints,
+  });
+
+  const ragChunks = retrieval.candidateTools.map((candidate) => ({
+    text: candidate.fitNote,
+    source: candidate.toolId,
+    score: null,
+  }));
+  const retrievedKnowledgeContext = ragChunks
+    .map((chunk) => `- ${chunk.source}: ${chunk.text}`)
+    .join("\n");
+
   return {
-    ragChunks: getRetrievedKnowledgeChunks(retrievedKnowledge)
-    .map((chunk) => ({
-      text: compactText(getChunkText(chunk), 280),
-      source: getSourceMetadata(chunk),
-      score: typeof chunk.score === "number" ? chunk.score : null,
-    }))
-    .filter((chunk) => chunk.text.length > 0),
-    retrievedKnowledgeContext: formatRetrievedKnowledgeContext(retrievedKnowledge),
+    ragChunks,
+    retrievedKnowledgeContext,
+    retrieval,
   };
 }
 
