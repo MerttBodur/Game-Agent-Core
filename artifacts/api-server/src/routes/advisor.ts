@@ -5,8 +5,10 @@ import { AnalyzeProjectBody, GetSessionParams } from "@workspace/api-zod";
 import {
   buildCategoryResults,
   generateMetadataWithAI,
+  heuristicIdeaScore,
   retrieveAdvisorKnowledge,
   streamFinalSummaryWithAI,
+  tierFromScore,
   type CategoryResults,
   type ProjectInput,
 } from "../lib/advisorEngine.js";
@@ -14,6 +16,7 @@ import { TOOL_CATEGORIES } from "../lib/gameDevTools.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 
 const router: IRouter = Router();
+const dedup = <T>(items: T[]): T[] => Array.from(new Set(items));
 
 function toRecommendationDTO(
   entry: import("../lib/advisorEngine.js").CategoryEntry,
@@ -82,17 +85,88 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
   };
 
   try {
-    const categoryResults = buildCategoryResults(input); // projectMode default = single_player
+    const { ragChunks, retrievedKnowledgeContext } = await retrieveAdvisorKnowledge(input);
+    const provisionalCategoryResults = buildCategoryResults(input, "single_player");
+    const metadata = await generateMetadataWithAI(
+      input,
+      provisionalCategoryResults,
+      retrievedKnowledgeContext,
+    );
+
+    const heuristic = heuristicIdeaScore({
+      input,
+      impliedScope: metadata.impliedScope,
+      achievableScope: metadata.achievableScope,
+    });
+    const ideaScore = heuristic.score;
+    const ideaScoreTier = tierFromScore(ideaScore);
+    const mismatchReasons = dedup([...heuristic.reasons, ...metadata.mismatchReasons]);
+
+    send("metadata_complete", {
+      projectSummary: metadata.projectSummary,
+      detectedProjectType: metadata.detectedProjectType,
+      stackOverview: metadata.stackOverview,
+      overallConfidence: metadata.overallConfidence,
+      ideaScore,
+      ideaScoreTier,
+      mismatchReasons,
+      archetype: {
+        implied: { scope: metadata.impliedScope },
+        achievable: { scope: metadata.achievableScope },
+      },
+      projectMode: metadata.projectMode,
+    });
+
+    if (ideaScoreTier === "block" && !input.adviseAnyway) {
+      const blockedResult = {
+        sessionId: 0,
+        projectSummary: metadata.projectSummary,
+        detectedProjectType: metadata.detectedProjectType,
+        categoryResults: null,
+        overallConfidence: metadata.overallConfidence,
+        finalSummary: null,
+        stackOverview: null,
+        ideaScore,
+        ideaScoreTier,
+        mismatchReasons,
+        archetype: {
+          implied: { scope: metadata.impliedScope },
+          achievable: { scope: metadata.achievableScope },
+        },
+        projectMode: metadata.projectMode,
+        feasibilityOverridden: false,
+      };
+
+      const [session] = await db
+        .insert(sessionsTable)
+        .values({
+          projectIdea: input.projectIdea,
+          projectInput: input as object,
+          detectedProjectType: metadata.detectedProjectType,
+          stackOverview: metadata.stackOverview,
+          overallConfidence: metadata.overallConfidence,
+          result: blockedResult as object,
+        })
+        .returning();
+
+      blockedResult.sessionId = session.id;
+      send("done", blockedResult);
+      res.end();
+      return;
+    }
+
+    const categoryResults =
+      metadata.projectMode === "single_player"
+        ? provisionalCategoryResults
+        : buildCategoryResults(input, metadata.projectMode);
+
     const dbTools = await db.select().from(toolsTable);
     const toolIdMap: Record<string, number> = {};
     for (const t of dbTools) toolIdMap[t.name] = t.id;
 
-    const earlyResults = buildCategoryResultsResponse(categoryResults, [], toolIdMap);
-    send("scoring_complete", { categoryResults: earlyResults });
-
-    const { ragChunks, retrievedKnowledgeContext } = await retrieveAdvisorKnowledge(input);
-    const metadata = await generateMetadataWithAI(input, categoryResults, retrievedKnowledgeContext);
-    send("metadata_complete", metadata);
+    send("scoring_complete", {
+      categoryResults: buildCategoryResultsResponse(categoryResults, [], toolIdMap),
+    });
 
     const finalSummary = await streamFinalSummaryWithAI(
       input,
@@ -114,18 +188,15 @@ router.post("/advisor/analyze", rateLimit, async (req, res): Promise<void> => {
         finalSummary ||
         "This stack has been selected based on your budget, skill level, and platform targets.",
       stackOverview: metadata.stackOverview,
-      // Step 4 will populate the feasibility fields with real heuristic output. Stubbed
-      // pass-through values keep the OpenAPI-required fields satisfied without changing
-      // tier behavior - score 100 / tier "pass" means nothing gets blocked yet.
-      ideaScore: 100,
-      ideaScoreTier: "pass",
-      mismatchReasons: [] as string[],
+      ideaScore,
+      ideaScoreTier,
+      mismatchReasons,
       archetype: {
-        implied: { scope: "indie" },
-        achievable: { scope: "indie" },
+        implied: { scope: metadata.impliedScope },
+        achievable: { scope: metadata.achievableScope },
       },
-      projectMode: "single_player",
-      feasibilityOverridden: false,
+      projectMode: metadata.projectMode,
+      feasibilityOverridden: input.adviseAnyway === true && ideaScoreTier === "block",
     };
 
     const [session] = await db
