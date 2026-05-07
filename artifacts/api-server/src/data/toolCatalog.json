@@ -1,0 +1,3479 @@
+[
+  {
+    "id": "bevy",
+    "name": "Bevy",
+    "category": "game_engine",
+    "description": "Modern open-source Rust game engine built around ECS architecture. High performance and strong systems-level control for teams comfortable with Rust.",
+    "bestUseCase": "Performance-critical games.",
+    "supportedPlatforms": [
+      "pc",
+      "web",
+      "mobile"
+    ],
+    "pricing": "open_source",
+    "difficultyLevel": "advanced",
+    "beginnerSuitability": 25,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "High performance ECS",
+      "Rust safety guarantees",
+      "Modern architecture",
+      "Open-source community"
+    ],
+    "cons": [
+      "Young ecosystem",
+      "Steeper learning curve",
+      "Tooling still maturing"
+    ],
+    "alternatives": [
+      "unity",
+      "unreal_engine",
+      "godot"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://bevyengine.org"
+  },
+  {
+    "id": "cocos_creator",
+    "name": "Cocos Creator",
+    "category": "game_engine",
+    "description": "Open-source engine focused on 2D and lightweight 3D with a component workflow and TypeScript scripting. Popular for mobile and web games, especially in Asia.",
+    "bestUseCase": "Mobile games.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "web"
+    ],
+    "pricing": "open_source",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Strong mobile performance",
+      "TypeScript-first workflow",
+      "Good 2D tooling",
+      "Open-source core"
+    ],
+    "cons": [
+      "Smaller Western community",
+      "Less AAA 3D tooling",
+      "Plugin ecosystem smaller than Unity"
+    ],
+    "alternatives": [
+      "unity",
+      "unreal_engine",
+      "godot"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://www.cocos.com/en/creator"
+  },
+  {
+    "id": "construct_3",
+    "name": "Construct 3",
+    "category": "game_engine",
+    "description": "Browser-based no-code/low-code 2D game engine with event-sheet scripting. Fast onboarding for non-programmers and educators with web-first deployment.",
+    "bestUseCase": "Beginner projects.",
+    "supportedPlatforms": [
+      "web",
+      "mobile",
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 90,
+    "teamSizeFit": [
+      "solo",
+      "small"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "casual",
+      "arcade",
+      "adventure",
+      "strategy"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "Very beginner-friendly",
+      "No-code event system",
+      "Runs in browser",
+      "Fast 2D prototyping"
+    ],
+    "cons": [
+      "Subscription cost",
+      "Limited for complex architecture",
+      "Less flexibility than code-heavy engines"
+    ],
+    "alternatives": [
+      "unity",
+      "unreal_engine",
+      "godot"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://www.construct.net"
+  },
+  {
+    "id": "defold",
+    "name": "Defold",
+    "category": "game_engine",
+    "description": "Lightweight free engine with Lua scripting and strong 2D capabilities. Uses a component-based architecture and supports native, web, and mobile exports.",
+    "bestUseCase": "2d games.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "web"
+    ],
+    "pricing": "free",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "casual",
+      "arcade",
+      "adventure",
+      "strategy"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "Fast iteration",
+      "Small runtime footprint",
+      "Friendly editor",
+      "No royalties"
+    ],
+    "cons": [
+      "Smaller asset ecosystem",
+      "Limited high-end 3D workflows",
+      "Fewer third-party tutorials"
+    ],
+    "alternatives": [
+      "unity",
+      "unreal_engine",
+      "godot"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://defold.com"
+  },
+  {
+    "id": "gamemaker",
+    "name": "GameMaker",
+    "category": "game_engine",
+    "description": "Specialized 2D game engine with GML scripting. Used to make classics like Undertale and Hotline Miami. Fast prototyping, beginner-friendly.",
+    "bestUseCase": "2d games.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "web",
+      "console"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "casual",
+      "arcade",
+      "adventure",
+      "strategy"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "Purpose-built for 2D",
+      "GML is easy to learn",
+      "Fast iteration",
+      "Proven for commercial 2D hits",
+      "Good export options"
+    ],
+    "cons": [
+      "Not suited for 3D",
+      "Subscription required for commercial use",
+      "Less flexibility than general engines",
+      "GML not transferable"
+    ],
+    "alternatives": [
+      "unity",
+      "unreal_engine",
+      "godot"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://gamemaker.io"
+  },
+  {
+    "id": "godot",
+    "name": "Godot",
+    "category": "game_engine",
+    "description": "Free and open-source game engine with GDScript (Python-like) and C# support. Lightweight, excellent for 2D games, rapidly improving 3D pipeline.",
+    "bestUseCase": "2d games.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "web",
+      "console"
+    ],
+    "pricing": "open_source",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 90,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Completely free & open source",
+      "Lightweight & fast",
+      "Excellent 2D pipeline",
+      "Python-like GDScript easy to learn",
+      "No revenue royalties ever"
+    ],
+    "cons": [
+      "3D still maturing vs Unity/Unreal",
+      "Smaller community",
+      "Fewer third-party assets",
+      "Limited console support (needs platform SDK)"
+    ],
+    "alternatives": [
+      "unity",
+      "unreal_engine",
+      "gamemaker"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://godotengine.org"
+  },
+  {
+    "id": "love",
+    "name": "LOVE",
+    "category": "game_engine",
+    "description": "Minimal open-source 2D framework using Lua. Code-first approach with a very fast feedback loop and excellent fit for prototyping and game jams.",
+    "bestUseCase": "2d prototypes.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "web"
+    ],
+    "pricing": "open_source",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "casual",
+      "arcade",
+      "adventure",
+      "strategy"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "Very lightweight",
+      "Simple Lua API",
+      "Great for rapid prototyping",
+      "Strong jam community"
+    ],
+    "cons": [
+      "No built-in visual editor",
+      "Framework-level tooling",
+      "2D-focused only"
+    ],
+    "alternatives": [
+      "unity",
+      "unreal_engine",
+      "godot"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://love2d.org"
+  },
+  {
+    "id": "phaser",
+    "name": "Phaser",
+    "category": "game_engine",
+    "description": "HTML5 game framework for browser-based 2D games using JavaScript/TypeScript. Excellent for web-native games and game jams.",
+    "bestUseCase": "Browser games.",
+    "supportedPlatforms": [
+      "web"
+    ],
+    "pricing": "open_source",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "casual",
+      "arcade",
+      "adventure",
+      "strategy"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "Native web platform",
+      "JavaScript/TypeScript",
+      "No install required for players",
+      "Great for web monetization",
+      "Strong browser performance"
+    ],
+    "cons": [
+      "Web-only (no native mobile/desktop)",
+      "JavaScript can be slow vs native",
+      "Limited 3D support",
+      "No visual editor"
+    ],
+    "alternatives": [
+      "unity",
+      "unreal_engine",
+      "godot"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://phaser.io"
+  },
+  {
+    "id": "unity",
+    "name": "Unity",
+    "category": "game_engine",
+    "description": "The world's most popular cross-platform game engine, used for 2D, 3D, VR, and AR games. C# scripting, massive asset store, excellent beginner support.",
+    "bestUseCase": "Mobile games.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "web",
+      "console",
+      "vr"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Massive community & tutorials",
+      "Huge Asset Store",
+      "Excellent cross-platform support",
+      "Strong 2D and 3D pipeline",
+      "Visual scripting available"
+    ],
+    "cons": [
+      "Performance overhead vs native engines",
+      "Licensing costs at scale",
+      "Complex build pipeline",
+      "Runtime fee controversy"
+    ],
+    "alternatives": [
+      "unreal_engine",
+      "godot",
+      "gamemaker"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://unity.com"
+  },
+  {
+    "id": "unreal_engine",
+    "name": "Unreal Engine",
+    "category": "game_engine",
+    "description": "AAA-quality 3D game engine by Epic Games. Industry standard for realistic graphics, large-scale games, and cinematics. Blueprints + C++ workflow.",
+    "bestUseCase": "3d games.",
+    "supportedPlatforms": [
+      "pc",
+      "console",
+      "mobile",
+      "vr"
+    ],
+    "pricing": "free",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 40,
+    "teamSizeFit": [
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "Photorealistic graphics out of the box",
+      "Nanite & Lumen rendering",
+      "Blueprint visual scripting",
+      "Free until $1M revenue",
+      "AAA studio standard"
+    ],
+    "cons": [
+      "Steep learning curve",
+      "Heavy resource requirements",
+      "Complex project setup",
+      "Overkill for simple 2D games"
+    ],
+    "alternatives": [
+      "unity",
+      "godot",
+      "gamemaker"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://unrealengine.com"
+  },
+  {
+    "id": "jetbrains_intellij",
+    "name": "IntelliJ IDEA",
+    "category": "ide",
+    "description": "JetBrains IDE focused on JVM and polyglot development with top-tier navigation, inspections, and plugin extensibility.",
+    "bestUseCase": "Tooling, backend, and pipeline development for game projects that use JVM ecosystems.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Best-in-class code navigation",
+      "Rich plugin ecosystem",
+      "Strong refactoring tools",
+      "Good polyglot support"
+    ],
+    "cons": [
+      "Can feel heavy for small scripts",
+      "Paid Ultimate features for advanced use"
+    ],
+    "alternatives": [
+      "vs_code",
+      "visual_studio",
+      "rider"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://www.jetbrains.com/idea"
+  },
+  {
+    "id": "rider",
+    "name": "JetBrains Rider",
+    "category": "ide",
+    "description": "Cross-platform .NET and C# IDE with strong refactoring, Unity support, and code analysis designed for professional workflows.",
+    "bestUseCase": "Unity and .NET teams that want fast navigation, static analysis, and robust refactoring.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 55,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Excellent code intelligence",
+      "Strong Unity support",
+      "Cross-platform",
+      "Powerful refactoring"
+    ],
+    "cons": [
+      "Subscription cost",
+      "Higher memory usage than lightweight editors"
+    ],
+    "alternatives": [
+      "vs_code",
+      "visual_studio",
+      "jetbrains_intellij"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://www.jetbrains.com/rider"
+  },
+  {
+    "id": "sublime_text",
+    "name": "Sublime Text",
+    "category": "ide",
+    "description": "Fast, lightweight text editor with extensibility and multi-cursor editing suited to scripting and quick code changes.",
+    "bestUseCase": "Rapid editing for scripts, config files, and lightweight game tooling workflows.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Very fast startup and editing",
+      "Great multi-cursor tools",
+      "Clean minimalist interface",
+      "Cross-platform"
+    ],
+    "cons": [
+      "Not a full IDE out of the box",
+      "Some advanced features require plugins"
+    ],
+    "alternatives": [
+      "vs_code",
+      "visual_studio",
+      "rider"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://www.sublimetext.com"
+  },
+  {
+    "id": "visual_studio",
+    "name": "Visual Studio",
+    "category": "ide",
+    "description": "Full-featured Microsoft IDE with deep C# and C++ tooling, advanced debugging, profiling, and native Unity workflows.",
+    "bestUseCase": "Large C# or C++ game codebases on Windows with strong debugging requirements.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 55,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Excellent debugger",
+      "Strong C# and C++ support",
+      "Mature profiler tooling",
+      "Unity integration"
+    ],
+    "cons": [
+      "Heavy install footprint",
+      "Best experience is Windows-centric"
+    ],
+    "alternatives": [
+      "vs_code",
+      "rider",
+      "jetbrains_intellij"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://visualstudio.microsoft.com"
+  },
+  {
+    "id": "vs_code",
+    "name": "Visual Studio Code",
+    "category": "ide",
+    "description": "Free, extensible code editor with first-class TypeScript and C# support, debugging, and a deep extension marketplace.",
+    "bestUseCase": "General-purpose IDE for game logic, scripts, and tooling across all engines.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "free",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 90,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Free",
+      "Huge extension ecosystem",
+      "Cross-platform",
+      "First-class git integration"
+    ],
+    "cons": [
+      "Heavier than minimal editors",
+      "Telemetry on by default"
+    ],
+    "alternatives": [
+      "visual_studio",
+      "rider",
+      "jetbrains_intellij"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://code.visualstudio.com"
+  },
+  {
+    "id": "diversion",
+    "name": "Diversion",
+    "category": "version_control",
+    "description": "Game-focused source control aimed at artist-friendly binary workflows and simpler collaboration UX than traditional Git setups.",
+    "bestUseCase": "Small game teams.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Artist-friendly workflow",
+      "Simplified setup",
+      "Built for game assets"
+    ],
+    "cons": [
+      "Newer ecosystem",
+      "Smaller community",
+      "Fewer mature integrations"
+    ],
+    "alternatives": [
+      "git_github",
+      "plastic_scm",
+      "perforce_helix_core"
+    ],
+    "phase": [
+      "version_control"
+    ],
+    "website": "https://www.diversion.dev"
+  },
+  {
+    "id": "git_github",
+    "name": "Git + GitHub",
+    "category": "version_control",
+    "description": "The standard version control system for code. GitHub provides hosting, pull requests, and CI/CD integrations.",
+    "bestUseCase": "Code versioning.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Industry standard",
+      "Free for small teams",
+      "Massive ecosystem",
+      "Great for code",
+      "GitHub Actions CI/CD"
+    ],
+    "cons": [
+      "Poor at handling large binary files (art, audio)",
+      "Need Git LFS for binaries (extra cost)",
+      "Command line can be daunting for beginners"
+    ],
+    "alternatives": [
+      "plastic_scm",
+      "perforce_helix_core",
+      "gitlab"
+    ],
+    "phase": [
+      "version_control"
+    ],
+    "website": "https://github.com"
+  },
+  {
+    "id": "gitlab",
+    "name": "GitLab",
+    "category": "version_control",
+    "description": "Git hosting platform with integrated CI/CD, issue tracking, and self-hosting options. Useful for teams needing all-in-one DevOps workflows.",
+    "bestUseCase": "Devops workflows.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Integrated CI/CD",
+      "Self-hosting available",
+      "Strong project management tooling"
+    ],
+    "cons": [
+      "Git binary limitations still apply",
+      "Can be heavy to administer self-hosted"
+    ],
+    "alternatives": [
+      "git_github",
+      "plastic_scm",
+      "perforce_helix_core"
+    ],
+    "phase": [
+      "version_control"
+    ],
+    "website": "https://gitlab.com"
+  },
+  {
+    "id": "perforce_helix_core",
+    "name": "Perforce Helix Core",
+    "category": "version_control",
+    "description": "Enterprise version control system widely used in AAA game studios for very large binary assets and multi-site collaboration.",
+    "bestUseCase": "Aaa teams.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "advanced",
+    "beginnerSuitability": 15,
+    "teamSizeFit": [
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Excellent large binary handling",
+      "Scales to massive depots",
+      "Strong permissions/workflow controls"
+    ],
+    "cons": [
+      "Operational complexity",
+      "Infrastructure/admin overhead",
+      "Cost at scale"
+    ],
+    "alternatives": [
+      "git_github",
+      "plastic_scm",
+      "gitlab"
+    ],
+    "phase": [
+      "version_control"
+    ],
+    "website": "https://www.perforce.com/products/helix-core"
+  },
+  {
+    "id": "plastic_scm",
+    "name": "Plastic SCM (Unity DevOps)",
+    "category": "version_control",
+    "description": "Version control designed for game development with large binary file support. Now integrated into Unity DevOps.",
+    "bestUseCase": "Unity projects.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Handles large binary files natively",
+      "Good GUI",
+      "Designed for game teams",
+      "Branch and merge for artists"
+    ],
+    "cons": [
+      "Learning curve",
+      "Cost at scale",
+      "Unity ecosystem only effectively"
+    ],
+    "alternatives": [
+      "git_github",
+      "perforce_helix_core",
+      "gitlab"
+    ],
+    "phase": [
+      "version_control"
+    ],
+    "website": "https://unity.com/products/plastic-scm"
+  },
+  {
+    "id": "adobe_photoshop",
+    "name": "Adobe Photoshop",
+    "category": "art_asset_creation",
+    "subcategory": "2d_art",
+    "description": "Industry-standard raster image editor. Used for texture creation, UI assets, concept art, and post-processing.",
+    "bestUseCase": "Texture creation.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Industry standard",
+      "Extensive features",
+      "Great for textures and UI",
+      "PSD file compatibility everywhere"
+    ],
+    "cons": [
+      "Expensive subscription",
+      "Heavy software",
+      "Overkill for pixel art",
+      "Not 3D"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "krita"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://adobe.com/photoshop"
+  },
+  {
+    "id": "after_effects",
+    "name": "After Effects",
+    "category": "art_asset_creation",
+    "subcategory": "vfx",
+    "description": "Adobe's motion graphics and compositing tool. Used for cinematic cutscene VFX and UI animations. Not real-time but exports to sprite sheets.",
+    "bestUseCase": "Cutscenes.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "narrative",
+      "casual",
+      "arcade",
+      "adventure"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "Industry-standard motion graphics",
+      "Sprite sheet export plugins",
+      "Huge tutorial library"
+    ],
+    "cons": [
+      "Not real-time",
+      "Expensive subscription",
+      "Requires export to use in engine"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://adobe.com/after-effects"
+  },
+  {
+    "id": "aseprite",
+    "name": "Aseprite",
+    "category": "art_asset_creation",
+    "subcategory": "2d_art",
+    "description": "The industry-standard pixel art and animation tool for game developers. Tilemaps, spritesheet export, frame-by-frame animation.",
+    "bestUseCase": "Pixel art games.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "narrative",
+      "casual",
+      "arcade",
+      "adventure"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "Purpose-built for pixel art",
+      "Excellent animation workflow",
+      "Tilemap support",
+      "Sprite sheet export",
+      "Affordable one-time price"
+    ],
+    "cons": [
+      "Pixel art only (no vector or raster painting)",
+      "Niche tool",
+      "One-time purchase (~$20)"
+    ],
+    "alternatives": [
+      "blender",
+      "adobe_photoshop",
+      "krita"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://aseprite.org"
+  },
+  {
+    "id": "autodesk_maya",
+    "name": "Autodesk Maya",
+    "category": "art_asset_creation",
+    "subcategory": "3d_modelling",
+    "description": "Comprehensive DCC suite for 3D modeling, rigging, and pipeline integration. Widely used in AAA and studio production environments.",
+    "bestUseCase": "Aaa pipelines.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "advanced",
+    "beginnerSuitability": 25,
+    "teamSizeFit": [
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "Studio-standard pipeline tool",
+      "Strong rigging and modeling",
+      "Deep scripting support"
+    ],
+    "cons": [
+      "High subscription cost",
+      "Steep learning curve",
+      "Heavy software footprint"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://www.autodesk.com/products/maya"
+  },
+  {
+    "id": "blender",
+    "name": "Blender",
+    "category": "art_asset_creation",
+    "subcategory": "3d_modelling",
+    "description": "Free open-source 3D modeling, rigging, animation, and rendering suite. Used by indie studios worldwide for game assets.",
+    "bestUseCase": "3d game assets.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "open_source",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "Completely free",
+      "Full 3D pipeline (model, rig, animate, render)",
+      "Strong community",
+      "Game asset export (FBX, GLTF)",
+      "Continuous improvements"
+    ],
+    "cons": [
+      "Steep learning curve",
+      "Not optimized for game-real-time workflows",
+      "Can be slow for very large assets"
+    ],
+    "alternatives": [
+      "aseprite",
+      "adobe_photoshop",
+      "krita"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://blender.org"
+  },
+  {
+    "id": "cascadeur",
+    "name": "Cascadeur",
+    "category": "art_asset_creation",
+    "subcategory": "animation",
+    "description": "3D keyframe animation software with physics-assisted posing and auto-physics features. Useful for more natural character motion without full mocap sessions.",
+    "bestUseCase": "Character animation.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "Physics-assisted posing",
+      "Good for action animation",
+      "Indie-accessible pricing"
+    ],
+    "cons": [
+      "Narrow focus vs full DCC tools",
+      "Pipeline integration setup required"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://cascadeur.com"
+  },
+  {
+    "id": "dragonbones",
+    "name": "DragonBones",
+    "category": "art_asset_creation",
+    "subcategory": "animation",
+    "description": "Free 2D skeletal animation tool similar to Spine. Good for mobile game character animation with engine integrations.",
+    "bestUseCase": "2d animation.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "free",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "narrative",
+      "casual",
+      "arcade",
+      "adventure"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "Free alternative to Spine",
+      "Good engine integrations",
+      "Active development"
+    ],
+    "cons": [
+      "Less community support than Spine",
+      "Fewer tutorials",
+      "Documentation quality varies"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "http://dragonbones.com"
+  },
+  {
+    "id": "embergen",
+    "name": "EmberGen",
+    "category": "art_asset_creation",
+    "subcategory": "vfx",
+    "description": "Real-time volumetric fluid and smoke simulation tool used to author explosions, fire, and clouds. Exports baked assets for engine use.",
+    "bestUseCase": "Explosions.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "Fast real-time iteration",
+      "High-quality volumetrics",
+      "Good export options for games"
+    ],
+    "cons": [
+      "Specialized scope",
+      "Paid license",
+      "Requires integration into engine pipeline"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://jangafx.com/software/embergen"
+  },
+  {
+    "id": "godot_control_nodes",
+    "name": "Godot Control Nodes",
+    "category": "art_asset_creation",
+    "subcategory": "ui",
+    "description": "Godot's built-in UI system using Control nodes in the scene tree. Straightforward, integrated with everything Godot.",
+    "bestUseCase": "Godot projects.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "web"
+    ],
+    "pricing": "open_source",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Deeply integrated with Godot",
+      "Theme system",
+      "Responsive layout",
+      "Easy to learn"
+    ],
+    "cons": [
+      "Godot-only",
+      "Less powerful than web-based UI solutions"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://godotengine.org"
+  },
+  {
+    "id": "godot_particles",
+    "name": "Godot Particles",
+    "category": "art_asset_creation",
+    "subcategory": "vfx",
+    "description": "Godot's built-in particle system for 2D and 3D effects. CPU and GPU modes available, integrated with Godot's scene system.",
+    "bestUseCase": "2d vfx.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "web"
+    ],
+    "pricing": "open_source",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "Built into Godot",
+      "Easy to use",
+      "CPU and GPU modes",
+      "Good for indie games"
+    ],
+    "cons": [
+      "Less powerful than Unity VFX Graph",
+      "Limited shader customization"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://godotengine.org"
+  },
+  {
+    "id": "houdini",
+    "name": "Houdini",
+    "category": "art_asset_creation",
+    "subcategory": "vfx",
+    "description": "Procedural 3D and VFX suite used for advanced simulations, destruction, and technical art pipelines. Houdini Engine enables integration into game editors.",
+    "bestUseCase": "Technical art.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "advanced",
+    "beginnerSuitability": 10,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "Best-in-class procedural workflows",
+      "Advanced simulation tools",
+      "Scales to complex production"
+    ],
+    "cons": [
+      "Very steep learning curve",
+      "High complexity",
+      "Expensive for small teams"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://www.sidefx.com/products/houdini"
+  },
+  {
+    "id": "krita",
+    "name": "Krita",
+    "category": "art_asset_creation",
+    "subcategory": "2d_art",
+    "description": "Free open-source digital painting application. Great for concept art, textures, and 2D game art with a professional brush engine.",
+    "bestUseCase": "Concept art.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "open_source",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "narrative",
+      "casual",
+      "arcade",
+      "adventure"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "Free and open source",
+      "Excellent brush engine",
+      "Good for concept art and textures",
+      "Animation support"
+    ],
+    "cons": [
+      "Less industry recognition than Photoshop",
+      "Fewer plugins",
+      "UI can feel dated"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://krita.org"
+  },
+  {
+    "id": "live2d_cubism",
+    "name": "Live2D Cubism",
+    "category": "art_asset_creation",
+    "subcategory": "animation",
+    "description": "2D mesh deformation and rigging system used for anime-style character motion. Common in visual novels, mobile RPGs, and VTuber-adjacent workflows.",
+    "bestUseCase": "Visual novels.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "web"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "narrative",
+      "casual",
+      "arcade",
+      "adventure"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "High-quality 2D character motion",
+      "Efficient runtime output",
+      "Strong stylized character support"
+    ],
+    "cons": [
+      "Specialized workflow",
+      "License cost",
+      "Learning curve for rig structure"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://www.live2d.com/en/cubism"
+  },
+  {
+    "id": "mixamo",
+    "name": "Mixamo",
+    "category": "art_asset_creation",
+    "subcategory": "animation",
+    "description": "Adobe service for automatic character rigging and a large library of mocap animations. Speeds up prototyping and placeholder animation work.",
+    "bestUseCase": "Prototype animation.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "free",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "Fast auto-rigging",
+      "Large animation library",
+      "Great prototyping speed"
+    ],
+    "cons": [
+      "Generic motion style",
+      "Limited deep customization",
+      "External workflow step"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://www.mixamo.com"
+  },
+  {
+    "id": "niagara_ue5",
+    "name": "Niagara (UE5)",
+    "category": "art_asset_creation",
+    "subcategory": "vfx",
+    "description": "Unreal Engine 5's advanced node-based VFX framework for particles, simulations, and gameplay-reactive effects. Built for high-fidelity real-time visuals.",
+    "bestUseCase": "Unreal projects.",
+    "supportedPlatforms": [
+      "pc",
+      "console",
+      "mobile",
+      "vr"
+    ],
+    "pricing": "free",
+    "difficultyLevel": "advanced",
+    "beginnerSuitability": 25,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "Deep UE5 integration",
+      "Powerful data-driven effects",
+      "AAA-quality real-time visuals"
+    ],
+    "cons": [
+      "Complex system",
+      "Heavy for simple projects",
+      "UE-focused workflow"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://www.unrealengine.com"
+  },
+  {
+    "id": "noesisgui",
+    "name": "NoesisGUI",
+    "category": "art_asset_creation",
+    "subcategory": "ui",
+    "description": "XAML-based retained-mode UI middleware for games with strong runtime performance and tooling. Used when teams want scalable app-like UI patterns in games.",
+    "bestUseCase": "Complex hud.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "console"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "advanced",
+    "beginnerSuitability": 25,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "High-performance runtime UI",
+      "Powerful data binding",
+      "Scalable for complex HUD/menu systems"
+    ],
+    "cons": [
+      "License cost",
+      "Advanced setup",
+      "Smaller community than engine-native UI"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://www.noesisengine.com"
+  },
+  {
+    "id": "procreate",
+    "name": "Procreate",
+    "category": "art_asset_creation",
+    "subcategory": "2d_art",
+    "description": "iPad-first digital painting app popular for concept sketches, UI mockups, and stylized 2D art ideation. Fast and intuitive for portable workflows.",
+    "bestUseCase": "Concept sketches.",
+    "supportedPlatforms": [
+      "mobile"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "narrative",
+      "casual",
+      "arcade",
+      "adventure"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "Very approachable UX",
+      "Strong brush engine",
+      "Great for ideation on the go"
+    ],
+    "cons": [
+      "iPad-only",
+      "Not a full pipeline suite",
+      "Limited advanced production tooling"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://procreate.com"
+  },
+  {
+    "id": "pyxel_edit",
+    "name": "Pyxel Edit",
+    "category": "art_asset_creation",
+    "subcategory": "2d_art",
+    "description": "Tile-focused pixel art editor built for fast environment and tileset creation. Popular in retro and top-down indie projects.",
+    "bestUseCase": "Tilemap production.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "narrative",
+      "casual",
+      "arcade",
+      "adventure"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "Great tilemap workflow",
+      "Simple focused UI",
+      "Good for environment art"
+    ],
+    "cons": [
+      "Narrow scope vs Aseprite",
+      "Smaller community",
+      "Limited non-pixel use"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://pyxeledit.com"
+  },
+  {
+    "id": "rive",
+    "name": "Rive",
+    "category": "art_asset_creation",
+    "subcategory": "ui",
+    "description": "Real-time interactive animation and UI tool for runtime motion graphics. Useful for polished menus, onboarding flows, and animated HUD elements.",
+    "bestUseCase": "Animated ui.",
+    "supportedPlatforms": [
+      "web",
+      "mobile",
+      "pc"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Interactive runtime animation",
+      "Compact vector-based assets",
+      "Good cross-platform runtimes"
+    ],
+    "cons": [
+      "Extra integration step",
+      "Advanced states require planning"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://rive.app"
+  },
+  {
+    "id": "spine",
+    "name": "Spine",
+    "category": "art_asset_creation",
+    "subcategory": "animation",
+    "description": "Professional 2D skeletal animation tool widely used in game development. Runtime available for Unity, Godot, and more.",
+    "bestUseCase": "2d character animation.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "puzzle",
+      "platformer",
+      "narrative",
+      "casual",
+      "arcade",
+      "adventure"
+    ],
+    "fit2d3d": "2d",
+    "pros": [
+      "Industry standard 2D skeletal animation",
+      "Runtime available for major engines",
+      "Powerful mesh deformation",
+      "Smooth animations with small file sizes"
+    ],
+    "cons": [
+      "Significant cost (~$100-300)",
+      "Learning curve for advanced features",
+      "Runtime integrations require setup"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "http://esotericsoftware.com"
+  },
+  {
+    "id": "substance_designer",
+    "name": "Substance Designer",
+    "category": "art_asset_creation",
+    "subcategory": "texturing",
+    "description": "Node-based procedural material authoring tool for creating reusable PBR materials. Widely used in production pipelines for scalable asset generation.",
+    "bestUseCase": "Material libraries.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "advanced",
+    "beginnerSuitability": 25,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "Procedural reusable materials",
+      "Powerful node workflows",
+      "Pipeline-friendly outputs"
+    ],
+    "cons": [
+      "Steep learning curve",
+      "Best value in larger pipelines",
+      "Subscription cost"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://www.adobe.com/products/substance3d-designer.html"
+  },
+  {
+    "id": "substance_painter",
+    "name": "Substance Painter",
+    "category": "art_asset_creation",
+    "subcategory": "texturing",
+    "description": "Industry-standard texture painting suite for PBR materials on 3D assets. Offers real-time viewport feedback and exports tuned for major engines.",
+    "bestUseCase": "3d texturing.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "Excellent PBR workflow",
+      "Smart masks and materials",
+      "Strong engine export presets"
+    ],
+    "cons": [
+      "Subscription/license cost",
+      "Focused on texturing only",
+      "Requires solid UV workflow"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://www.adobe.com/products/substance3d-painter.html"
+  },
+  {
+    "id": "unity_ui_toolkit",
+    "name": "Unity UI Toolkit",
+    "category": "art_asset_creation",
+    "subcategory": "ui",
+    "description": "Unity's modern UI system using UXML/USS (similar to HTML/CSS). Best for complex, scalable game UI and tooling.",
+    "bestUseCase": "Complex game ui.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "console"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Modern declarative UI",
+      "CSS-like styling",
+      "Good for complex UI",
+      "Editor tool UI built with it too"
+    ],
+    "cons": [
+      "Newer system with some gaps",
+      "Learning curve for traditional game devs",
+      "3D world-space UI needs workarounds"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://unity.com"
+  },
+  {
+    "id": "unity_vfx_graph",
+    "name": "Unity VFX Graph",
+    "category": "art_asset_creation",
+    "subcategory": "vfx",
+    "description": "Node-based visual effects editor for Unity's High Definition and Universal Render Pipelines. GPU-accelerated particle systems.",
+    "bestUseCase": "3d vfx.",
+    "supportedPlatforms": [
+      "pc",
+      "console"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "GPU-accelerated",
+      "Node-based (no code)",
+      "Extremely powerful",
+      "Integrates with Unity render pipelines"
+    ],
+    "cons": [
+      "Requires HDRP or URP",
+      "Not mobile-friendly",
+      "Steep learning curve",
+      "Heavy GPU requirements"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://unity.com"
+  },
+  {
+    "id": "zbrush",
+    "name": "ZBrush",
+    "category": "art_asset_creation",
+    "subcategory": "3d_modelling",
+    "description": "Digital sculpting package used for high-detail character and creature creation. Commonly used to produce high-poly sculpts for bake-down game assets.",
+    "bestUseCase": "Character sculpting.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "advanced",
+    "beginnerSuitability": 25,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "shooter",
+      "racing",
+      "simulation",
+      "horror"
+    ],
+    "fit2d3d": "3d",
+    "pros": [
+      "Best-in-class sculpting",
+      "Handles dense meshes",
+      "Production-proven character pipeline"
+    ],
+    "cons": [
+      "Unique UI paradigm",
+      "Steep learning curve",
+      "Requires retopo/baking workflow"
+    ],
+    "alternatives": [
+      "aseprite",
+      "blender",
+      "adobe_photoshop"
+    ],
+    "phase": [
+      "art_assets"
+    ],
+    "website": "https://www.maxon.net/zbrush"
+  },
+  {
+    "id": "audacity",
+    "name": "Audacity",
+    "category": "audio",
+    "description": "Free open-source audio editor for waveform editing, cleanup, and quick mastering tasks. Useful for indie teams handling simple sound effects and voice prep.",
+    "bestUseCase": "Voice cleanup.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "open_source",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 90,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Free and open source",
+      "Simple editing workflow",
+      "Good for quick cleanup tasks"
+    ],
+    "cons": [
+      "Not a full production DAW",
+      "Limited advanced workflow automation",
+      "UI can feel basic"
+    ],
+    "alternatives": [
+      "fmod_studio",
+      "wwise",
+      "reaper"
+    ],
+    "phase": [
+      "audio"
+    ],
+    "website": "https://www.audacityteam.org"
+  },
+  {
+    "id": "bfxr",
+    "name": "BFXR",
+    "category": "audio",
+    "description": "Retro sound effect generator focused on quick arcade-style bleeps, impacts, and UI cues. Commonly used in game jams and pixel-art projects.",
+    "bestUseCase": "Game jams.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "free",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Very fast SFX generation",
+      "Great for retro styles",
+      "Beginner-friendly workflow"
+    ],
+    "cons": [
+      "Narrow stylistic range",
+      "Limited realism",
+      "Simple feature set"
+    ],
+    "alternatives": [
+      "fmod_studio",
+      "wwise",
+      "audacity"
+    ],
+    "phase": [
+      "audio"
+    ],
+    "website": "https://www.bfxr.net"
+  },
+  {
+    "id": "eleven_labs_tts",
+    "name": "Eleven Labs TTS",
+    "category": "audio",
+    "description": "Text-to-speech platform for generating narration and character voice placeholders with expressive output. Useful for iterating dialogue timing before final recording.",
+    "bestUseCase": "Narration prototypes.",
+    "supportedPlatforms": [
+      "web",
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "High-quality voice generation",
+      "Fast iteration on script changes",
+      "Good for prototype VO"
+    ],
+    "cons": [
+      "Ongoing subscription cost",
+      "Rights/compliance checks required",
+      "Final polish may need manual editing"
+    ],
+    "alternatives": [
+      "fmod_studio",
+      "wwise",
+      "audacity"
+    ],
+    "phase": [
+      "audio"
+    ],
+    "website": "https://elevenlabs.io"
+  },
+  {
+    "id": "fmod_studio",
+    "name": "FMOD Studio",
+    "category": "audio",
+    "description": "Professional interactive audio middleware used to author adaptive music and sound behavior in games. Integrates with major engines and supports parameter-driven mixing.",
+    "bestUseCase": "Adaptive music.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "console",
+      "vr"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Mature interactive audio workflows",
+      "Strong engine integrations",
+      "Adaptive mixing support"
+    ],
+    "cons": [
+      "Learning curve for non-audio teams",
+      "License cost at scale",
+      "Middleware integration overhead"
+    ],
+    "alternatives": [
+      "wwise",
+      "audacity",
+      "reaper"
+    ],
+    "phase": [
+      "audio"
+    ],
+    "website": "https://www.fmod.com"
+  },
+  {
+    "id": "reaper",
+    "name": "Reaper",
+    "category": "audio",
+    "description": "Lightweight full-featured DAW widely used for game audio production and editing. Offers deep routing, scripting, and plugin support at a relatively low cost.",
+    "bestUseCase": "Sound design.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Powerful DAW features",
+      "Efficient performance",
+      "Strong plugin and scripting support"
+    ],
+    "cons": [
+      "UI less polished than some DAWs",
+      "Requires setup for optimal workflow",
+      "Audio-specialist learning curve"
+    ],
+    "alternatives": [
+      "fmod_studio",
+      "wwise",
+      "audacity"
+    ],
+    "phase": [
+      "audio"
+    ],
+    "website": "https://www.reaper.fm"
+  },
+  {
+    "id": "soundly",
+    "name": "Soundly",
+    "category": "audio",
+    "description": "Cloud-connected sound effects library and browsing tool designed for fast search and drag-drop workflow. Helps teams source and organize production-ready SFX quickly.",
+    "bestUseCase": "Sfx sourcing.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Fast SFX discovery",
+      "Large searchable library",
+      "Simple integration into editing workflows"
+    ],
+    "cons": [
+      "Subscription cost",
+      "Library dependence",
+      "Requires license management discipline"
+    ],
+    "alternatives": [
+      "fmod_studio",
+      "wwise",
+      "audacity"
+    ],
+    "phase": [
+      "audio"
+    ],
+    "website": "https://getsoundly.com"
+  },
+  {
+    "id": "suno_music",
+    "name": "Suno Music",
+    "category": "audio",
+    "description": "AI music generation tool for quickly drafting soundtrack ideas and mood references. Useful in early production for testing pacing and tone before bespoke composition.",
+    "bestUseCase": "Temp soundtrack.",
+    "supportedPlatforms": [
+      "web"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Rapid music concepting",
+      "Simple prompt workflow",
+      "Helpful for temporary tracks"
+    ],
+    "cons": [
+      "Limited arrangement control",
+      "Licensing review needed",
+      "Not a replacement for final composition in many projects"
+    ],
+    "alternatives": [
+      "fmod_studio",
+      "wwise",
+      "audacity"
+    ],
+    "phase": [
+      "audio"
+    ],
+    "website": "https://suno.com"
+  },
+  {
+    "id": "wwise",
+    "name": "Wwise",
+    "category": "audio",
+    "description": "Industry-standard game audio middleware for interactive music, voice, and effects with deep profiling tools. Common in mid-size and AAA production pipelines.",
+    "bestUseCase": "Aaa audio pipelines.",
+    "supportedPlatforms": [
+      "pc",
+      "mobile",
+      "console",
+      "vr"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "advanced",
+    "beginnerSuitability": 15,
+    "teamSizeFit": [
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Production-proven middleware",
+      "Advanced profiling and optimization",
+      "Scales well for large projects"
+    ],
+    "cons": [
+      "Complex setup",
+      "Steeper onboarding",
+      "License complexity for teams"
+    ],
+    "alternatives": [
+      "fmod_studio",
+      "audacity",
+      "reaper"
+    ],
+    "phase": [
+      "audio"
+    ],
+    "website": "https://www.audiokinetic.com/products/wwise"
+  },
+  {
+    "id": "chatgpt_gpt4",
+    "name": "ChatGPT / GPT-4",
+    "category": "ai_coding_assistant",
+    "description": "General-purpose AI assistant by OpenAI. Useful for game design brainstorming, dialog writing, game mechanics analysis, and code debugging.",
+    "bestUseCase": "Game design.",
+    "supportedPlatforms": [
+      "web"
+    ],
+    "pricing": "freemium",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Versatile: design, writing, code, analysis",
+      "Free tier available",
+      "Good at game design consulting",
+      "Explains complex concepts"
+    ],
+    "cons": [
+      "Not game-engine specific",
+      "Can hallucinate API details",
+      "Requires good prompting"
+    ],
+    "alternatives": [
+      "github_copilot",
+      "cursor",
+      "claude_code"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://chat.openai.com"
+  },
+  {
+    "id": "claude_code",
+    "name": "Claude Code",
+    "category": "ai_coding_assistant",
+    "description": "Agentic coding workflow centered on repository-aware planning and code edits. It is useful for larger refactors, debugging sessions, and implementation tasks that span multiple files.",
+    "bestUseCase": "Multi-file refactors.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Strong long-context reasoning",
+      "Good multi-file change support",
+      "Useful for architecture-level tasks"
+    ],
+    "cons": [
+      "Output still needs validation",
+      "Subscription cost",
+      "Quality varies by prompt precision"
+    ],
+    "alternatives": [
+      "github_copilot",
+      "chatgpt_gpt4",
+      "cursor"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://www.anthropic.com/claude-code"
+  },
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "category": "ai_coding_assistant",
+    "description": "AI-first code editor built on VS Code with context-aware code generation and refactoring workflows. Useful for rapid scripting, codebase navigation, and implementation planning in game projects.",
+    "bestUseCase": "Rapid prototyping.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Strong codebase-aware generation",
+      "Fast refactoring loops",
+      "Familiar editor UX"
+    ],
+    "cons": [
+      "Paid tier for advanced usage",
+      "Needs careful review of generated code",
+      "IDE migration overhead"
+    ],
+    "alternatives": [
+      "github_copilot",
+      "chatgpt_gpt4",
+      "claude_code"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://cursor.com"
+  },
+  {
+    "id": "github_copilot",
+    "name": "GitHub Copilot",
+    "category": "ai_coding_assistant",
+    "description": "AI pair programmer integrated into VS Code, Visual Studio, JetBrains IDEs. Autocompletes code, suggests implementations, writes tests.",
+    "bestUseCase": "Code generation.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Excellent code autocomplete",
+      "Works in your existing IDE",
+      "Speeds up boilerplate",
+      "Good at explaining code"
+    ],
+    "cons": [
+      "Monthly subscription cost",
+      "Can suggest incorrect code",
+      "Privacy concerns",
+      "Less useful for engine-specific patterns"
+    ],
+    "alternatives": [
+      "chatgpt_gpt4",
+      "cursor",
+      "claude_code"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://github.com/features/copilot"
+  },
+  {
+    "id": "windsurf",
+    "name": "Windsurf",
+    "category": "ai_coding_assistant",
+    "description": "AI coding environment with integrated chat and command-style editing workflows. It helps teams iterate on gameplay logic, utility scripts, and project tooling quickly.",
+    "bestUseCase": "Indie workflows.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Integrated AI editing flows",
+      "Fast coding iteration",
+      "Good for day-to-day developer productivity"
+    ],
+    "cons": [
+      "Subscription dependency",
+      "Requires prompt discipline",
+      "Feature set evolves quickly"
+    ],
+    "alternatives": [
+      "github_copilot",
+      "chatgpt_gpt4",
+      "cursor"
+    ],
+    "phase": [
+      "programming"
+    ],
+    "website": "https://windsurf.com"
+  },
+  {
+    "id": "apple_app_store",
+    "name": "Apple App Store",
+    "category": "deployment_publishing",
+    "description": "iOS and macOS app marketplace. Required for commercial iOS game distribution. Strict review process.",
+    "bestUseCase": "Ios games.",
+    "supportedPlatforms": [
+      "mobile"
+    ],
+    "pricing": "subscription",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "High-spending user base",
+      "Better security reputation",
+      "Mac + iOS unified distribution",
+      "Good discovery algorithms"
+    ],
+    "cons": [
+      "$99/year developer fee",
+      "Strict review guidelines",
+      "30% revenue cut",
+      "Requires Mac for builds"
+    ],
+    "alternatives": [
+      "steam",
+      "itch_io",
+      "google_play_store"
+    ],
+    "phase": [
+      "deployment_publishing"
+    ],
+    "website": "https://developer.apple.com"
+  },
+  {
+    "id": "crazygames",
+    "name": "CrazyGames",
+    "category": "deployment_publishing",
+    "description": "Web game platform for instant-play HTML5 games with built-in distribution and monetization opportunities. Strong for rapid browser game launches.",
+    "bestUseCase": "Html5 games.",
+    "supportedPlatforms": [
+      "web"
+    ],
+    "pricing": "free",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Fast web distribution",
+      "Large browser audience",
+      "Good fit for lightweight games"
+    ],
+    "cons": [
+      "Web-only constraints",
+      "Platform-specific monetization model",
+      "Short session focus"
+    ],
+    "alternatives": [
+      "steam",
+      "itch_io",
+      "google_play_store"
+    ],
+    "phase": [
+      "deployment_publishing"
+    ],
+    "website": "https://www.crazygames.com"
+  },
+  {
+    "id": "epic_games_store",
+    "name": "Epic Games Store",
+    "category": "deployment_publishing",
+    "description": "PC game storefront by Epic with favorable revenue share terms and growing audience. Includes developer portal tooling and store integrations.",
+    "bestUseCase": "Pc commercial releases.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Favorable revenue split",
+      "Strong PC audience",
+      "Epic ecosystem integration"
+    ],
+    "cons": [
+      "Smaller audience than Steam",
+      "Curation/release requirements",
+      "Lower discoverability tools"
+    ],
+    "alternatives": [
+      "steam",
+      "itch_io",
+      "google_play_store"
+    ],
+    "phase": [
+      "deployment_publishing"
+    ],
+    "website": "https://store.epicgames.com"
+  },
+  {
+    "id": "gog_galaxy",
+    "name": "GOG Connect / GOG Galaxy",
+    "category": "deployment_publishing",
+    "description": "GOG distribution ecosystem focused on DRM-free PC releases and community trust. GOG Galaxy provides launcher and user account integration.",
+    "bestUseCase": "Premium pc games.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "DRM-free positioning",
+      "Loyal PC audience",
+      "Strong fit for premium titles"
+    ],
+    "cons": [
+      "Smaller install base than Steam",
+      "Selective onboarding",
+      "Fewer live-service features"
+    ],
+    "alternatives": [
+      "steam",
+      "itch_io",
+      "google_play_store"
+    ],
+    "phase": [
+      "deployment_publishing"
+    ],
+    "website": "https://www.gog.com"
+  },
+  {
+    "id": "google_play_store",
+    "name": "Google Play Store",
+    "category": "deployment_publishing",
+    "description": "Android's primary app and game marketplace. Required for commercial Android game distribution.",
+    "bestUseCase": "Android games.",
+    "supportedPlatforms": [
+      "mobile"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "2.5B Android users",
+      "Lower entry barrier than Apple",
+      "$25 one-time fee",
+      "Easier sideloading"
+    ],
+    "cons": [
+      "30% revenue cut (reduces to 15% over $1M)",
+      "Review process",
+      "Fragmented Android devices",
+      "More piracy than iOS"
+    ],
+    "alternatives": [
+      "steam",
+      "itch_io",
+      "apple_app_store"
+    ],
+    "phase": [
+      "deployment_publishing"
+    ],
+    "website": "https://play.google.com/console"
+  },
+  {
+    "id": "itch_io",
+    "name": "itch.io",
+    "category": "deployment_publishing",
+    "description": "Open indie game marketplace. Zero upfront cost, flexible revenue sharing, excellent for game jams and indie releases.",
+    "bestUseCase": "Game jams.",
+    "supportedPlatforms": [
+      "pc",
+      "web"
+    ],
+    "pricing": "free",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Free to publish",
+      "Flexible pricing (even free)",
+      "Great game jam community",
+      "Supports pay-what-you-want",
+      "Web game hosting"
+    ],
+    "cons": [
+      "Smaller audience than Steam",
+      "Less discovery infrastructure",
+      "No built-in DRM"
+    ],
+    "alternatives": [
+      "steam",
+      "google_play_store",
+      "apple_app_store"
+    ],
+    "phase": [
+      "deployment_publishing"
+    ],
+    "website": "https://itch.io"
+  },
+  {
+    "id": "poki",
+    "name": "Poki",
+    "category": "deployment_publishing",
+    "description": "Web game publishing platform with a focus on polished, quick-loading browser experiences. Offers access to a broad casual audience.",
+    "bestUseCase": "Casual web games.",
+    "supportedPlatforms": [
+      "web"
+    ],
+    "pricing": "free",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Large casual web audience",
+      "Web-focused distribution",
+      "Good for lightweight gameplay loops"
+    ],
+    "cons": [
+      "Web-only scope",
+      "Editorial acceptance requirements",
+      "Limited fit for deep premium games"
+    ],
+    "alternatives": [
+      "steam",
+      "itch_io",
+      "google_play_store"
+    ],
+    "phase": [
+      "deployment_publishing"
+    ],
+    "website": "https://poki.com"
+  },
+  {
+    "id": "steam",
+    "name": "Steam",
+    "category": "deployment_publishing",
+    "description": "The dominant PC gaming platform by Valve. Required for most commercial PC game releases. Steamworks SDK for DRM, achievements, leaderboards.",
+    "bestUseCase": "Pc games.",
+    "supportedPlatforms": [
+      "pc"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 50,
+    "teamSizeFit": [
+      "solo",
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Largest PC gaming marketplace",
+      "Built-in community features",
+      "Sales events driving huge revenue",
+      "Workshop modding support"
+    ],
+    "cons": [
+      "$100 one-time fee per game",
+      "30% revenue cut",
+      "Discovery can be difficult",
+      "Review process required"
+    ],
+    "alternatives": [
+      "itch_io",
+      "google_play_store",
+      "apple_app_store"
+    ],
+    "phase": [
+      "deployment_publishing"
+    ],
+    "website": "https://store.steampowered.com"
+  },
+  {
+    "id": "console_partner_portals",
+    "name": "Xbox / PlayStation / Nintendo Partner Portals",
+    "category": "deployment_publishing",
+    "description": "Official console publishing portals and certification pipelines for Xbox, PlayStation, and Nintendo platforms. Required path for commercial console releases.",
+    "bestUseCase": "Console launches.",
+    "supportedPlatforms": [
+      "console"
+    ],
+    "pricing": "paid",
+    "difficultyLevel": "advanced",
+    "beginnerSuitability": 25,
+    "teamSizeFit": [
+      "small",
+      "medium",
+      "large"
+    ],
+    "genreFit": [
+      "action",
+      "adventure",
+      "rpg",
+      "strategy",
+      "simulation",
+      "puzzle",
+      "platformer",
+      "shooter",
+      "racing",
+      "sports",
+      "horror",
+      "narrative",
+      "casual",
+      "arcade"
+    ],
+    "fit2d3d": "both",
+    "pros": [
+      "Required for console launch",
+      "Access to platform SDK and certification docs",
+      "First-party publishing support"
+    ],
+    "cons": [
+      "Strict certification requirements",
+      "Long lead times",
+      "Higher business/legal overhead"
+    ],
+    "alternatives": [
+      "steam",
+      "itch_io",
+      "google_play_store"
+    ],
+    "phase": [
+      "deployment_publishing"
+    ],
+    "website": "https://developer.microsoft.com/games"
+  }
+]
