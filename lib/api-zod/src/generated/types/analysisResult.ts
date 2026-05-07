@@ -11,7 +11,7 @@ import type { AnalysisResultProjectMode } from "./analysisResultProjectMode";
 import type { CategoryResults } from "./categoryResults";
 
 export interface AnalysisResult {
-  sessionId: number;
+  sessionId: string;
   projectSummary: string;
   detectedProjectType: string;
   /** Null when ideaScoreTier == 'block' and adviseAnyway is false */

@@ -8,7 +8,7 @@
 import type { Evidence } from "./evidence";
 
 export interface ToolRecommendation {
-  toolId: number;
+  toolId: string;
   toolName: string;
   /** Fit score 0-100 */
   score: number;

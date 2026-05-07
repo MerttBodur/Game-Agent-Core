@@ -7,7 +7,7 @@
  */
 
 export interface SessionSummary {
-  id: number;
+  id: string;
   projectIdea: string;
   detectedProjectType: string;
   stackOverview: string;

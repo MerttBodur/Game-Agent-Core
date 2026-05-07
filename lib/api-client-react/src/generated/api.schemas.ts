@@ -129,7 +129,7 @@ export interface Evidence {
 }
 
 export interface ToolRecommendation {
-  toolId: number;
+  toolId: string;
   toolName: string;
   /** Fit score 0-100 */
   score: number;
@@ -208,7 +208,7 @@ export const AnalysisResultProjectMode = {
 } as const;
 
 export interface AnalysisResult {
-  sessionId: number;
+  sessionId: string;
   projectSummary: string;
   detectedProjectType: string;
   /** Null when ideaScoreTier == 'block' and adviseAnyway is false */
@@ -228,7 +228,7 @@ export interface AnalysisResult {
 }
 
 export interface SessionSummary {
-  id: number;
+  id: string;
   projectIdea: string;
   detectedProjectType: string;
   stackOverview: string;
@@ -237,7 +237,7 @@ export interface SessionSummary {
 }
 
 export interface Session {
-  id: number;
+  id: string;
   projectInput: ProjectInput;
   result: AnalysisResult;
   createdAt: string;

@@ -9,7 +9,7 @@ import type { AnalysisResult } from "./analysisResult";
 import type { ProjectInput } from "./projectInput";
 
 export interface Session {
-  id: number;
+  id: string;
   projectInput: ProjectInput;
   result: AnalysisResult;
   createdAt: Date;

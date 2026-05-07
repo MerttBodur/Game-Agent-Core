@@ -58,7 +58,7 @@ export const AnalyzeProjectBody = zod.object({
 export const analyzeProjectResponseFeasibilityOverriddenDefault = false;
 
 export const AnalyzeProjectResponse = zod.object({
-  sessionId: zod.number(),
+  sessionId: zod.string(),
   projectSummary: zod.string(),
   detectedProjectType: zod.string(),
   categoryResults: zod
@@ -69,7 +69,7 @@ export const AnalyzeProjectResponse = zod.object({
             category: zod.string(),
             categoryLabel: zod.string(),
             topPick: zod.object({
-              toolId: zod.number(),
+              toolId: zod.string(),
               toolName: zod.string(),
               score: zod.number().describe("Fit score 0-100"),
               reasoning: zod.string().describe("Why this tool was recommended"),
@@ -99,7 +99,7 @@ export const AnalyzeProjectResponse = zod.object({
             }),
             alternatives: zod.array(
               zod.object({
-                toolId: zod.number(),
+                toolId: zod.string(),
                 toolName: zod.string(),
                 score: zod.number().describe("Fit score 0-100"),
                 reasoning: zod
@@ -138,7 +138,7 @@ export const AnalyzeProjectResponse = zod.object({
             category: zod.string(),
             categoryLabel: zod.string(),
             topPick: zod.object({
-              toolId: zod.number(),
+              toolId: zod.string(),
               toolName: zod.string(),
               score: zod.number().describe("Fit score 0-100"),
               reasoning: zod.string().describe("Why this tool was recommended"),
@@ -168,7 +168,7 @@ export const AnalyzeProjectResponse = zod.object({
             }),
             alternatives: zod.array(
               zod.object({
-                toolId: zod.number(),
+                toolId: zod.string(),
                 toolName: zod.string(),
                 score: zod.number().describe("Fit score 0-100"),
                 reasoning: zod
@@ -248,7 +248,7 @@ export const AnalyzeProjectResponse = zod.object({
  * @summary List recent analysis sessions
  */
 export const ListSessionsResponseItem = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   projectIdea: zod.string(),
   detectedProjectType: zod.string(),
   stackOverview: zod.string(),
@@ -261,13 +261,13 @@ export const ListSessionsResponse = zod.array(ListSessionsResponseItem);
  * @summary Get a specific analysis session
  */
 export const GetSessionParams = zod.object({
-  id: zod.coerce.number(),
+  id: zod.coerce.string(),
 });
 
 export const getSessionResponseResultFeasibilityOverriddenDefault = false;
 
 export const GetSessionResponse = zod.object({
-  id: zod.number(),
+  id: zod.string(),
   projectInput: zod.object({
     projectIdea: zod.string().describe("Description of the game project idea"),
     budget: zod
@@ -304,7 +304,7 @@ export const GetSessionResponse = zod.object({
       .describe("Set true to bypass block-tier early-return"),
   }),
   result: zod.object({
-    sessionId: zod.number(),
+    sessionId: zod.string(),
     projectSummary: zod.string(),
     detectedProjectType: zod.string(),
     categoryResults: zod
@@ -315,7 +315,7 @@ export const GetSessionResponse = zod.object({
               category: zod.string(),
               categoryLabel: zod.string(),
               topPick: zod.object({
-                toolId: zod.number(),
+                toolId: zod.string(),
                 toolName: zod.string(),
                 score: zod.number().describe("Fit score 0-100"),
                 reasoning: zod
@@ -347,7 +347,7 @@ export const GetSessionResponse = zod.object({
               }),
               alternatives: zod.array(
                 zod.object({
-                  toolId: zod.number(),
+                  toolId: zod.string(),
                   toolName: zod.string(),
                   score: zod.number().describe("Fit score 0-100"),
                   reasoning: zod
@@ -386,7 +386,7 @@ export const GetSessionResponse = zod.object({
               category: zod.string(),
               categoryLabel: zod.string(),
               topPick: zod.object({
-                toolId: zod.number(),
+                toolId: zod.string(),
                 toolName: zod.string(),
                 score: zod.number().describe("Fit score 0-100"),
                 reasoning: zod
@@ -418,7 +418,7 @@ export const GetSessionResponse = zod.object({
               }),
               alternatives: zod.array(
                 zod.object({
-                  toolId: zod.number(),
+                  toolId: zod.string(),
                   toolName: zod.string(),
                   score: zod.number().describe("Fit score 0-100"),
                   reasoning: zod

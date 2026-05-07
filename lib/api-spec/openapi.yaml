@@ -81,7 +81,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Session with full analysis result
@@ -245,7 +245,7 @@ components:
       type: object
       properties:
         toolId:
-          type: integer
+          type: string
         toolName:
           type: string
         score:
@@ -390,7 +390,7 @@ components:
       type: object
       properties:
         sessionId:
-          type: integer
+          type: string
         projectSummary:
           type: string
         detectedProjectType:
@@ -448,7 +448,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         projectIdea:
           type: string
         detectedProjectType:
@@ -472,7 +472,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         projectInput:
           $ref: "#/components/schemas/ProjectInput"
         result:

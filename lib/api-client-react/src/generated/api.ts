@@ -280,12 +280,12 @@ export function useListSessions<
 /**
  * @summary Get a specific analysis session
  */
-export const getGetSessionUrl = (id: number) => {
+export const getGetSessionUrl = (id: string) => {
   return `/api/advisor/sessions/${id}`;
 };
 
 export const getSession = async (
-  id: number,
+  id: string,
   options?: RequestInit,
 ): Promise<Session> => {
   return customFetch<Session>(getGetSessionUrl(id), {
@@ -294,7 +294,7 @@ export const getSession = async (
   });
 };
 
-export const getGetSessionQueryKey = (id: number) => {
+export const getGetSessionQueryKey = (id: string) => {
   return [`/api/advisor/sessions/${id}`] as const;
 };
 
@@ -302,7 +302,7 @@ export const getGetSessionQueryOptions = <
   TData = Awaited<ReturnType<typeof getSession>>,
   TError = ErrorType<ErrorResponse>,
 >(
-  id: number,
+  id: string,
   options?: {
     query?: UseQueryOptions<
       Awaited<ReturnType<typeof getSession>>,
@@ -345,7 +345,7 @@ export function useGetSession<
   TData = Awaited<ReturnType<typeof getSession>>,
   TError = ErrorType<ErrorResponse>,
 >(
-  id: number,
+  id: string,
   options?: {
     query?: UseQueryOptions<
       Awaited<ReturnType<typeof getSession>>,
