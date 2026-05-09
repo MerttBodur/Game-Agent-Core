@@ -1,4 +1,5 @@
 import { TOOL_CATALOG, TOOL_CATEGORIES } from "../lib/gameDevTools.js";
+import type { CandidateEntry, ToolRow } from "../types/agent.js";
 import type { PddCategory, ToolEntry } from "../types/pdd.js";
 import type { RetrievedContextPackage } from "../types/tree.js";
 
@@ -136,4 +137,56 @@ export function trustTierFor(score: number): "block" | "warn" | "pass" {
   if (score < TRUST_SCORE_BLOCK_THRESHOLD) return "block";
   if (score < 50) return "warn";
   return "pass";
+}
+
+export interface AgentScoredTool {
+  tool: ToolRow;
+  score: number;
+}
+
+export function scoreAgentCandidates(
+  inputs: ScoringInputs,
+  candidatesByCategory: Record<string, CandidateEntry>,
+): Record<string, AgentScoredTool[]> {
+  const scored: Record<string, AgentScoredTool[]> = {};
+
+  for (const [category, entry] of Object.entries(candidatesByCategory)) {
+    if (entry.type !== "fetched" && entry.type !== "context") {
+      continue;
+    }
+
+    scored[category] = entry.tools
+      .map((tool) => ({ tool, score: scoreAgentTool(tool, inputs) }))
+      .sort((a, b) => b.score - a.score);
+  }
+
+  return scored;
+}
+
+function scoreAgentTool(tool: ToolRow, inputs: ScoringInputs): number {
+  const priceScore = scoreAgentPrice(tool.priceModel, inputs.budget);
+  const platformScore = scoreAgentPlatform(tool.platforms, inputs.platformTarget);
+  const ratingScore = Math.max(0, Math.min(100, tool.rating * 20));
+
+  return Math.round(priceScore * 0.35 + platformScore * 0.35 + ratingScore * 0.3);
+}
+
+function scoreAgentPrice(priceModel: ToolRow["priceModel"], budget: string): number {
+  if (budget === "zero") {
+    return priceModel === "free" ? 100 : priceModel === "freemium" ? 70 : 20;
+  }
+  if (budget === "low") {
+    return priceModel === "free" ? 100 : priceModel === "freemium" ? 90 : 45;
+  }
+  return priceModel === "subscription" ? 75 : 90;
+}
+
+function scoreAgentPlatform(toolPlatforms: string[], targetPlatforms: string[]): number {
+  if (targetPlatforms.length === 0) {
+    return 50;
+  }
+
+  const supported = new Set(toolPlatforms.map((platform) => platform.toLowerCase()));
+  const matches = targetPlatforms.filter((platform) => supported.has(platform.toLowerCase())).length;
+  return Math.round((matches / targetPlatforms.length) * 100);
 }
