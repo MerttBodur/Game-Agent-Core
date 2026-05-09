@@ -72,7 +72,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   programming: "Programming Language",
   art: "Art & Assets",
   animation: "Animation",
-  ui: "UI / HUD",
   vfx: "VFX & Particles",
   version_control: "Version Control",
   deployment: "Deployment",
@@ -80,10 +79,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   audio: "Audio & Music",
   networking: "Networking",
   backend_services: "Backend Services",
-  monetization: "Monetization",
-  analytics: "Analytics",
-  narrative: "Narrative Tools",
-  build_ci: "Build & CI",
 };
 
 const PAID_PRIORITY_OPTIONS = [
@@ -93,8 +88,6 @@ const PAID_PRIORITY_OPTIONS = [
   { value: "vfx", label: "VFX" },
   { value: "networking", label: "Networking" },
   { value: "backend_services", label: "Backend Services" },
-  { value: "analytics", label: "Analytics" },
-  { value: "monetization", label: "Monetization" },
 ];
 
 function ScoreBar({ score }: { score: number }) {

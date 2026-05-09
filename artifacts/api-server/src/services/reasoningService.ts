@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { openai } from "../lib/openaiClient.js";
 import { TOOL_CATALOG } from "../lib/gameDevTools.js";
 import type { PddCategory, Phase } from "../types/pdd.js";
 import {
@@ -16,8 +16,6 @@ import {
   type ScoredCategory,
   type ScoringInputs,
 } from "./scoringService.js";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export interface ReasoningInputs extends ScoringInputs {
   projectIdea: string;

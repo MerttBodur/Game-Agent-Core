@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import OpenAI from "openai";
+import { openai } from "../openaiClient.js";
 import {
   PDD_CATEGORIES,
   PDD_CATEGORY_WEIGHTS,
@@ -19,11 +19,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const treePath = resolve(__dirname, "../../data/toolTree.json");
 
 export const TOOL_TREE: ToolTree = JSON.parse(readFileSync(treePath, "utf8")) as ToolTree;
-
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY ?? process.env.OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-});
 
 export interface ProjectInputs {
   projectIdea: string;

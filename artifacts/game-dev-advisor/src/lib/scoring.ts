@@ -34,14 +34,13 @@ const WEIGHTS_BY_ARCHETYPE: Record<Scope, Record<string, number>> = {
   AAA: { budget: 0.7, skill: 0.7, platform: 1.3, time: 0.6, art: 1.3 },
 };
 
-const LOCKED_CATEGORIES = new Set(["programming", "ui", "vfx", "build_ci"]);
+const LOCKED_CATEGORIES = new Set(["programming", "vfx"]);
 
 const CATEGORY_LABELS: Record<string, string> = {
   engine: "Game Engine",
   programming: "Programming Language",
   art: "Art & Assets",
   animation: "Animation",
-  ui: "UI / HUD",
   vfx: "VFX & Particles",
   version_control: "Version Control",
   deployment: "Deployment",
@@ -49,10 +48,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   audio: "Audio & Music",
   networking: "Networking",
   backend_services: "Backend Services",
-  monetization: "Monetization",
-  analytics: "Analytics",
-  narrative: "Narrative Tools",
-  build_ci: "Build & CI",
 };
 
 function hiddenCategoriesForMode(mode: ProjectMode): string[] {
