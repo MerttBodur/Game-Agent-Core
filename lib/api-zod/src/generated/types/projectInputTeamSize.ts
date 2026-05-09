@@ -14,7 +14,5 @@ export type ProjectInputTeamSize =
 
 export const ProjectInputTeamSize = {
   solo: "solo",
-  small: "small",
-  medium: "medium",
-  large: "large",
+  team: "team",
 } as const;

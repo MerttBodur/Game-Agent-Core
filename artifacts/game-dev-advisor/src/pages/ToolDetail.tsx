@@ -21,7 +21,7 @@ function getFriendlyErrorMessage(error: unknown): string {
 
 export default function ToolDetail() {
   const params = useParams<{ id: string }>();
-  const id = parseInt(params.id ?? "0", 10);
+  const id = params.id ?? "";
   const { data: tool, isLoading, isError, error } = useGetTool(id, { query: { enabled: !!id, queryKey: getGetToolQueryKey(id) } });
 
   if (isLoading) {

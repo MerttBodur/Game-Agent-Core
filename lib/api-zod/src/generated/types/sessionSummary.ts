@@ -12,5 +12,8 @@ export interface SessionSummary {
   projectIdea: string;
   trustScore: number;
   trustTier: SessionSummaryTrustTier;
+  detectedProjectType: string;
+  overallConfidence: number;
+  stackOverview: string;
   createdAt: Date;
 }

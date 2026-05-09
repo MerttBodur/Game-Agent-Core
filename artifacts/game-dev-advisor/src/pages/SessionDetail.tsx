@@ -153,7 +153,7 @@ function getFriendlyErrorMessage(error: unknown): string {
 
 export default function SessionDetail() {
   const params = useParams<{ id: string }>();
-  const id = parseInt(params.id ?? "0", 10);
+  const id = params.id ?? "";
   const { data: session, isLoading, isError, error } = useGetSession(id, { query: { enabled: !!id, queryKey: getGetSessionQueryKey(id) } });
   const [copied, setCopied] = useState(false);
 

@@ -26,6 +26,8 @@ export interface ProjectInput {
   platformTarget: string[];
   /** Art and design capability level */
   artCapability: ProjectInputArtCapability;
+  /** Whether the project requires multiplayer */
+  multiplayer: boolean;
   /**
    * Any other constraints or notes
    * @nullable

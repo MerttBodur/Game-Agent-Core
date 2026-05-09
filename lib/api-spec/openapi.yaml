@@ -210,7 +210,7 @@ components:
           description: Developer skill level
         teamSize:
           type: string
-          enum: [solo, small, medium, large]
+          enum: [solo, team]
           description: Team size
         platformTarget:
           type: array
@@ -221,6 +221,9 @@ components:
           type: string
           enum: [none, basic, intermediate, advanced, professional]
           description: Art and design capability level
+        multiplayer:
+          type: boolean
+          description: Whether the project requires multiplayer
         otherConstraints:
           type: ["string", "null"]
           description: Any other constraints or notes
@@ -245,6 +248,7 @@ components:
         - teamSize
         - platformTarget
         - artCapability
+        - multiplayer
 
     Phase:
       type: string
@@ -359,6 +363,155 @@ components:
         - retrievalConfidence
         - fallbackStatus
 
+    ArchetypeScope:
+      type: string
+      enum: [jam, prototype, indie, AA, AAA]
+
+    ProjectMode:
+      type: string
+      enum: [single_player, co_op_local, multiplayer_online, live_service]
+
+    IdeaScoreTier:
+      type: string
+      enum: [block, warn, pass]
+
+    ArchetypePair:
+      type: object
+      properties:
+        scope:
+          $ref: "#/components/schemas/ArchetypeScope"
+      required:
+        - scope
+
+    ProjectArchetype:
+      type: object
+      properties:
+        implied:
+          $ref: "#/components/schemas/ArchetypePair"
+        achievable:
+          $ref: "#/components/schemas/ArchetypePair"
+      required:
+        - implied
+        - achievable
+
+    Evidence:
+      type: object
+      properties:
+        scoreBreakdown:
+          type: object
+          properties:
+            budget: { type: number }
+            skill: { type: number }
+            platform: { type: number }
+            timeLimit: { type: number }
+            artCapability: { type: number }
+            popularity: { type: number }
+            paidPriority: { type: number }
+            jitter: { type: number }
+            total: { type: number }
+        ragChunks:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              source:
+                type: string
+            required:
+              - text
+              - source
+      required:
+        - scoreBreakdown
+        - ragChunks
+
+    CategoryRecommendationTool:
+      type: object
+      properties:
+        toolId:
+          oneOf:
+            - type: string
+            - type: integer
+        toolName:
+          type: string
+        score:
+          type: number
+        reasoning:
+          type: string
+        strengths:
+          type: array
+          items:
+            type: string
+        weaknesses:
+          type: array
+          items:
+            type: string
+        tradeoffs:
+          type: string
+        evidence:
+          $ref: "#/components/schemas/Evidence"
+        isTopPick:
+          type: boolean
+      required:
+        - toolId
+        - toolName
+        - score
+        - reasoning
+        - strengths
+        - weaknesses
+        - tradeoffs
+        - isTopPick
+
+    CategoryRecommendation:
+      type: object
+      properties:
+        category:
+          type: string
+        categoryLabel:
+          type: string
+        topPick:
+          $ref: "#/components/schemas/CategoryRecommendationTool"
+        alternatives:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryRecommendationTool"
+        categoryReasoning:
+          type: string
+      required:
+        - category
+        - categoryLabel
+        - topPick
+        - alternatives
+        - categoryReasoning
+
+    CategoryResults:
+      type: object
+      properties:
+        locked:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryRecommendation"
+        flexible:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryRecommendation"
+        hidden:
+          type: array
+          items:
+            type: string
+        candidatePool:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+      required:
+        - locked
+        - flexible
+        - hidden
+        - candidatePool
+
     AnalysisResult:
       type: object
       properties:
@@ -378,6 +531,44 @@ components:
           type: boolean
         retrieval:
           $ref: "#/components/schemas/Retrieval"
+        detectedProjectType:
+          type: string
+        overallConfidence:
+          type: number
+        stackOverview:
+          type: ["string", "null"]
+        ideaScore:
+          type: number
+        ideaScoreTier:
+          $ref: "#/components/schemas/IdeaScoreTier"
+        mismatchReasons:
+          type: array
+          items:
+            type: string
+        archetype:
+          $ref: "#/components/schemas/ProjectArchetype"
+        projectMode:
+          $ref: "#/components/schemas/ProjectMode"
+        feasibilityOverridden:
+          type: boolean
+        categoryResults:
+          $ref: "#/components/schemas/CategoryResults"
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryRecommendation"
+        engineDecision:
+          $ref: "#/components/schemas/EngineDecision"
+        lockedCategories:
+          type: array
+          items:
+            $ref: "#/components/schemas/LockedCategory"
+        skippedCategories:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkippedCategory"
+        retryMetadata:
+          $ref: "#/components/schemas/RetryMetadata"
         recommendations:
           type: array
           items:
@@ -391,8 +582,108 @@ components:
         - trustTier
         - terminated
         - retrieval
+        - detectedProjectType
+        - overallConfidence
+        - stackOverview
+        - ideaScore
+        - ideaScoreTier
+        - mismatchReasons
+        - archetype
+        - projectMode
+        - feasibilityOverridden
         - recommendations
         - finalSummary
+
+    EngineDecision:
+      type: object
+      properties:
+        picked:
+          type: string
+          enum: [Unity, Unreal, Godot, Custom]
+        userPreferred:
+          oneOf:
+            - type: "null"
+            - type: string
+              enum: [Unity, Unreal, Godot, Custom, unknown]
+        agreement:
+          type: string
+          enum: [agreed, challenged, user_silent]
+        reasoning:
+          type: string
+        alternativesConsidered:
+          type: array
+          items:
+            type: object
+            properties:
+              engine:
+                type: string
+                enum: [Unity, Unreal, Godot, Custom, unknown]
+              reasonRejected:
+                type: string
+            required:
+              - engine
+              - reasonRejected
+      required:
+        - picked
+        - userPreferred
+        - agreement
+        - reasoning
+        - alternativesConsidered
+
+    LockedCategory:
+      type: object
+      properties:
+        category:
+          type: string
+        lockedTo:
+          type: array
+          items:
+            type: string
+        note:
+          type: string
+      required:
+        - category
+        - lockedTo
+        - note
+
+    SkippedCategory:
+      type: object
+      properties:
+        category:
+          type: string
+        reason:
+          type: string
+      required:
+        - category
+        - reason
+
+    RetryHistoryItem:
+      type: object
+      properties:
+        attempt:
+          type: integer
+        mode:
+          type: string
+          enum: [broaden, pre_filter]
+        countBefore:
+          type: integer
+      required:
+        - attempt
+        - mode
+        - countBefore
+
+    RetryMetadata:
+      type: object
+      properties:
+        retryCount:
+          type: integer
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/RetryHistoryItem"
+      required:
+        - retryCount
+        - history
 
     SessionSummary:
       type: object
@@ -406,6 +697,12 @@ components:
         trustTier:
           type: string
           enum: [block, warn, pass]
+        detectedProjectType:
+          type: string
+        overallConfidence:
+          type: number
+        stackOverview:
+          type: string
         createdAt:
           type: string
           format: date-time
@@ -414,6 +711,9 @@ components:
         - projectIdea
         - trustScore
         - trustTier
+        - detectedProjectType
+        - overallConfidence
+        - stackOverview
         - createdAt
 
     Session:
@@ -451,17 +751,28 @@ components:
           type: string
         bestUseCase:
           type: string
+        bestFor:
+          type: array
+          items:
+            type: string
         supportedPlatforms:
           type: array
           items:
             type: string
             enum: [pc, mobile, web, console, vr, ar]
+        platforms:
+          type: array
+          items:
+            type: string
         pricing:
           type: string
           enum: [free, open_source, freemium, paid, subscription, revenue_share, enterprise]
         difficultyLevel:
           type: string
           enum: [beginner, intermediate, advanced]
+        minSkillLevel:
+          type: string
+          enum: [beginner, intermediate, advanced, expert]
         beginnerSuitability:
           type: integer
           minimum: 0
@@ -482,11 +793,23 @@ components:
           type: array
           items:
             type: string
+        strengths:
+          type: array
+          items:
+            type: string
         cons:
           type: array
           items:
             type: string
+        weaknesses:
+          type: array
+          items:
+            type: string
         alternatives:
+          type: array
+          items:
+            type: string
+        tags:
           type: array
           items:
             type: string
@@ -503,16 +826,22 @@ components:
         - category
         - description
         - bestUseCase
+        - bestFor
         - supportedPlatforms
+        - platforms
         - pricing
         - difficultyLevel
+        - minSkillLevel
         - beginnerSuitability
         - teamSizeFit
         - genreFit
         - fit2d3d
         - pros
+        - strengths
         - cons
+        - weaknesses
         - alternatives
+        - tags
         - phase
 
     ToolCategory:

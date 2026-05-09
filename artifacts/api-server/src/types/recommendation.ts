@@ -1,6 +1,7 @@
 import { z } from "zod/v4";
 import { PDD_CATEGORIES, PHASES, type PddCategory, type Phase } from "./pdd.js";
 import type { RetrievedContextPackage } from "./tree.js";
+import type { EngineDecision, RetrievalResult } from "./agent.js";
 
 export const TRUST_TIERS = ["block", "warn", "pass"] as const;
 export type TrustTier = (typeof TRUST_TIERS)[number];
@@ -29,6 +30,10 @@ export interface AnalysisResult {
   trustTier: TrustTier;
   terminated: boolean;
   retrieval: RetrievedContextPackage;
+  engineDecision?: EngineDecision;
+  lockedCategories?: Array<{ category: string; lockedTo: string[]; note: string }>;
+  skippedCategories?: Array<{ category: string; reason: string }>;
+  retryMetadata?: { retryCount: number; history: RetrievalResult["retryHistory"] };
   recommendations: Recommendation[]; // empty when terminated === true
   finalSummary: string; // markdown
 }

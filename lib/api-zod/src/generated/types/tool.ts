@@ -8,6 +8,7 @@
 import type { ToolCategoryProperty } from "./toolCategoryProperty";
 import type { ToolDifficultyLevel } from "./toolDifficultyLevel";
 import type { ToolFit2d3d } from "./toolFit2d3d";
+import type { ToolMinSkillLevel } from "./toolMinSkillLevel";
 import type { ToolPhaseItem } from "./toolPhaseItem";
 import type { ToolPricing } from "./toolPricing";
 import type { ToolSupportedPlatformsItem } from "./toolSupportedPlatformsItem";
@@ -22,9 +23,12 @@ export interface Tool {
   subcategory?: string | null;
   description: string;
   bestUseCase: string;
+  bestFor: string[];
   supportedPlatforms: ToolSupportedPlatformsItem[];
+  platforms: string[];
   pricing: ToolPricing;
   difficultyLevel: ToolDifficultyLevel;
+  minSkillLevel: ToolMinSkillLevel;
   /**
    * @minimum 0
    * @maximum 100
@@ -34,8 +38,11 @@ export interface Tool {
   genreFit: string[];
   fit2d3d: ToolFit2d3d;
   pros: string[];
+  strengths: string[];
   cons: string[];
+  weaknesses: string[];
   alternatives: string[];
+  tags: string[];
   phase: ToolPhaseItem[];
   /** @nullable */
   website?: string | null;

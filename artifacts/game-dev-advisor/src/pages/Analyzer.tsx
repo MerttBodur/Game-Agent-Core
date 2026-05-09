@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { LockedCategoryCard } from "@/components/LockedCategoryCard";
 import { FeasibilityHeader } from "@/components/FeasibilityHeader";
@@ -46,9 +47,7 @@ const SKILL_OPTIONS = [
 
 const TEAM_OPTIONS = [
   { value: "solo", label: "Solo", desc: "Just me" },
-  { value: "small", label: "Small", desc: "2-5 people" },
-  { value: "medium", label: "Medium", desc: "6-20 people" },
-  { value: "large", label: "Large", desc: "20+ people" },
+  { value: "team", label: "Team", desc: "2+ people" },
 ];
 
 const PLATFORM_OPTIONS = [
@@ -450,6 +449,7 @@ export default function Analyzer() {
   const [teamSize, setTeamSize] = useState<ProjectInput["teamSize"]>(ProjectInputTeamSize.solo);
   const [platformTarget, setPlatformTarget] = useState<string[]>(["pc"]);
   const [artCapability, setArtCapability] = useState<ProjectInput["artCapability"]>(ProjectInputArtCapability.basic);
+  const [multiplayer, setMultiplayer] = useState(false);
   const [otherConstraints, setOtherConstraints] = useState("");
   const [paidPriorityCategories, setPaidPriorityCategories] = useState<string[]>([]);
   const [phase, setPhase] = useState<AnalyzerPhase>("idle");
@@ -633,6 +633,7 @@ export default function Analyzer() {
       teamSize,
       platformTarget,
       artCapability,
+      multiplayer,
       otherConstraints: otherConstraints || null,
       paidPriorityCategories: paidPriorityCategories.length > 0 ? paidPriorityCategories : undefined,
     };
@@ -694,6 +695,14 @@ export default function Analyzer() {
           <div>
             <label className="block text-sm font-semibold text-foreground mb-2">Art & Design Capability</label>
             <SelectCards options={ART_OPTIONS} value={artCapability} onChange={(v) => setArtCapability(v as ProjectInput["artCapability"])} />
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Multiplayer</p>
+              <p className="text-xs text-muted-foreground">Enable if your game requires multiplayer features.</p>
+            </div>
+            <Switch checked={multiplayer} onCheckedChange={setMultiplayer} />
           </div>
 
           <div>
