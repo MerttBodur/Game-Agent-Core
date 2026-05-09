@@ -21,8 +21,14 @@ export async function analyze(req: Request, res: Response): Promise<void> {
 
   try {
     await runAdvisorPipeline(input, (event) => {
-      if (event.type === "retrieval_complete") {
-        send("retrieval_complete", { retrieval: event.retrieval });
+      if (event.type === "analyze_complete") {
+        send("analyze_complete", event.analyze);
+      } else if (event.type === "engine_picked") {
+        send("engine_picked", event.engineDecision);
+      } else if (event.type === "retrieval_retry") {
+        send("retrieval_retry", event.retry);
+      } else if (event.type === "retrieval_complete") {
+        send("retrieval_complete", event.retrieval);
       } else if (event.type === "done") {
         send("done", event.result);
       }
