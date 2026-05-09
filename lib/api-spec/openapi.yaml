@@ -667,6 +667,10 @@ components:
           enum: [broaden, pre_filter]
         countBefore:
           type: integer
+        categories:
+          type: array
+          items:
+            type: string
       required:
         - attempt
         - mode

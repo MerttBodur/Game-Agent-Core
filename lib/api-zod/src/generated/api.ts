@@ -409,6 +409,7 @@ export const AnalyzeProjectResponse = zod.object({
           attempt: zod.number(),
           mode: zod.enum(["broaden", "pre_filter"]),
           countBefore: zod.number(),
+          categories: zod.array(zod.string()).optional(),
         }),
       ),
     })
@@ -895,6 +896,7 @@ export const GetSessionResponse = zod.object({
             attempt: zod.number(),
             mode: zod.enum(["broaden", "pre_filter"]),
             countBefore: zod.number(),
+            categories: zod.array(zod.string()).optional(),
           }),
         ),
       })

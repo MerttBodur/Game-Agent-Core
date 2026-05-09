@@ -369,6 +369,7 @@ export interface RetryHistoryItem {
   attempt: number;
   mode: RetryHistoryItemMode;
   countBefore: number;
+  categories?: string[];
 }
 
 export interface RetryMetadata {

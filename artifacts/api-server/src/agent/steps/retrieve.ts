@@ -1,7 +1,8 @@
 import { applyConstraint } from "../constraints/apply.js";
-import { fetchToolsByCategory } from "../../services/catalogService.js";
+import { fetchToolsByCategory, type FetchToolsOptions } from "../../services/catalogService.js";
 import { resolveConstraint } from "../../services/constraintService.js";
 import type { AgentState, CandidateEntry, RetrievalResult } from "../../types/agent.js";
+import { broadenCategories } from "./checkRetry.js";
 
 export async function runRetrieve(state: AgentState): Promise<RetrievalResult> {
   if (!state.analyze) {
@@ -13,13 +14,19 @@ export async function runRetrieve(state: AgentState): Promise<RetrievalResult> {
 
   const candidatesByCategory: Record<string, CandidateEntry> = {};
   let totalToolCount = 0;
+  const activeRetry = activeRetryEntry(state);
+  const targetCategories =
+    activeRetry?.mode === "broaden"
+      ? broadenCategories(state.analyze.targetCategories, state.retrieval?.retryHistory ?? [])
+      : state.analyze.targetCategories;
+  const fetchOptions = activeRetry?.mode === "pre_filter" ? preFilterOptions(state) : undefined;
 
-  for (const category of state.analyze.targetCategories) {
+  for (const category of targetCategories) {
     const constraint = await resolveConstraint(category, state.engineDecision.picked);
     const verdict = applyConstraint(constraint, state.input, state.analyze.signals);
 
     if (verdict.type === "fetched" || verdict.type === "context") {
-      const fetchedTools = await fetchToolsByCategory(category, state.engineDecision.picked);
+      const fetchedTools = await fetchToolsByCategory(category, state.engineDecision.picked, fetchOptions);
       const tools =
         verdict.type === "context"
           ? filterRecommendedTools(fetchedTools, constraint?.resultJson.recommend_ids)
@@ -39,6 +46,29 @@ export async function runRetrieve(state: AgentState): Promise<RetrievalResult> {
     candidatesByCategory,
     totalToolCount,
     retryHistory: state.retrieval?.retryHistory ?? [],
+  };
+}
+
+function activeRetryEntry(state: AgentState): RetrievalResult["retryHistory"][number] | null {
+  if (state.retryCount <= 0) {
+    return null;
+  }
+
+  return state.retrieval?.retryHistory.find((entry) => entry.attempt === state.retryCount) ?? null;
+}
+
+function preFilterOptions(state: AgentState): FetchToolsOptions {
+  if (state.retryCount >= 2) {
+    return {
+      priceModels: ["free"],
+      requirePlatformOverlap: state.input.platformTarget,
+      minRating: 4,
+    };
+  }
+
+  return {
+    priceModels: ["free", "freemium"],
+    requirePlatformOverlap: state.input.platformTarget,
   };
 }
 

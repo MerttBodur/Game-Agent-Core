@@ -46,7 +46,7 @@ export type CandidateEntry =
 export interface RetrievalResult {
   candidatesByCategory: Record<string, CandidateEntry>;
   totalToolCount: number;
-  retryHistory: Array<{ attempt: number; mode: RetryMode; countBefore: number }>;
+  retryHistory: Array<{ attempt: number; mode: RetryMode; countBefore: number; categories?: string[] }>;
 }
 
 export interface AgentState {
