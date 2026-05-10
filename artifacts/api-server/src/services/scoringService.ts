@@ -4,7 +4,7 @@ import type { PddCategory, ToolEntry } from "../types/pdd.js";
 import type { RetrievedContextPackage } from "../types/tree.js";
 
 export const TRUST_SCORE_BLOCK_THRESHOLD = Number(
-  process.env.TRUST_SCORE_BLOCK_THRESHOLD ?? "25",
+  process.env.TRUST_SCORE_BLOCK_THRESHOLD ?? "0",
 );
 
 // Sum to 1.0; tuned from the existing advisorEngine baseline.

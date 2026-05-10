@@ -25,7 +25,7 @@ function state(totalToolCount: number, retryCount: number): AgentState {
 }
 
 test("retry decision table matches count and retryCount thresholds", () => {
-  const counts = [0, 2, 3, 10, 15, 16];
+  const counts = [0, 2, 3, 10, 40, 41];
   const retryCounts = [0, 1, 2];
   const actual = retryCounts.map((retryCount) =>
     counts.map((count) => checkRetry(state(count, retryCount))),

@@ -1,67 +1,56 @@
-import { useGetSession, getGetSessionQueryKey } from "@workspace/api-client-react";
-import type { CategoryRecommendation, Evidence, ProjectInput } from "@workspace/api-client-react";
+import { useGetSession, getGetSessionQueryKey, useListTools } from "@workspace/api-client-react";
 import { Link, useParams } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useState } from "react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { LockedCategoryCard } from "@/components/LockedCategoryCard";
-import { FeasibilityHeader } from "@/components/FeasibilityHeader";
-import {
-  recomputeCategoryResults,
-  type ProjectMode as Mode,
-  type Scope as ScopeValue,
-} from "@/lib/scoring";
+import { useEffect, useMemo, useState } from "react";
 
-function EvidencePanel({ evidence }: { evidence: Evidence }) {
-  const chunks = evidence.ragChunks.slice(0, 3);
-  return (
-    <div className="mt-3 space-y-4 rounded-md border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
-      <div>
-        <p className="mb-2 font-semibold text-foreground">Score Breakdown</p>
-        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-          <dt>Budget</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.budget?.toFixed(1)}</dd>
-          <dt>Skill</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.skill?.toFixed(1)}</dd>
-          <dt>Platform</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.platform?.toFixed(1)}</dd>
-          <dt>Time</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.timeLimit?.toFixed(1)}</dd>
-          <dt>Art</dt>
-          <dd className="text-right font-mono">{evidence.scoreBreakdown.artCapability?.toFixed(1)}</dd>
-          <dt>Popularity</dt>
-          <dd className="text-right font-mono">
-            {(evidence.scoreBreakdown as { popularity?: number }).popularity?.toFixed(1) ?? "—"}
-          </dd>
-          <dt>Paid Priority</dt>
-          <dd className="text-right font-mono">
-            {(evidence.scoreBreakdown as { paidPriority?: number }).paidPriority?.toFixed(1) ?? "—"}
-          </dd>
-          <dt>Jitter</dt>
-          <dd className="text-right font-mono">
-            {(evidence.scoreBreakdown as { jitter?: number }).jitter?.toFixed(2) ?? "—"}
-          </dd>
-        </dl>
-        <p className="mt-2 text-[11px] text-muted-foreground/80">
-          Total: <span className="font-mono">{evidence.scoreBreakdown.total?.toFixed(1)}</span>
-        </p>
-      </div>
-      {chunks.length > 0 && (
-        <div className="space-y-2">
-          <p className="font-semibold text-foreground">Knowledge Sources</p>
-          {chunks.map((chunk, index) => (
-            <blockquote key={`${chunk.source}-${index}`} className="border-l-2 border-border pl-2 italic">
-              {chunk.text}
-              <footer className="mt-1 not-italic text-[11px] text-muted-foreground/70">{chunk.source}</footer>
-            </blockquote>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+const CATEGORY_LABELS: Record<string, string> = {
+  game_engine: "Game Engine",
+  ide: "IDE",
+  version_control: "Version Control",
+  art_asset_creation: "Art & Asset Creation",
+  audio: "Audio",
+  ai_coding_assistant: "AI Coding Assistant",
+  deployment_publishing: "Deployment & Publishing",
+};
+
+// Backend's actual saved-session result shape (same as the SSE `done` payload
+// from /advisor/analyze). The codegen type advertises feasibility/archetype
+// fields that the runtime backend does not produce yet.
+interface BackendRecommendationItem {
+  toolId: string;
+  score: number;
+  reasoning: string;
+  pros: string[];
+  cons: string[];
+  compatibility: string;
+  useCaseJustification: string;
+  phase: string[];
+}
+
+interface BackendRecommendation {
+  category: string;
+  primary: BackendRecommendationItem;
+  alternatives: BackendRecommendationItem[];
+}
+
+interface BackendAnalysisResult {
+  sessionId: string;
+  projectSummary: string;
+  trustScore: number;
+  trustTier: "block" | "warn" | "pass";
+  terminated: boolean;
+  recommendations: BackendRecommendation[];
+  finalSummary: string;
+}
+
+interface BackendSessionDetail {
+  id: string;
+  projectInput: { projectIdea?: string; [key: string]: unknown };
+  result: BackendAnalysisResult;
+  createdAt: string;
 }
 
 function ScoreBar({ score }: { score: number }) {
@@ -73,71 +62,103 @@ function ScoreBar({ score }: { score: number }) {
   );
 }
 
-function CategoryCard({ cat }: { cat: CategoryRecommendation }) {
+function ItemBlock({
+  item,
+  toolName,
+  isPrimary,
+}: {
+  item: BackendRecommendationItem;
+  toolName: string;
+  isPrimary: boolean;
+}) {
+  return (
+    <div className={isPrimary ? "" : "rounded-md bg-muted/40 border border-border p-3"}>
+      <div className="flex items-center justify-between mb-1">
+        <span className={isPrimary ? "text-lg font-bold text-foreground" : "text-sm font-semibold text-foreground"}>
+          {toolName}
+        </span>
+        <span className="text-sm font-mono text-primary">{item.score.toFixed(1)}</span>
+      </div>
+      <ScoreBar score={item.score} />
+      <p className="text-sm text-muted-foreground my-2 leading-relaxed">{item.reasoning}</p>
+      {isPrimary && (
+        <div className="grid grid-cols-2 gap-3 mb-2">
+          <div>
+            <p className="text-xs font-semibold text-green-400 mb-1">Strengths</p>
+            <ul className="space-y-0.5">
+              {item.pros.slice(0, 3).map((s, i) => (
+                <li key={i} className="text-xs text-muted-foreground flex gap-1.5 items-start">
+                  <span className="text-green-500 mt-0.5 shrink-0">+</span>
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-red-400 mb-1">Weaknesses</p>
+            <ul className="space-y-0.5">
+              {item.cons.slice(0, 3).map((c, i) => (
+                <li key={i} className="text-xs text-muted-foreground flex gap-1.5 items-start">
+                  <span className="text-red-500 mt-0.5 shrink-0">-</span>
+                  {c}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+      {isPrimary && item.compatibility && (
+        <p className="text-xs text-muted-foreground/80 mt-2">
+          <span className="font-semibold text-foreground">Compatibility:</span> {item.compatibility}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function RecommendationCard({
+  rec,
+  toolNames,
+}: {
+  rec: BackendRecommendation;
+  toolNames: Record<string, string>;
+}) {
   const [showAlts, setShowAlts] = useState(false);
+  const primaryName = toolNames[rec.primary.toolId] ?? rec.primary.toolId;
+
   return (
     <Card className="p-5 border-border bg-card">
-      <div className="mb-3 flex items-center justify-between">
+      <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {cat.categoryLabel}
+          {CATEGORY_LABELS[rec.category] ?? rec.category}
         </span>
+        <Badge variant="secondary" className="text-xs">Top Pick</Badge>
       </div>
-      <div className="mb-3">
-        <div className="mb-1 flex items-center justify-between">
-          <span className="text-lg font-bold text-foreground">{cat.topPick.toolName}</span>
-          <span className="text-sm font-mono text-primary">{cat.topPick.score.toFixed(1)}</span>
-        </div>
-        <ScoreBar score={cat.topPick.score} />
-      </div>
-      <p className="mb-3 text-sm text-muted-foreground">{cat.topPick.reasoning}</p>
-      <div className="mb-3 grid grid-cols-2 gap-3">
-        <div>
-          <p className="mb-1 text-xs font-semibold text-green-400">Strengths</p>
-          {cat.topPick.strengths.slice(0, 3).map((s, i) => (
-            <p key={i} className="flex gap-1.5 text-xs text-muted-foreground">
-              <span className="text-green-500">+</span>
-              {s}
-            </p>
-          ))}
-        </div>
-        <div>
-          <p className="mb-1 text-xs font-semibold text-red-400">Weaknesses</p>
-          {cat.topPick.weaknesses.slice(0, 3).map((w, i) => (
-            <p key={i} className="flex gap-1.5 text-xs text-muted-foreground">
-              <span className="text-red-500">-</span>
-              {w}
-            </p>
-          ))}
-        </div>
-      </div>
-      {cat.alternatives.length > 0 && (
+
+      <ItemBlock item={rec.primary} toolName={primaryName} isPrimary />
+
+      {rec.alternatives.length > 0 && (
         <>
-          <button onClick={() => setShowAlts(!showAlts)} className="text-xs text-primary hover:underline">
-            {showAlts ? "Hide" : "Show"} alternatives
+          <button
+            onClick={() => setShowAlts(!showAlts)}
+            className="text-xs text-primary hover:underline mt-3"
+          >
+            {showAlts ? "Hide" : "Show"} {rec.alternatives.length} alternative
+            {rec.alternatives.length > 1 ? "s" : ""}
           </button>
           {showAlts && (
             <div className="mt-3 space-y-2">
-              {cat.alternatives.map((alt, i) => (
-                <div key={i} className="rounded-md border border-border bg-muted/40 p-3">
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="text-sm font-semibold">{alt.toolName}</span>
-                    <span className="text-xs font-mono text-muted-foreground">{alt.score.toFixed(1)}</span>
-                  </div>
-                  <ScoreBar score={alt.score} />
-                  <p className="mt-2 text-xs text-muted-foreground">{alt.reasoning}</p>
-                </div>
+              {rec.alternatives.map((alt, i) => (
+                <ItemBlock
+                  key={`${alt.toolId}-${i}`}
+                  item={alt}
+                  toolName={toolNames[alt.toolId] ?? alt.toolId}
+                  isPrimary={false}
+                />
               ))}
             </div>
           )}
         </>
-      )}
-      {cat.topPick.evidence && (
-        <Collapsible className="mt-3">
-          <CollapsibleTrigger className="text-xs text-primary hover:underline">Why this recommendation?</CollapsibleTrigger>
-          <CollapsibleContent>
-            <EvidencePanel evidence={cat.topPick.evidence} />
-          </CollapsibleContent>
-        </Collapsible>
       )}
     </Card>
   );
@@ -154,18 +175,29 @@ function getFriendlyErrorMessage(error: unknown): string {
 export default function SessionDetail() {
   const params = useParams<{ id: string }>();
   const id = params.id ?? "";
-  const { data: session, isLoading, isError, error } = useGetSession(id, { query: { enabled: !!id, queryKey: getGetSessionQueryKey(id) } });
+  const { data: rawSession, isLoading, isError, error } = useGetSession(id, {
+    query: { enabled: !!id, queryKey: getGetSessionQueryKey(id) },
+  });
+  const session = rawSession as unknown as BackendSessionDetail | undefined;
   const [copied, setCopied] = useState(false);
 
+  const { data: tools } = useListTools();
+  const toolNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const t of tools ?? []) map[t.id] = t.name;
+    return map;
+  }, [tools]);
+
   useEffect(() => {
-    if (session?.result?.stackOverview) {
-      document.title = `${session.result.stackOverview} - Game Dev Stack Advisor`;
+    if (session?.result?.projectSummary) {
+      const truncated = session.result.projectSummary.slice(0, 60);
+      document.title = `${truncated} - Game Dev Stack Advisor`;
     }
 
     return () => {
       document.title = "Game Dev Stack Advisor";
     };
-  }, [session?.result?.stackOverview]);
+  }, [session?.result?.projectSummary]);
 
   useEffect(() => {
     if (!copied) {
@@ -224,55 +256,14 @@ export default function SessionDetail() {
     );
   }
 
-  const result = session.result as {
-    projectSummary: string;
-    detectedProjectType: string;
-    categoryResults?: {
-      locked?: CategoryRecommendation[];
-      flexible?: CategoryRecommendation[];
-      hidden?: string[];
-      candidatePool?: Record<string, unknown[]>;
-    };
-    categories?: CategoryRecommendation[];
-    overallConfidence: number;
-    finalSummary: string | null;
-    stackOverview: string | null;
-    ideaScore?: number;
-    ideaScoreTier?: "pass" | "warn" | "block";
-    mismatchReasons?: string[];
-    archetype?: { implied?: { scope?: string }; achievable?: { scope?: string } };
-    projectMode?: string;
-    feasibilityOverridden?: boolean;
-  };
-  const buckets = result.categoryResults ?? { locked: [], flexible: [], hidden: [], candidatePool: {} };
-  const baseMode = (result.projectMode ?? "single_player") as Mode;
-  const baseScope = (result.archetype?.achievable?.scope ?? "indie") as ScopeValue;
-  const [modeOverride, setModeOverride] = useState<Mode>(baseMode);
-  const [scopeOverride, setScopeOverride] = useState<ScopeValue>(baseScope);
-  const isOverridden = modeOverride !== baseMode || scopeOverride !== baseScope;
-  const projectInput = session.projectInput as unknown as ProjectInput;
-  const recomputed = isOverridden
-    ? recomputeCategoryResults({
-      input: projectInput,
-      modeOverride,
-      scopeOverride,
-      candidatePool: (buckets.candidatePool ?? {}) as never,
-      ragChunks: buckets.locked?.[0]?.topPick.evidence?.ragChunks ?? [],
-    })
-    : null;
-
-  const locked = recomputed ? recomputed.locked : (buckets.locked ?? []);
-  const flexible = recomputed ? recomputed.flexible : (buckets.flexible ?? []);
-  const hidden = recomputed ? recomputed.hidden : (buckets.hidden ?? []);
-  const legacyFlat = !result.categoryResults && result.categories ? result.categories : [];
-  const legacyFlexible = [...flexible, ...legacyFlat];
-  const engineEntry = locked.find((c) => c.category === "engine");
-  const engineName = engineEntry?.topPick.toolName;
-  const lockedNonEngine = locked.filter((c) => c.category !== "engine");
-
-  const input = session.projectInput as unknown as Record<string, unknown>;
-  const confColor = result.overallConfidence >= 75 ? "text-green-400" : result.overallConfidence >= 55 ? "text-yellow-400" : "text-red-400";
-  const blocked = result.ideaScoreTier === "block" && !result.feasibilityOverridden;
+  const result = session.result;
+  const projectIdea = (session.projectInput.projectIdea as string | undefined) ?? "";
+  const trustColor =
+    result.trustTier === "pass"
+      ? "text-green-400"
+      : result.trustTier === "warn"
+        ? "text-yellow-400"
+        : "text-red-400";
 
   return (
     <div className="min-h-screen bg-background">
@@ -285,15 +276,12 @@ export default function SessionDetail() {
 
         <div className="mb-8">
           <div className="mb-4 flex items-start justify-between gap-4">
-            <div>
-              <Badge variant="secondary" className="mb-2">
-                {result.detectedProjectType}
-              </Badge>
-              <h1 className="text-xl font-black text-foreground">{(input.projectIdea as string) ?? ""}</h1>
+            <div className="flex-1">
+              <h1 className="text-xl font-black text-foreground">{projectIdea}</h1>
             </div>
             <div className="shrink-0 text-right">
-              <div className={`text-4xl font-black ${confColor}`}>{Math.round(result.overallConfidence)}</div>
-              <div className="text-xs text-muted-foreground">Fit Score</div>
+              <div className={`text-4xl font-black ${trustColor}`}>{result.trustScore}</div>
+              <div className="text-xs text-muted-foreground">Trust Score</div>
             </div>
           </div>
           <div className="mb-3">
@@ -302,64 +290,34 @@ export default function SessionDetail() {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">{result.projectSummary}</p>
-          <p className="mt-3 text-sm font-semibold text-primary">{result.stackOverview}</p>
           <p className="mt-1 text-xs text-muted-foreground">{new Date(session.createdAt).toLocaleString()}</p>
         </div>
 
         <Separator className="mb-8 bg-border" />
 
-        <div className="mb-8">
-          <FeasibilityHeader
-            result={result as never}
-            modeOverride={modeOverride}
-            scopeOverride={scopeOverride}
-            onChangeMode={setModeOverride}
-            onChangeScope={setScopeOverride}
-          />
-        </div>
+        {result.terminated ? (
+          <div className="rounded-md border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+            This session was blocked by the trust gate. Recommendations are not available.
+          </div>
+        ) : result.recommendations.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+            No recommendations were saved for this session.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 mb-8">
+            {result.recommendations.map((rec) => (
+              <RecommendationCard key={rec.category} rec={rec} toolNames={toolNames} />
+            ))}
+          </div>
+        )}
 
-        {!blocked && (
-          <>
-            {isOverridden && (
-              <div className="mb-8 rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-200">
-                Adjusted client-side. Submit the form again to regenerate the narrative.
-              </div>
-            )}
-
-            {locked.length > 0 && (
-              <div className="mb-8">
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-widest text-muted-foreground">Locked</h3>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {engineEntry && <CategoryCard cat={engineEntry} />}
-                  {lockedNonEngine.map((cat) => (
-                    <LockedCategoryCard key={cat.category} cat={cat} engineName={engineName} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {legacyFlexible.length > 0 && (
-              <div className="mb-8">
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-                  {result.categoryResults ? "Flexible" : "Stack Breakdown"}
-                </h3>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {legacyFlexible.map((cat) => (
-                    <CategoryCard key={cat.category} cat={cat} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {hidden.length > 0 && (
-              <p className="mb-8 text-xs text-muted-foreground">Hidden by project mode: {hidden.join(", ")}.</p>
-            )}
-
-            <Card className="border-border bg-card p-5">
-              <h3 className="mb-2 text-sm font-semibold text-foreground">Final Analysis</h3>
-              <p className="text-sm text-muted-foreground">{result.finalSummary}</p>
-            </Card>
-          </>
+        {result.finalSummary && !result.terminated && (
+          <Card className="border-border bg-card p-5">
+            <h3 className="mb-2 text-sm font-semibold text-foreground">Final Analysis</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+              {result.finalSummary}
+            </p>
+          </Card>
         )}
       </div>
     </div>

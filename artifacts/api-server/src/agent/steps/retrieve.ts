@@ -15,9 +15,12 @@ export async function runRetrieve(state: AgentState): Promise<RetrievalResult> {
   const candidatesByCategory: Record<string, CandidateEntry> = {};
   let totalToolCount = 0;
   const activeRetry = activeRetryEntry(state);
+  const priorHistory = (state.retrieval?.retryHistory ?? []).filter(
+    (entry) => entry.attempt < state.retryCount,
+  );
   const targetCategories =
     activeRetry?.mode === "broaden"
-      ? broadenCategories(state.analyze.targetCategories, state.retrieval?.retryHistory ?? [])
+      ? broadenCategories(state.analyze.targetCategories, priorHistory)
       : state.analyze.targetCategories;
   const fetchOptions = activeRetry?.mode === "pre_filter" ? preFilterOptions(state) : undefined;
 
@@ -62,7 +65,6 @@ function preFilterOptions(state: AgentState): FetchToolsOptions {
     return {
       priceModels: ["free"],
       requirePlatformOverlap: state.input.platformTarget,
-      minRating: 4,
     };
   }
 

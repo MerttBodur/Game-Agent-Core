@@ -27,15 +27,21 @@ export async function resolveConstraint(
   category: string,
   engine: string,
 ): Promise<ConstraintRow | null> {
-  const [rows] = await pool.query<ConstraintSqlRow[]>(
-    `SELECT id, engine, category, constraint_type, condition_json, result_json, priority
-     FROM engine_constraints
-     WHERE category = ?
-       AND engine IN (?, '*')
-     ORDER BY (engine = ?) DESC, priority DESC
-     LIMIT 1`,
-    [category, engine, engine],
-  );
+  let rows: ConstraintSqlRow[];
+  try {
+    [rows] = await pool.query<ConstraintSqlRow[]>(
+      `SELECT id, engine, category, constraint_type, condition_json, result_json, priority
+       FROM engine_constraints
+       WHERE category = ?
+         AND engine IN (?, '*')
+       ORDER BY (engine = ?) DESC, priority DESC
+       LIMIT 1`,
+      [category, engine, engine],
+    );
+  } catch (error) {
+    console.warn("[constraints] falling back without DB constraints", error);
+    return null;
+  }
 
   const row = rows[0];
   if (!row) {

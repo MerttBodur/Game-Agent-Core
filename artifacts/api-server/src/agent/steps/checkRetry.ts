@@ -19,7 +19,7 @@ export function checkRetry(state: AgentState): RetryDecision {
   if (count < 3) {
     return "broaden";
   }
-  if (count > 15) {
+  if (count > 40) {
     return "pre_filter";
   }
   return "done";

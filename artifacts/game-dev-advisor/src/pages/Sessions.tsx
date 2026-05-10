@@ -5,6 +5,29 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Backend's actual list row shape (advisorController.listSessions). The
+// codegen type advertises richer fields (overallConfidence, stackOverview,
+// detectedProjectType) that the runtime backend does not produce yet.
+interface BackendSessionRow {
+  id: string;
+  projectIdea: string;
+  trustScore: number;
+  trustTier: "block" | "warn" | "pass";
+  createdAt: string;
+}
+
+const TRUST_COLOR: Record<BackendSessionRow["trustTier"], string> = {
+  pass: "text-green-400",
+  warn: "text-yellow-400",
+  block: "text-red-400",
+};
+
+const TRUST_LABEL: Record<BackendSessionRow["trustTier"], string> = {
+  pass: "Pass",
+  warn: "Warn",
+  block: "Blocked",
+};
+
 function getFriendlyErrorMessage(error: unknown): string {
   const e = error as { status?: number; response?: { status?: number } };
   const status = e?.status ?? e?.response?.status;
@@ -14,7 +37,8 @@ function getFriendlyErrorMessage(error: unknown): string {
 }
 
 export default function Sessions() {
-  const { data: sessions, isLoading, isError, error } = useListSessions();
+  const { data: rawSessions, isLoading, isError, error } = useListSessions();
+  const sessions = rawSessions as unknown as BackendSessionRow[] | undefined;
 
   if (isLoading) {
     return (
@@ -60,8 +84,8 @@ export default function Sessions() {
         ) : (
           <div className="space-y-3">
             {sessions.map((session) => {
-              const confidence = Math.round(session.overallConfidence);
-              const confColor = confidence >= 75 ? "text-green-400" : confidence >= 55 ? "text-yellow-400" : "text-red-400";
+              const tier = session.trustTier;
+              const trustColor = TRUST_COLOR[tier];
               return (
                 <Link key={session.id} href={`/sessions/${session.id}`}>
                   <Card className="p-4 border-border bg-card hover:border-primary/40 transition-colors cursor-pointer">
@@ -69,15 +93,14 @@ export default function Sessions() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <Badge variant="secondary" className="text-xs shrink-0">
-                            {session.detectedProjectType}
+                            {TRUST_LABEL[tier]}
                           </Badge>
                         </div>
                         <p className="text-sm font-medium text-foreground truncate">{session.projectIdea}</p>
-                        <p className="text-xs text-muted-foreground mt-1 truncate">{session.stackOverview}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <div className={`text-2xl font-black ${confColor}`}>{confidence}</div>
-                        <div className="text-xs text-muted-foreground">Fit</div>
+                        <div className={`text-2xl font-black ${trustColor}`}>{session.trustScore}</div>
+                        <div className="text-xs text-muted-foreground">Trust</div>
                       </div>
                     </div>
                     <div className="mt-3 flex items-center justify-between gap-2">

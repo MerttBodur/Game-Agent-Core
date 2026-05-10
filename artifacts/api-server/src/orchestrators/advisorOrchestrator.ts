@@ -129,11 +129,15 @@ async function applyTrustGateAndPersist(
   };
 
   if (!terminated) {
-    await persistSession({
-      id: sessionId,
-      inputs: input as unknown as Record<string, unknown>,
-      result: gated,
-    });
+    try {
+      await persistSession({
+        id: sessionId,
+        inputs: input as unknown as Record<string, unknown>,
+        result: gated,
+      });
+    } catch (error) {
+      console.warn("[advisor] analysis completed but session persistence failed", error);
+    }
   }
 
   return gated;

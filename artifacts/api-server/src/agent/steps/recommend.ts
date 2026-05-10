@@ -45,69 +45,74 @@ const RecommendResponseSchema = z.object({
 
 type RecommendResponse = z.infer<typeof RecommendResponseSchema>;
 
-export const RECOMMEND_JSON_SCHEMA = {
-  name: "agent_recommend_result",
-  schema: {
-    type: "object",
-    additionalProperties: false,
-    properties: {
-      projectSummary: { type: "string" },
-      engineExplanation: { type: "string" },
-      recommendations: {
-        type: "array",
-        items: {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            category: { type: "string" },
-            primary: itemJsonSchema(),
-            alternatives: { type: "array", maxItems: 2, items: itemJsonSchema() },
+// Built per-request so toolId is locked to the actual candidate pool via JSON
+// schema enum. Makes "tool not in pool" a model-level impossibility under
+// OpenAI structured outputs, not a runtime validation race.
+export function buildRecommendJsonSchema(allowedToolIds: string[]) {
+  return {
+    name: "agent_recommend_result",
+    schema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        projectSummary: { type: "string" },
+        engineExplanation: { type: "string" },
+        recommendations: {
+          type: "array",
+          items: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+              category: { type: "string" },
+              primary: itemJsonSchema(allowedToolIds),
+              alternatives: { type: "array", maxItems: 2, items: itemJsonSchema(allowedToolIds) },
+            },
+            required: ["category", "primary", "alternatives"],
           },
-          required: ["category", "primary", "alternatives"],
         },
-      },
-      lockedExplanations: {
-        type: "array",
-        items: {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            category: { type: "string" },
-            lockedTo: { type: "array", items: { type: "string" } },
-            note: { type: "string" },
+        lockedExplanations: {
+          type: "array",
+          items: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+              category: { type: "string" },
+              lockedTo: { type: "array", items: { type: "string" } },
+              note: { type: "string" },
+            },
+            required: ["category", "lockedTo", "note"],
           },
-          required: ["category", "lockedTo", "note"],
         },
-      },
-      skippedExplanations: {
-        type: "array",
-        items: {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            category: { type: "string" },
-            reason: { type: "string" },
+        skippedExplanations: {
+          type: "array",
+          items: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+              category: { type: "string" },
+              reason: { type: "string" },
+            },
+            required: ["category", "reason"],
           },
-          required: ["category", "reason"],
         },
+        trustScore: { type: "integer", minimum: 0, maximum: 100 },
+        trustRationale: { type: "string" },
+        finalSummary: { type: "string" },
       },
-      trustScore: { type: "integer", minimum: 0, maximum: 100 },
-      trustRationale: { type: "string" },
-      finalSummary: { type: "string" },
+      required: [
+        "projectSummary",
+        "engineExplanation",
+        "recommendations",
+        "lockedExplanations",
+        "skippedExplanations",
+        "trustScore",
+        "trustRationale",
+        "finalSummary",
+      ],
     },
-    required: [
-      "projectSummary",
-      "engineExplanation",
-      "recommendations",
-      "lockedExplanations",
-      "skippedExplanations",
-      "trustScore",
-      "trustRationale",
-      "finalSummary",
-    ],
-  },
-  strict: true,
-} as const;
+    strict: true,
+  } as const;
+}
 
 export async function runRecommend(state: AgentState): Promise<AnalysisResult> {
   if (!state.retrieval || !state.engineDecision) {
@@ -115,13 +120,19 @@ export async function runRecommend(state: AgentState): Promise<AnalysisResult> {
   }
 
   const scored = scoreAgentCandidates(state.input, state.retrieval.candidatesByCategory);
+  const allowedToolIds = collectAllowedToolIds(state.retrieval.candidatesByCategory);
+  if (allowedToolIds.length === 0) {
+    throw new Error("Recommend step has no candidate tools to choose from");
+  }
+  console.error("[recommend] scored candidate counts:", Object.fromEntries(Object.entries(scored).map(([k, v]) => [k, v.length])));
+  console.error("[recommend] candidatesByCategory types:", Object.fromEntries(Object.entries(state.retrieval.candidatesByCategory).map(([k, v]) => [k, v.type])));
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-4o-mini",
     temperature: 0,
     messages: buildRecommendMessages(state, scored),
     response_format: {
       type: "json_schema",
-      json_schema: RECOMMEND_JSON_SCHEMA,
+      json_schema: buildRecommendJsonSchema(allowedToolIds),
     },
   });
 
@@ -129,6 +140,7 @@ export async function runRecommend(state: AgentState): Promise<AnalysisResult> {
   if (!raw) {
     throw new Error("Recommend step returned empty content");
   }
+  console.error("[recommend] raw LLM response:", raw);
 
   const parsed = RecommendResponseSchema.parse(JSON.parse(raw));
   validateRecommendResponse(parsed, state.retrieval.candidatesByCategory);
@@ -193,12 +205,12 @@ function toRetrievedContextPackage(
   };
 }
 
-function itemJsonSchema() {
+function itemJsonSchema(allowedToolIds: string[]) {
   return {
     type: "object",
     additionalProperties: false,
     properties: {
-      toolId: { type: "string" },
+      toolId: { type: "string", enum: allowedToolIds },
       reasoning: { type: "string" },
       pros: { type: "array", items: { type: "string" }, minItems: 1 },
       cons: { type: "array", items: { type: "string" }, minItems: 1 },
@@ -243,6 +255,19 @@ function validateRecommendResponse(
       }
     }
   }
+}
+
+function collectAllowedToolIds(candidatesByCategory: Record<string, CandidateEntry>): string[] {
+  const ids = new Set<string>();
+  for (const entry of Object.values(candidatesByCategory)) {
+    if (entry.type !== "fetched" && entry.type !== "context") {
+      continue;
+    }
+    for (const tool of entry.tools) {
+      ids.add(tool.id);
+    }
+  }
+  return [...ids];
 }
 
 function buildToolMap(candidatesByCategory: Record<string, CandidateEntry>): Map<string, ToolRow> {

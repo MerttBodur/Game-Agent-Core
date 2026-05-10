@@ -25,7 +25,7 @@ export function buildAnalyzeMessages(input: AdvisorFormInput, tree: ToolTree = T
     "- Do not emit tool ids such as unity, godot, fmod_studio, or git_github.",
     "- Do not emit networking or backend unless those exact ids are listed in Available category ids.",
     "- userMentionedEngine is non-null only when the user explicitly names Unity, Unreal, Godot, Custom, or an unknown engine in free text.",
-    "- projectSummary must be 1-2 Turkish sentences.",
+    "- projectSummary must be 1-2 English sentences.",
   ].join("\n");
 
   const user = `Project input:
