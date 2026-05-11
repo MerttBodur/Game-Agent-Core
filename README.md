@@ -323,6 +323,4 @@ Not included yet:
 - Add follow-up questions when the project input is ambiguous.
 - Add deployment scripts and production environment documentation.
 
-## License
 
-MIT
