@@ -11,8 +11,8 @@ pnpm run typecheck
 # Build all packages (runs typecheck first)
 pnpm run build
 
-# Boot local MySQL
-docker compose up -d mysql
+# Boot local services
+docker compose up -d mysql chroma
 
 # Push DB schema changes (dev only, not for production migrations)
 pnpm --filter @workspace/db run push
@@ -23,49 +23,64 @@ pnpm --filter @workspace/api-server run dev
 # Run frontend dev server (http://localhost:5173)
 pnpm --filter @workspace/game-dev-advisor run dev
 
-# Kill process on a port
-Get-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess | Stop-Process -Force
+# Run API unit tests
+pnpm --filter @workspace/api-server run test
+
+# Run the live advisor pipeline integration test
+pnpm --filter @workspace/api-server exec tsx --test src/agent/advisorPipeline.integration.test.ts
+
+# Rebuild the Chroma RAG index from the catalog and guidance docs
+pnpm --filter @workspace/api-server run rag:index
+
+# Run live retrieval quality checks against Chroma + OpenAI embeddings
+pnpm --filter @workspace/api-server run rag:eval
 
 # Regenerate API client hooks and Zod types from OpenAPI spec
 pnpm --filter @workspace/api-spec run codegen
 
-# Regenerate the tree-of-contents from the tool catalog
-pnpm --filter @workspace/api-server run tree:build
+# Kill process on a port
+Get-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess | Stop-Process -Force
 ```
-
-There are no test commands — the project currently has no test suite.
 
 ## Architecture
 
 pnpm monorepo. Packages under `lib/` are shared libraries; `artifacts/` contains the deployable apps.
 
 **API server (`artifacts/api-server/src`):**
-- `routes/` — thin Express routers that delegate to controllers.
-- `controllers/` — request/response shaping only.
-- `orchestrators/advisorOrchestrator.ts` — owns the analyze pipeline (validate -> retrieve -> score -> reason -> trust gate -> persist).
-- `services/` — `scoringService` (deterministic), `reasoningService` (single LLM call), `catalogService` (filters), `sessionService` (MySQL persistence).
-- `middleware/` — `rateLimit`, `validateBody(schema)`, `errorHandler` (single global sink, never leaks internals).
-- `data/` — `toolCatalog.json` (Section 2 source of truth), `toolTree.json` (generated tree-of-contents).
-- `lib/rag/treeNavigator.ts` — vectorless retrieval using a single structured-output LLM call against the tree.
-- `types/` — `pdd.ts`, `tree.ts`, `recommendation.ts` (canonical TypeScript + Zod surface).
+- `routes/` - thin Express routers that delegate to controllers.
+- `controllers/` - request/response shaping, SSE event mapping, and validation boundaries.
+- `orchestrators/advisorOrchestrator.ts` - owns the RAG advisor pipeline: feasibility -> engine -> per-category recommendations -> deterministic /10 scoring -> persistence.
+- `agent/steps/` - LangChain/OpenAI structured-output steps for feasibility, engine choice, category recommendation, and final explanation.
+- `lib/rag/` - OpenAI embeddings, Chroma vector store access, index construction, metadata-filtered retrieval helpers, and chat model factory.
+- `services/` - deterministic scoring, catalog filtering, and session persistence.
+- `middleware/` - `rateLimit`, `validateBody(schema)`, `errorHandler` (single global sink, never leaks internals).
+- `data/` - `toolCatalog.json` plus `knowledge/*.md` guidance documents used by the RAG index.
+- `types/` - catalog taxonomy/types and advisor pipeline/result types.
 
 **Single sources of truth:**
 - API contract: `lib/api-spec/openapi.yaml` -> Orval codegen -> `lib/api-zod`, `lib/api-client-react`.
 - Tool catalog: `artifacts/api-server/src/data/toolCatalog.json` (validated by `ToolCatalogSchema` at boot).
-- Tool tree: regenerate via `pnpm --filter @workspace/api-server run tree:build` after editing the catalog.
+- RAG index: rebuild via `pnpm --filter @workspace/api-server run rag:index` after editing the catalog or guidance docs.
 
-**Persistence:** MySQL 8.4 (Docker for local dev). Only the `advisor_sessions` table exists. Sessions are persisted only when `result.terminated === false`.
+**RAG pipeline:** The advisor first runs a feasibility gate. Unrealistic projects terminate early with `terminated: true` and no persisted row. Feasible projects choose an engine, retrieve per-category candidates, score recommendations deterministically on a 0-10 scale, and stream progress over SSE.
 
-**Trust gate:** `TRUST_SCORE_BLOCK_THRESHOLD` (env, default 25). Below this, response is `terminated: true`, recommendations are absent, and no row is written.
+**Chroma indexing:** Chroma stores one document per `(tool x category)` because metadata filters must be scalar. Tool metadata includes `category`, `toolId`, `engine_unity`, `engine_unreal`, `engine_godot`, and `engine_any`; guidance docs are stored in the same collection with `type: guidance` and `topic`.
+
+**Taxonomy:** The canonical categories are `game_engine`, `art_asset`, `vfx`, `animation`, `audio`, and `ai_coding`.
+
+**Persistence:** MySQL 8.4 (Docker for local dev). Only advisor sessions are persisted. Sessions are written only when `result.terminated === false`.
 
 ## Git Convention
 
-**CLAUDE.md değiştirildiğinde hemen commit yapılmalıdır.** Bu dosya projenin canlı dokümantasyonu; stale kalmaması için her değişiklik ayrı bir commit olarak kaydedilmeli.
+When `CLAUDE.md` changes, commit it immediately in its own commit. This file is live project documentation and should not stay stale.
 
 ## Key Conventions
 
+- Read `replit.md` before starting project work.
+- Treat `lib/api-spec/openapi.yaml` as the API source of truth.
+- Use OpenAI Docs MCP for OpenAI API, embeddings, RAG, model, and structured-output work.
 - `lib/` packages use TypeScript project references (`tsc --build`); run `pnpm run typecheck:libs` to rebuild them before type-checking artifacts.
-- The API server is bundled to CJS via esbuild (`artifacts/api-server/build.mjs`); it is **not** run with `tsx` in production.
+- The API server is bundled to CJS via esbuild (`artifacts/api-server/build.mjs`); it is not run with `tsx` in production.
 - Zod imports use `zod/v4` (the v4 API surface); do not use the old `zod` default import style.
-- `pnpm-workspace.yaml` enforces a 1-day minimum package release age as a supply-chain defense — do not remove `minimumReleaseAge: 1440`.
+- `pnpm-workspace.yaml` enforces a 1-day minimum package release age as a supply-chain defense; do not remove `minimumReleaseAge: 1440`.
 - The frontend uses Tailwind CSS v4 (`@tailwindcss/vite` plugin) with shadcn/ui components.
