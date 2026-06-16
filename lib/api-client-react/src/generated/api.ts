@@ -115,7 +115,7 @@ export function useHealthCheck<
 }
 
 /**
- * Takes user project inputs and returns a full AI-powered tool stack recommendation with RAG-backed rationale
+ * Takes user project inputs and streams a full AI-powered tool stack recommendation with RAG-backed rationale
  * @summary Analyze project and recommend tools
  */
 export const getAnalyzeProjectUrl = () => {
@@ -611,7 +611,7 @@ export function useGetToolCategories<
 }
 
 /**
- * Returns stats like total analyses, most recommended tools, popular categories
+ * Returns stats like total analyses, most recommended tools, and popular categories
  * @summary Get advisor usage statistics
  */
 export const getGetAdvisorStatsUrl = () => {

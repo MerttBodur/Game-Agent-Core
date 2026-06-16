@@ -13,7 +13,6 @@ export type ProjectInputBudget =
   (typeof ProjectInputBudget)[keyof typeof ProjectInputBudget];
 
 export const ProjectInputBudget = {
-  zero: "zero",
   low: "low",
   medium: "medium",
   high: "high",

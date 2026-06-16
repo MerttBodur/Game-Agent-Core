@@ -5,47 +5,17 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
-import type { AnalysisResultTrustTier } from "./analysisResultTrustTier";
-import type { CategoryRecommendation } from "./categoryRecommendation";
-import type { CategoryResults } from "./categoryResults";
 import type { EngineDecision } from "./engineDecision";
-import type { IdeaScoreTier } from "./ideaScoreTier";
-import type { LockedCategory } from "./lockedCategory";
-import type { ProjectArchetype } from "./projectArchetype";
-import type { ProjectMode } from "./projectMode";
 import type { Recommendation } from "./recommendation";
-import type { Retrieval } from "./retrieval";
-import type { RetryMetadata } from "./retryMetadata";
-import type { SkippedCategory } from "./skippedCategory";
 
 export interface AnalysisResult {
   /** Empty string when terminated is true */
   sessionId: string;
-  projectSummary: string;
-  /**
-   * @minimum 0
-   * @maximum 100
-   */
-  trustScore: number;
-  trustTier: AnalysisResultTrustTier;
+  feasible: boolean;
+  reason: string;
   terminated: boolean;
-  retrieval: Retrieval;
-  detectedProjectType: string;
-  overallConfidence: number;
-  /** @nullable */
-  stackOverview: string | null;
-  ideaScore: number;
-  ideaScoreTier: IdeaScoreTier;
-  mismatchReasons: string[];
-  archetype: ProjectArchetype;
-  projectMode: ProjectMode;
-  feasibilityOverridden: boolean;
-  categoryResults?: CategoryResults;
-  categories?: CategoryRecommendation[];
+  projectSummary: string;
   engineDecision?: EngineDecision;
-  lockedCategories?: LockedCategory[];
-  skippedCategories?: SkippedCategory[];
-  retryMetadata?: RetryMetadata;
   recommendations: Recommendation[];
   finalSummary: string;
 }

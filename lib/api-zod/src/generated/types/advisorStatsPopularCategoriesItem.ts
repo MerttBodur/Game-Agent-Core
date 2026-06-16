@@ -5,8 +5,9 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
+import type { Category } from "./category";
 
 export type AdvisorStatsPopularCategoriesItem = {
-  category: string;
+  category: Category;
   count: number;
 };

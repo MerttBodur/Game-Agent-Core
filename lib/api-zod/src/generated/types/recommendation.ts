@@ -5,12 +5,13 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
-import type { RecommendationCategory } from "./recommendationCategory";
+import type { Category } from "./category";
 import type { RecommendationItem } from "./recommendationItem";
 
 export interface Recommendation {
-  category: RecommendationCategory;
+  category: Category;
   primary: RecommendationItem;
   /** @maxItems 2 */
   alternatives: RecommendationItem[];
+  reasoning: string;
 }

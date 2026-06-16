@@ -11,7 +11,7 @@ import type { EngineDecisionPicked } from "./engineDecisionPicked";
 
 export interface EngineDecision {
   picked: EngineDecisionPicked;
-  userPreferred: null | "Unity" | "Unreal" | "Godot" | "Custom" | "unknown";
+  userPreferred: null | "Unity" | "Unreal" | "Godot";
   agreement: EngineDecisionAgreement;
   reasoning: string;
   alternativesConsidered: EngineDecisionAlternativesConsideredItem[];

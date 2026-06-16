@@ -6,11 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type EngineDecisionPicked =
-  (typeof EngineDecisionPicked)[keyof typeof EngineDecisionPicked];
+export type ToolEngineCompatibilityItem =
+  (typeof ToolEngineCompatibilityItem)[keyof typeof ToolEngineCompatibilityItem];
 
-export const EngineDecisionPicked = {
+export const ToolEngineCompatibilityItem = {
   Unity: "Unity",
   Unreal: "Unreal",
   Godot: "Godot",
+  any: "any",
 } as const;

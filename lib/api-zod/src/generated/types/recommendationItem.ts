@@ -5,19 +5,16 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
-import type { Phase } from "./phase";
 
 export interface RecommendationItem {
   toolId: string;
   /**
    * @minimum 0
-   * @maximum 100
+   * @maximum 10
    */
   score: number;
+  scoreReason: string;
   reasoning: string;
   pros: string[];
   cons: string[];
-  compatibility: string;
-  useCaseJustification: string;
-  phase: Phase[];
 }

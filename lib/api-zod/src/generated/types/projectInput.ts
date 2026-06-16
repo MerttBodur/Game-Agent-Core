@@ -5,38 +5,32 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
+import type { Category } from "./category";
 import type { ProjectInputArtCapability } from "./projectInputArtCapability";
 import type { ProjectInputBudget } from "./projectInputBudget";
 import type { ProjectInputSkillLevel } from "./projectInputSkillLevel";
 import type { ProjectInputTeamSize } from "./projectInputTeamSize";
-import type { ProjectInputTimeLimit } from "./projectInputTimeLimit";
 
 export interface ProjectInput {
   /** Description of the game project idea */
   projectIdea: string;
   /** Budget range for the project */
   budget: ProjectInputBudget;
-  /** Time available for the project */
-  timeLimit: ProjectInputTimeLimit;
   /** Developer skill level */
   skillLevel: ProjectInputSkillLevel;
   /** Team size */
   teamSize: ProjectInputTeamSize;
-  /** Target platforms (pc, mobile, web, console, vr) */
+  /** Target platforms (pc, mobile, web, console, vr, ar) */
   platformTarget: string[];
   /** Art and design capability level */
   artCapability: ProjectInputArtCapability;
-  /** Whether the project requires multiplayer */
-  multiplayer: boolean;
+  /** Category ids where user accepts paid tools. Empty = prefer free. */
+  paidPriorityCategories?: Category[];
+  /** Tool ids the user explicitly wants kept. */
+  pinnedToolIds?: string[];
   /**
    * Any other constraints or notes
    * @nullable
    */
-  otherConstraints?: string | null;
-  /** Category ids where user accepts paid tools. Empty = prefer free. */
-  paidPriorityCategories?: string[];
-  /** Tool ids the user explicitly wants kept; reasoning will adapt around them. */
-  pinnedToolIds?: string[];
-  /** Set true to bypass block-tier early-return */
-  adviseAnyway?: boolean;
+  notes?: string | null;
 }

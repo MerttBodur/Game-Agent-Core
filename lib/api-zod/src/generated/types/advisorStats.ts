@@ -12,5 +12,5 @@ export interface AdvisorStats {
   totalAnalyses: number;
   topRecommendedTools: AdvisorStatsTopRecommendedToolsItem[];
   popularCategories: AdvisorStatsPopularCategoriesItem[];
-  avgConfidenceScore: number;
+  avgRecommendationsPerAnalysis: number;
 }

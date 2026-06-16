@@ -5,15 +5,10 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
-import type { SessionSummaryTrustTier } from "./sessionSummaryTrustTier";
 
 export interface SessionSummary {
   id: string;
   projectIdea: string;
-  trustScore: number;
-  trustTier: SessionSummaryTrustTier;
-  detectedProjectType: string;
-  overallConfidence: number;
-  stackOverview: string;
+  feasible: boolean;
   createdAt: Date;
 }

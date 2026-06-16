@@ -13,6 +13,4 @@ export const EngineDecisionAlternativesConsideredItemEngine = {
   Unity: "Unity",
   Unreal: "Unreal",
   Godot: "Godot",
-  Custom: "Custom",
-  unknown: "unknown",
 } as const;

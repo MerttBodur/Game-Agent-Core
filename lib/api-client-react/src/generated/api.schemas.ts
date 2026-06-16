@@ -13,6 +13,17 @@ export interface ErrorResponse {
   error: string;
 }
 
+export type Category = (typeof Category)[keyof typeof Category];
+
+export const Category = {
+  game_engine: "game_engine",
+  art_asset: "art_asset",
+  vfx: "vfx",
+  animation: "animation",
+  audio: "audio",
+  ai_coding: "ai_coding",
+} as const;
+
 /**
  * Budget range for the project
  */
@@ -20,25 +31,10 @@ export type ProjectInputBudget =
   (typeof ProjectInputBudget)[keyof typeof ProjectInputBudget];
 
 export const ProjectInputBudget = {
-  zero: "zero",
   low: "low",
   medium: "medium",
   high: "high",
   enterprise: "enterprise",
-} as const;
-
-/**
- * Time available for the project
- */
-export type ProjectInputTimeLimit =
-  (typeof ProjectInputTimeLimit)[keyof typeof ProjectInputTimeLimit];
-
-export const ProjectInputTimeLimit = {
-  jam: "jam",
-  month: "month",
-  quarter: "quarter",
-  year: "year",
-  longterm: "longterm",
 } as const;
 
 /**
@@ -84,224 +80,45 @@ export interface ProjectInput {
   projectIdea: string;
   /** Budget range for the project */
   budget: ProjectInputBudget;
-  /** Time available for the project */
-  timeLimit: ProjectInputTimeLimit;
   /** Developer skill level */
   skillLevel: ProjectInputSkillLevel;
   /** Team size */
   teamSize: ProjectInputTeamSize;
-  /** Target platforms (pc, mobile, web, console, vr) */
+  /** Target platforms (pc, mobile, web, console, vr, ar) */
   platformTarget: string[];
   /** Art and design capability level */
   artCapability: ProjectInputArtCapability;
-  /** Whether the project requires multiplayer */
-  multiplayer: boolean;
+  /** Category ids where user accepts paid tools. Empty = prefer free. */
+  paidPriorityCategories?: Category[];
+  /** Tool ids the user explicitly wants kept. */
+  pinnedToolIds?: string[];
   /**
    * Any other constraints or notes
    * @nullable
    */
-  otherConstraints?: string | null;
-  /** Category ids where user accepts paid tools. Empty = prefer free. */
-  paidPriorityCategories?: string[];
-  /** Tool ids the user explicitly wants kept; reasoning will adapt around them. */
-  pinnedToolIds?: string[];
-  /** Set true to bypass block-tier early-return */
-  adviseAnyway?: boolean;
+  notes?: string | null;
 }
-
-export type Phase = (typeof Phase)[keyof typeof Phase];
-
-export const Phase = {
-  planning: "planning",
-  programming: "programming",
-  version_control: "version_control",
-  art_assets: "art_assets",
-  audio: "audio",
-  deployment_publishing: "deployment_publishing",
-} as const;
 
 export interface RecommendationItem {
   toolId: string;
   /**
    * @minimum 0
-   * @maximum 100
+   * @maximum 10
    */
   score: number;
+  scoreReason: string;
   reasoning: string;
   pros: string[];
   cons: string[];
-  compatibility: string;
-  useCaseJustification: string;
-  phase: Phase[];
 }
 
-export type RecommendationCategory =
-  (typeof RecommendationCategory)[keyof typeof RecommendationCategory];
-
-export const RecommendationCategory = {
-  game_engine: "game_engine",
-  ide: "ide",
-  version_control: "version_control",
-  art_asset_creation: "art_asset_creation",
-  audio: "audio",
-  ai_coding_assistant: "ai_coding_assistant",
-  deployment_publishing: "deployment_publishing",
-} as const;
-
 export interface Recommendation {
-  category: RecommendationCategory;
+  category: Category;
   primary: RecommendationItem;
   /** @maxItems 2 */
   alternatives: RecommendationItem[];
-}
-
-export type RetrievalRelevantCategoriesItem =
-  (typeof RetrievalRelevantCategoriesItem)[keyof typeof RetrievalRelevantCategoriesItem];
-
-export const RetrievalRelevantCategoriesItem = {
-  game_engine: "game_engine",
-  ide: "ide",
-  version_control: "version_control",
-  art_asset_creation: "art_asset_creation",
-  audio: "audio",
-  ai_coding_assistant: "ai_coding_assistant",
-  deployment_publishing: "deployment_publishing",
-} as const;
-
-export type RetrievalCandidateToolsItem = {
-  toolId: string;
-  nodePath: string;
-  fitNote: string;
-};
-
-export type RetrievalRejectedToolsItem = {
-  toolId: string;
-  reason: string;
-};
-
-export type RetrievalFallbackStatus =
-  (typeof RetrievalFallbackStatus)[keyof typeof RetrievalFallbackStatus];
-
-export const RetrievalFallbackStatus = {
-  ok: "ok",
-  weak_coverage: "weak_coverage",
-  ambiguous_input: "ambiguous_input",
-  missing_domain: "missing_domain",
-} as const;
-
-export interface Retrieval {
-  relevantCategories: RetrievalRelevantCategoriesItem[];
-  candidateTools: RetrievalCandidateToolsItem[];
-  rejectedTools: RetrievalRejectedToolsItem[];
-  missingInformationNotes: string[];
-  /**
-   * @minimum 0
-   * @maximum 100
-   */
-  retrievalConfidence: number;
-  fallbackStatus: RetrievalFallbackStatus;
-}
-
-export type ArchetypeScope =
-  (typeof ArchetypeScope)[keyof typeof ArchetypeScope];
-
-export const ArchetypeScope = {
-  jam: "jam",
-  prototype: "prototype",
-  indie: "indie",
-  AA: "AA",
-  AAA: "AAA",
-} as const;
-
-export type ProjectMode = (typeof ProjectMode)[keyof typeof ProjectMode];
-
-export const ProjectMode = {
-  single_player: "single_player",
-  co_op_local: "co_op_local",
-  multiplayer_online: "multiplayer_online",
-  live_service: "live_service",
-} as const;
-
-export type IdeaScoreTier = (typeof IdeaScoreTier)[keyof typeof IdeaScoreTier];
-
-export const IdeaScoreTier = {
-  block: "block",
-  warn: "warn",
-  pass: "pass",
-} as const;
-
-export interface ArchetypePair {
-  scope: ArchetypeScope;
-}
-
-export interface ProjectArchetype {
-  implied: ArchetypePair;
-  achievable: ArchetypePair;
-}
-
-export type EvidenceScoreBreakdown = {
-  budget?: number;
-  skill?: number;
-  platform?: number;
-  timeLimit?: number;
-  artCapability?: number;
-  popularity?: number;
-  paidPriority?: number;
-  jitter?: number;
-  total?: number;
-};
-
-export type EvidenceRagChunksItem = {
-  text: string;
-  source: string;
-};
-
-export interface Evidence {
-  scoreBreakdown: EvidenceScoreBreakdown;
-  ragChunks: EvidenceRagChunksItem[];
-}
-
-export interface CategoryRecommendationTool {
-  toolId: string | number;
-  toolName: string;
-  score: number;
   reasoning: string;
-  strengths: string[];
-  weaknesses: string[];
-  tradeoffs: string;
-  evidence?: Evidence;
-  isTopPick: boolean;
 }
-
-export interface CategoryRecommendation {
-  category: string;
-  categoryLabel: string;
-  topPick: CategoryRecommendationTool;
-  alternatives: CategoryRecommendationTool[];
-  categoryReasoning: string;
-}
-
-export type CategoryResultsCandidatePoolItem = { [key: string]: unknown };
-
-export type CategoryResultsCandidatePool = {
-  [key: string]: CategoryResultsCandidatePoolItem[];
-};
-
-export interface CategoryResults {
-  locked: CategoryRecommendation[];
-  flexible: CategoryRecommendation[];
-  hidden: string[];
-  candidatePool: CategoryResultsCandidatePool;
-}
-
-export type AnalysisResultTrustTier =
-  (typeof AnalysisResultTrustTier)[keyof typeof AnalysisResultTrustTier];
-
-export const AnalysisResultTrustTier = {
-  block: "block",
-  warn: "warn",
-  pass: "pass",
-} as const;
 
 export type EngineDecisionPicked =
   (typeof EngineDecisionPicked)[keyof typeof EngineDecisionPicked];
@@ -310,7 +127,6 @@ export const EngineDecisionPicked = {
   Unity: "Unity",
   Unreal: "Unreal",
   Godot: "Godot",
-  Custom: "Custom",
 } as const;
 
 export type EngineDecisionAgreement =
@@ -329,8 +145,6 @@ export const EngineDecisionAlternativesConsideredItemEngine = {
   Unity: "Unity",
   Unreal: "Unreal",
   Godot: "Godot",
-  Custom: "Custom",
-  unknown: "unknown",
 } as const;
 
 export type EngineDecisionAlternativesConsideredItem = {
@@ -340,92 +154,28 @@ export type EngineDecisionAlternativesConsideredItem = {
 
 export interface EngineDecision {
   picked: EngineDecisionPicked;
-  userPreferred: null | "Unity" | "Unreal" | "Godot" | "Custom" | "unknown";
+  userPreferred: null | "Unity" | "Unreal" | "Godot";
   agreement: EngineDecisionAgreement;
   reasoning: string;
   alternativesConsidered: EngineDecisionAlternativesConsideredItem[];
 }
 
-export interface LockedCategory {
-  category: string;
-  lockedTo: string[];
-  note: string;
-}
-
-export interface SkippedCategory {
-  category: string;
-  reason: string;
-}
-
-export type RetryHistoryItemMode =
-  (typeof RetryHistoryItemMode)[keyof typeof RetryHistoryItemMode];
-
-export const RetryHistoryItemMode = {
-  broaden: "broaden",
-  pre_filter: "pre_filter",
-} as const;
-
-export interface RetryHistoryItem {
-  attempt: number;
-  mode: RetryHistoryItemMode;
-  countBefore: number;
-  categories?: string[];
-}
-
-export interface RetryMetadata {
-  retryCount: number;
-  history: RetryHistoryItem[];
-}
-
 export interface AnalysisResult {
   /** Empty string when terminated is true */
   sessionId: string;
-  projectSummary: string;
-  /**
-   * @minimum 0
-   * @maximum 100
-   */
-  trustScore: number;
-  trustTier: AnalysisResultTrustTier;
+  feasible: boolean;
+  reason: string;
   terminated: boolean;
-  retrieval: Retrieval;
-  detectedProjectType: string;
-  overallConfidence: number;
-  /** @nullable */
-  stackOverview: string | null;
-  ideaScore: number;
-  ideaScoreTier: IdeaScoreTier;
-  mismatchReasons: string[];
-  archetype: ProjectArchetype;
-  projectMode: ProjectMode;
-  feasibilityOverridden: boolean;
-  categoryResults?: CategoryResults;
-  categories?: CategoryRecommendation[];
+  projectSummary: string;
   engineDecision?: EngineDecision;
-  lockedCategories?: LockedCategory[];
-  skippedCategories?: SkippedCategory[];
-  retryMetadata?: RetryMetadata;
   recommendations: Recommendation[];
   finalSummary: string;
 }
 
-export type SessionSummaryTrustTier =
-  (typeof SessionSummaryTrustTier)[keyof typeof SessionSummaryTrustTier];
-
-export const SessionSummaryTrustTier = {
-  block: "block",
-  warn: "warn",
-  pass: "pass",
-} as const;
-
 export interface SessionSummary {
   id: string;
   projectIdea: string;
-  trustScore: number;
-  trustTier: SessionSummaryTrustTier;
-  detectedProjectType: string;
-  overallConfidence: number;
-  stackOverview: string;
+  feasible: boolean;
   createdAt: string;
 }
 
@@ -436,29 +186,32 @@ export interface Session {
   createdAt: string;
 }
 
-export type ToolCategoryProperty =
-  (typeof ToolCategoryProperty)[keyof typeof ToolCategoryProperty];
+export type ToolToolNature =
+  (typeof ToolToolNature)[keyof typeof ToolToolNature];
 
-export const ToolCategoryProperty = {
-  game_engine: "game_engine",
-  ide: "ide",
-  version_control: "version_control",
-  art_asset_creation: "art_asset_creation",
-  audio: "audio",
-  ai_coding_assistant: "ai_coding_assistant",
-  deployment_publishing: "deployment_publishing",
+export const ToolToolNature = {
+  ai: "ai",
+  traditional: "traditional",
+  hybrid: "hybrid",
 } as const;
 
-export type ToolSupportedPlatformsItem =
-  (typeof ToolSupportedPlatformsItem)[keyof typeof ToolSupportedPlatformsItem];
+export type ToolLearningCurve =
+  (typeof ToolLearningCurve)[keyof typeof ToolLearningCurve];
 
-export const ToolSupportedPlatformsItem = {
-  pc: "pc",
-  mobile: "mobile",
-  web: "web",
-  console: "console",
-  vr: "vr",
-  ar: "ar",
+export const ToolLearningCurve = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+} as const;
+
+export type ToolEngineCompatibilityItem =
+  (typeof ToolEngineCompatibilityItem)[keyof typeof ToolEngineCompatibilityItem];
+
+export const ToolEngineCompatibilityItem = {
+  Unity: "Unity",
+  Unreal: "Unreal",
+  Godot: "Godot",
+  any: "any",
 } as const;
 
 export type ToolPricing = (typeof ToolPricing)[keyof typeof ToolPricing];
@@ -482,96 +235,44 @@ export const ToolDifficultyLevel = {
   advanced: "advanced",
 } as const;
 
-export type ToolMinSkillLevel =
-  (typeof ToolMinSkillLevel)[keyof typeof ToolMinSkillLevel];
+export type ToolSupportedPlatformsItem =
+  (typeof ToolSupportedPlatformsItem)[keyof typeof ToolSupportedPlatformsItem];
 
-export const ToolMinSkillLevel = {
-  beginner: "beginner",
-  intermediate: "intermediate",
-  advanced: "advanced",
-  expert: "expert",
-} as const;
-
-export type ToolTeamSizeFitItem =
-  (typeof ToolTeamSizeFitItem)[keyof typeof ToolTeamSizeFitItem];
-
-export const ToolTeamSizeFitItem = {
-  solo: "solo",
-  small: "small",
-  medium: "medium",
-  large: "large",
-} as const;
-
-export type ToolFit2d3d = (typeof ToolFit2d3d)[keyof typeof ToolFit2d3d];
-
-export const ToolFit2d3d = {
-  "2d": "2d",
-  "3d": "3d",
-  both: "both",
-} as const;
-
-export type ToolPhaseItem = (typeof ToolPhaseItem)[keyof typeof ToolPhaseItem];
-
-export const ToolPhaseItem = {
-  planning: "planning",
-  programming: "programming",
-  version_control: "version_control",
-  art_assets: "art_assets",
-  audio: "audio",
-  deployment_publishing: "deployment_publishing",
+export const ToolSupportedPlatformsItem = {
+  pc: "pc",
+  mobile: "mobile",
+  web: "web",
+  console: "console",
+  vr: "vr",
+  ar: "ar",
 } as const;
 
 export interface Tool {
   /** Stable snake_case slug */
   id: string;
   name: string;
-  category: ToolCategoryProperty;
-  /** @nullable */
-  subcategory?: string | null;
+  categories: Category[];
   description: string;
   bestUseCase: string;
-  bestFor: string[];
-  supportedPlatforms: ToolSupportedPlatformsItem[];
-  platforms: string[];
+  toolNature: ToolToolNature;
+  learningCurve: ToolLearningCurve;
+  engineCompatibility: ToolEngineCompatibilityItem[];
   pricing: ToolPricing;
   difficultyLevel: ToolDifficultyLevel;
-  minSkillLevel: ToolMinSkillLevel;
   /**
    * @minimum 0
    * @maximum 100
    */
   beginnerSuitability: number;
-  teamSizeFit: ToolTeamSizeFitItem[];
-  genreFit: string[];
-  fit2d3d: ToolFit2d3d;
+  supportedPlatforms: ToolSupportedPlatformsItem[];
   pros: string[];
-  strengths: string[];
   cons: string[];
-  weaknesses: string[];
-  alternatives: string[];
-  tags: string[];
-  phase: ToolPhaseItem[];
-  /** @nullable */
-  website?: string | null;
+  website?: string;
 }
 
-export type ToolCategoryId =
-  (typeof ToolCategoryId)[keyof typeof ToolCategoryId];
-
-export const ToolCategoryId = {
-  game_engine: "game_engine",
-  ide: "ide",
-  version_control: "version_control",
-  art_asset_creation: "art_asset_creation",
-  audio: "audio",
-  ai_coding_assistant: "ai_coding_assistant",
-  deployment_publishing: "deployment_publishing",
-} as const;
-
 export interface ToolCategory {
-  id: ToolCategoryId;
+  id: Category;
   label: string;
-  description: string;
   toolCount: number;
 }
 
@@ -581,7 +282,7 @@ export type AdvisorStatsTopRecommendedToolsItem = {
 };
 
 export type AdvisorStatsPopularCategoriesItem = {
-  category: string;
+  category: Category;
   count: number;
 };
 
@@ -589,7 +290,7 @@ export interface AdvisorStats {
   totalAnalyses: number;
   topRecommendedTools: AdvisorStatsTopRecommendedToolsItem[];
   popularCategories: AdvisorStatsPopularCategoriesItem[];
-  avgConfidenceScore: number;
+  avgRecommendationsPerAnalysis: number;
 }
 
 export type ListToolsParams = {
@@ -597,6 +298,5 @@ export type ListToolsParams = {
   platform?: string;
   pricing?: string;
   difficulty?: string;
-  teamSize?: string;
-  fit2d3d?: string;
+  toolNature?: string;
 };

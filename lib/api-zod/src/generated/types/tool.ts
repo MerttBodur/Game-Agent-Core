@@ -5,45 +5,33 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
-import type { ToolCategoryProperty } from "./toolCategoryProperty";
+import type { Category } from "./category";
 import type { ToolDifficultyLevel } from "./toolDifficultyLevel";
-import type { ToolFit2d3d } from "./toolFit2d3d";
-import type { ToolMinSkillLevel } from "./toolMinSkillLevel";
-import type { ToolPhaseItem } from "./toolPhaseItem";
+import type { ToolEngineCompatibilityItem } from "./toolEngineCompatibilityItem";
+import type { ToolLearningCurve } from "./toolLearningCurve";
 import type { ToolPricing } from "./toolPricing";
 import type { ToolSupportedPlatformsItem } from "./toolSupportedPlatformsItem";
-import type { ToolTeamSizeFitItem } from "./toolTeamSizeFitItem";
+import type { ToolToolNature } from "./toolToolNature";
 
 export interface Tool {
   /** Stable snake_case slug */
   id: string;
   name: string;
-  category: ToolCategoryProperty;
-  /** @nullable */
-  subcategory?: string | null;
+  categories: Category[];
   description: string;
   bestUseCase: string;
-  bestFor: string[];
-  supportedPlatforms: ToolSupportedPlatformsItem[];
-  platforms: string[];
+  toolNature: ToolToolNature;
+  learningCurve: ToolLearningCurve;
+  engineCompatibility: ToolEngineCompatibilityItem[];
   pricing: ToolPricing;
   difficultyLevel: ToolDifficultyLevel;
-  minSkillLevel: ToolMinSkillLevel;
   /**
    * @minimum 0
    * @maximum 100
    */
   beginnerSuitability: number;
-  teamSizeFit: ToolTeamSizeFitItem[];
-  genreFit: string[];
-  fit2d3d: ToolFit2d3d;
+  supportedPlatforms: ToolSupportedPlatformsItem[];
   pros: string[];
-  strengths: string[];
   cons: string[];
-  weaknesses: string[];
-  alternatives: string[];
-  tags: string[];
-  phase: ToolPhaseItem[];
-  /** @nullable */
-  website?: string | null;
+  website?: string;
 }
