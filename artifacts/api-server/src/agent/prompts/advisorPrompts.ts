@@ -68,3 +68,47 @@ export function engineSystemPrompt(): string {
 export function engineUserPrompt(idea: string, context: string): string {
   return [`Project idea: ${idea}`, "", "Engine docs and guidance:", context || "(none retrieved)"].join("\n");
 }
+
+// Built per-request so the model can only choose from retrieved candidate ids.
+export function buildCategorySchema(candidateIds: string[]) {
+  const idEnum = z.enum(candidateIds as [string, ...string[]]);
+  const item = z.object({
+    toolId: idEnum,
+    reasoning: z.string().min(1),
+    pros: z.array(z.string().min(1)).min(1),
+    cons: z.array(z.string().min(1)).min(1),
+  });
+  return z.object({
+    primary: item,
+    alternatives: z.array(item).max(2),
+    reasoning: z.string().min(1),
+  });
+}
+
+export function categorySystemPrompt(category: string): string {
+  return [
+    `You recommend tools for the "${category}" category of a game project.`,
+    "Choose ONE primary tool and up to 2 alternatives, ONLY from the provided candidates.",
+    "Apply the AI-vs-traditional rule: when skill/art capability is low and budget is tight,",
+    "prefer ai / low-learning-curve tools (e.g. Meshy) over high-curve standalone tools (e.g. Blender), and say why.",
+    "Answer in English.",
+  ].join("\n");
+}
+
+export function categoryUserPrompt(args: {
+  idea: string;
+  budget: string;
+  skillLevel: string;
+  artCapability: string;
+  category: string;
+  candidates: string;
+}): string {
+  return [
+    `Project idea: ${args.idea}`,
+    `Budget: ${args.budget}, Skill: ${args.skillLevel}, Art capability: ${args.artCapability}`,
+    `Category: ${args.category}`,
+    "",
+    "Candidate tools (choose only from these):",
+    args.candidates,
+  ].join("\n");
+}
