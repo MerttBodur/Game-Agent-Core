@@ -9,7 +9,8 @@
     "start": "node --enable-source-maps ./dist/index.mjs",
     "test": "tsx --test src/agent/constraints/apply.test.ts src/agent/steps/checkRetry.test.ts src/agent/steps/broaden.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "tree:build": "tsx ./src/scripts/buildTree.ts"
+    "tree:build": "tsx ./src/scripts/buildTree.ts",
+    "rag:index": "tsx ./src/scripts/indexRag.ts"
   },
   "dependencies": {
     "@langchain/community": "^1.1.29",
