@@ -1,0 +1,53 @@
+[
+  {
+    "id": "unity",
+    "name": "Unity",
+    "categories": ["game_engine"],
+    "description": "Cross-platform C# game engine with a large asset store and strong mobile support.",
+    "bestUseCase": "Cross-platform 2D/3D games, especially mobile.",
+    "toolNature": "traditional",
+    "learningCurve": "medium",
+    "engineCompatibility": ["Unity"],
+    "pricing": "freemium",
+    "difficultyLevel": "intermediate",
+    "beginnerSuitability": 65,
+    "supportedPlatforms": ["pc", "mobile", "web", "console", "vr", "ar"],
+    "pros": ["Huge ecosystem", "Cross-platform", "C# tooling"],
+    "cons": ["Editor can feel heavy", "Licensing changes have been controversial"],
+    "website": "https://unity.com"
+  },
+  {
+    "id": "blender",
+    "name": "Blender",
+    "categories": ["art_asset", "vfx", "animation"],
+    "description": "Free open-source 3D creation suite for modeling, sculpting, texturing, rigging, animation, and VFX.",
+    "bestUseCase": "End-to-end 3D asset and animation production.",
+    "toolNature": "traditional",
+    "learningCurve": "high",
+    "engineCompatibility": ["any"],
+    "pricing": "open_source",
+    "difficultyLevel": "advanced",
+    "beginnerSuitability": 30,
+    "supportedPlatforms": ["pc"],
+    "pros": ["Free and open-source", "Full 3D pipeline", "Large community"],
+    "cons": ["Steep learning curve", "Demanding for low-end machines"],
+    "website": "https://www.blender.org"
+  },
+  {
+    "id": "meshy",
+    "name": "Meshy",
+    "categories": ["art_asset"],
+    "description": "AI tool that generates 3D models from text or images, suitable for fast asset prototyping.",
+    "bestUseCase": "Generating 3D assets quickly without modeling skills.",
+    "toolNature": "ai",
+    "learningCurve": "low",
+    "engineCompatibility": ["any"],
+    "pricing": "freemium",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 90,
+    "supportedPlatforms": ["web"],
+    "pros": ["No modeling skill required", "Very fast", "Engine-agnostic exports"],
+    "cons": ["Limited fine control", "Quality varies by prompt"],
+    "website": "https://www.meshy.ai"
+  }
+]
