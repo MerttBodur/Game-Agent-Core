@@ -112,3 +112,29 @@ export function categoryUserPrompt(args: {
     args.candidates,
   ].join("\n");
 }
+
+export function buildReviewSchema(recommendedIds: string[]) {
+  return z.object({
+    projectSummary: z.string().min(1),
+    finalSummary: z.string().min(1),
+    scoreReasons: z.array(
+      z.object({
+        toolId: z.enum(recommendedIds as [string, ...string[]]),
+        scoreReason: z.string().min(1),
+      }),
+    ),
+  });
+}
+
+export function reviewSystemPrompt(): string {
+  return [
+    "You are a senior game-development consultant reviewing a recommended tool stack.",
+    "Each tool already has a deterministic score out of 10. For EACH tool, write a one-sentence scoreReason",
+    "explaining why it scored what it did given the constraints (e.g. why 8/10 and not 10/10).",
+    "Then write a short markdown finalSummary (max ~200 words) and a one-line projectSummary. English only.",
+  ].join("\n");
+}
+
+export function reviewUserPrompt(idea: string, stack: string): string {
+  return [`Project idea: ${idea}`, "", "Scored recommendations:", stack].join("\n");
+}
