@@ -18,7 +18,6 @@ const SKILL_COLORS: Record<string, string> = {
   beginner: "text-green-400",
   intermediate: "text-yellow-400",
   advanced: "text-orange-400",
-  expert: "text-red-400",
 };
 
 function getFriendlyErrorMessage(error: unknown): string {
@@ -119,12 +118,12 @@ export default function Tools() {
                   <p className="text-xs text-muted-foreground leading-relaxed flex-1 mb-3">{tool.description}</p>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-wrap gap-1">
-                      {tool.tags.slice(0, 3).map((tag) => (
+                      {[...tool.categories, tool.toolNature].slice(0, 3).map((tag) => (
                         <Badge key={tag} variant="secondary" className="text-xs px-1.5 py-0">{tag}</Badge>
                       ))}
                     </div>
-                    <span className={`text-xs font-medium ${SKILL_COLORS[tool.minSkillLevel] ?? ""}`}>
-                      {tool.minSkillLevel}+
+                    <span className={`text-xs font-medium ${SKILL_COLORS[tool.difficultyLevel] ?? ""}`}>
+                      {tool.difficultyLevel}
                     </span>
                   </div>
                 </Card>

@@ -1,63 +1,31 @@
-import { useGetSession, getGetSessionQueryKey, useListTools } from "@workspace/api-client-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  getGetSessionQueryKey,
+  useGetSession,
+  useListTools,
+} from "@workspace/api-client-react";
+import type { Recommendation, RecommendationItem } from "@workspace/api-client-react";
 import { Link, useParams } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useMemo, useState } from "react";
 
 const CATEGORY_LABELS: Record<string, string> = {
   game_engine: "Game Engine",
-  ide: "IDE",
-  version_control: "Version Control",
-  art_asset_creation: "Art & Asset Creation",
+  art_asset: "Art & Asset",
+  vfx: "VFX",
+  animation: "Animation",
   audio: "Audio",
-  ai_coding_assistant: "AI Coding Assistant",
-  deployment_publishing: "Deployment & Publishing",
+  ai_coding: "AI Coding Tool",
 };
 
-// Backend's actual saved-session result shape (same as the SSE `done` payload
-// from /advisor/analyze). The codegen type advertises feasibility/archetype
-// fields that the runtime backend does not produce yet.
-interface BackendRecommendationItem {
-  toolId: string;
-  score: number;
-  reasoning: string;
-  pros: string[];
-  cons: string[];
-  compatibility: string;
-  useCaseJustification: string;
-  phase: string[];
-}
-
-interface BackendRecommendation {
-  category: string;
-  primary: BackendRecommendationItem;
-  alternatives: BackendRecommendationItem[];
-}
-
-interface BackendAnalysisResult {
-  sessionId: string;
-  projectSummary: string;
-  trustScore: number;
-  trustTier: "block" | "warn" | "pass";
-  terminated: boolean;
-  recommendations: BackendRecommendation[];
-  finalSummary: string;
-}
-
-interface BackendSessionDetail {
-  id: string;
-  projectInput: { projectIdea?: string; [key: string]: unknown };
-  result: BackendAnalysisResult;
-  createdAt: string;
-}
-
 function ScoreBar({ score }: { score: number }) {
-  const cls = score >= 75 ? "" : score >= 55 ? " score-bar-fill-medium" : " score-bar-fill-low";
+  const width = Math.max(0, Math.min(100, score * 10));
+  const cls = score >= 8 ? "" : score >= 6 ? " score-bar-fill-medium" : " score-bar-fill-low";
   return (
     <div className="score-bar w-full">
-      <div className={`score-bar-fill${cls}`} style={{ width: `${score}%` }} />
+      <div className={`score-bar-fill${cls}`} style={{ width: `${width}%` }} />
     </div>
   );
 }
@@ -67,27 +35,30 @@ function ItemBlock({
   toolName,
   isPrimary,
 }: {
-  item: BackendRecommendationItem;
+  item: RecommendationItem;
   toolName: string;
   isPrimary: boolean;
 }) {
   return (
     <div className={isPrimary ? "" : "rounded-md bg-muted/40 border border-border p-3"}>
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between gap-3 mb-1">
         <span className={isPrimary ? "text-lg font-bold text-foreground" : "text-sm font-semibold text-foreground"}>
           {toolName}
         </span>
-        <span className="text-sm font-mono text-primary">{item.score.toFixed(1)}</span>
+        <span className="text-sm font-mono text-primary">{item.score.toFixed(1)}/10</span>
       </div>
       <ScoreBar score={item.score} />
+      {item.scoreReason && (
+        <p className="text-xs text-primary/90 mt-2 leading-relaxed">{item.scoreReason}</p>
+      )}
       <p className="text-sm text-muted-foreground my-2 leading-relaxed">{item.reasoning}</p>
       {isPrimary && (
-        <div className="grid grid-cols-2 gap-3 mb-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
           <div>
             <p className="text-xs font-semibold text-green-400 mb-1">Strengths</p>
             <ul className="space-y-0.5">
-              {item.pros.slice(0, 3).map((s, i) => (
-                <li key={i} className="text-xs text-muted-foreground flex gap-1.5 items-start">
+              {item.pros.slice(0, 3).map((s) => (
+                <li key={s} className="text-xs text-muted-foreground flex gap-1.5 items-start">
                   <span className="text-green-500 mt-0.5 shrink-0">+</span>
                   {s}
                 </li>
@@ -95,10 +66,10 @@ function ItemBlock({
             </ul>
           </div>
           <div>
-            <p className="text-xs font-semibold text-red-400 mb-1">Weaknesses</p>
+            <p className="text-xs font-semibold text-red-400 mb-1">Tradeoffs</p>
             <ul className="space-y-0.5">
-              {item.cons.slice(0, 3).map((c, i) => (
-                <li key={i} className="text-xs text-muted-foreground flex gap-1.5 items-start">
+              {item.cons.slice(0, 3).map((c) => (
+                <li key={c} className="text-xs text-muted-foreground flex gap-1.5 items-start">
                   <span className="text-red-500 mt-0.5 shrink-0">-</span>
                   {c}
                 </li>
@@ -106,11 +77,6 @@ function ItemBlock({
             </ul>
           </div>
         </div>
-      )}
-      {isPrimary && item.compatibility && (
-        <p className="text-xs text-muted-foreground/80 mt-2">
-          <span className="font-semibold text-foreground">Compatibility:</span> {item.compatibility}
-        </p>
       )}
     </div>
   );
@@ -120,7 +86,7 @@ function RecommendationCard({
   rec,
   toolNames,
 }: {
-  rec: BackendRecommendation;
+  rec: Recommendation;
   toolNames: Record<string, string>;
 }) {
   const [showAlts, setShowAlts] = useState(false);
@@ -134,12 +100,15 @@ function RecommendationCard({
         </span>
         <Badge variant="secondary" className="text-xs">Top Pick</Badge>
       </div>
-
+      {rec.reasoning && (
+        <p className="text-xs text-muted-foreground mb-4 leading-relaxed">{rec.reasoning}</p>
+      )}
       <ItemBlock item={rec.primary} toolName={primaryName} isPrimary />
 
       {rec.alternatives.length > 0 && (
         <>
           <button
+            type="button"
             onClick={() => setShowAlts(!showAlts)}
             className="text-xs text-primary hover:underline mt-3"
           >
@@ -148,9 +117,9 @@ function RecommendationCard({
           </button>
           {showAlts && (
             <div className="mt-3 space-y-2">
-              {rec.alternatives.map((alt, i) => (
+              {rec.alternatives.map((alt) => (
                 <ItemBlock
-                  key={`${alt.toolId}-${i}`}
+                  key={alt.toolId}
                   item={alt}
                   toolName={toolNames[alt.toolId] ?? alt.toolId}
                   isPrimary={false}
@@ -167,7 +136,7 @@ function RecommendationCard({
 function getFriendlyErrorMessage(error: unknown): string {
   const e = error as { status?: number; response?: { status?: number } };
   const status = e?.status ?? e?.response?.status;
-  if (status === 429) return "You're sending requests too quickly. Please wait a minute.";
+  if (status === 429) return "You are sending requests too quickly. Please wait a minute.";
   if (status === 404) return "Not found.";
   return "Something went wrong. Please try again.";
 }
@@ -175,10 +144,9 @@ function getFriendlyErrorMessage(error: unknown): string {
 export default function SessionDetail() {
   const params = useParams<{ id: string }>();
   const id = params.id ?? "";
-  const { data: rawSession, isLoading, isError, error } = useGetSession(id, {
+  const { data: session, isLoading, isError, error } = useGetSession(id, {
     query: { enabled: !!id, queryKey: getGetSessionQueryKey(id) },
   });
-  const session = rawSession as unknown as BackendSessionDetail | undefined;
   const [copied, setCopied] = useState(false);
 
   const { data: tools } = useListTools();
@@ -200,17 +168,9 @@ export default function SessionDetail() {
   }, [session?.result?.projectSummary]);
 
   useEffect(() => {
-    if (!copied) {
-      return;
-    }
-
-    const timerId = window.setTimeout(() => {
-      setCopied(false);
-    }, 2000);
-
-    return () => {
-      window.clearTimeout(timerId);
-    };
+    if (!copied) return;
+    const timerId = window.setTimeout(() => setCopied(false), 2000);
+    return () => window.clearTimeout(timerId);
   }, [copied]);
 
   const handleCopyLink = async () => {
@@ -257,13 +217,7 @@ export default function SessionDetail() {
   }
 
   const result = session.result;
-  const projectIdea = (session.projectInput.projectIdea as string | undefined) ?? "";
-  const trustColor =
-    result.trustTier === "pass"
-      ? "text-green-400"
-      : result.trustTier === "warn"
-        ? "text-yellow-400"
-        : "text-red-400";
+  const projectIdea = session.projectInput.projectIdea ?? "";
 
   return (
     <div className="min-h-screen bg-background">
@@ -279,17 +233,21 @@ export default function SessionDetail() {
             <div className="flex-1">
               <h1 className="text-xl font-black text-foreground">{projectIdea}</h1>
             </div>
-            <div className="shrink-0 text-right">
-              <div className={`text-4xl font-black ${trustColor}`}>{result.trustScore}</div>
-              <div className="text-xs text-muted-foreground">Trust Score</div>
-            </div>
+            <Badge variant={result.feasible ? "secondary" : "destructive"} className="shrink-0">
+              {result.feasible ? "Feasible" : "Blocked"}
+            </Badge>
           </div>
           <div className="mb-3">
             <Button type="button" variant="outline" size="sm" onClick={handleCopyLink}>
               {copied ? "Link copied!" : "Copy Link"}
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground">{result.projectSummary}</p>
+          <p className="text-sm text-muted-foreground">{result.projectSummary || result.reason}</p>
+          {result.engineDecision && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Engine: <span className="text-foreground">{result.engineDecision.picked}</span>
+            </p>
+          )}
           <p className="mt-1 text-xs text-muted-foreground">{new Date(session.createdAt).toLocaleString()}</p>
         </div>
 
@@ -297,14 +255,14 @@ export default function SessionDetail() {
 
         {result.terminated ? (
           <div className="rounded-md border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
-            This session was blocked by the trust gate. Recommendations are not available.
+            {result.reason}
           </div>
         ) : result.recommendations.length === 0 ? (
           <div className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
             No recommendations were saved for this session.
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 mb-8">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mb-8">
             {result.recommendations.map((rec) => (
               <RecommendationCard key={rec.category} rec={rec} toolNames={toolNames} />
             ))}

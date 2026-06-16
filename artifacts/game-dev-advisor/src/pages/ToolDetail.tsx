@@ -69,8 +69,10 @@ export default function ToolDetail() {
             </span>
           </div>
           <div className="flex items-center gap-3 mb-4">
-            <Badge variant="secondary">{tool.category.replace("_", " ")}</Badge>
-            <span className="text-xs text-muted-foreground">Min skill: <span className="text-foreground">{tool.minSkillLevel}</span></span>
+            {tool.categories.map((category) => (
+              <Badge key={category} variant="secondary">{category.replace("_", " ")}</Badge>
+            ))}
+            <span className="text-xs text-muted-foreground">Difficulty: <span className="text-foreground">{tool.difficultyLevel}</span></span>
           </div>
           <p className="text-muted-foreground leading-relaxed">{tool.description}</p>
           {tool.website && (
@@ -84,8 +86,8 @@ export default function ToolDetail() {
           <Card className="p-4 border-border bg-card">
             <h3 className="text-xs font-semibold uppercase tracking-widest text-green-400 mb-3">Strengths</h3>
             <ul className="space-y-2">
-              {tool.strengths.map((s, i) => (
-                <li key={i} className="text-sm text-muted-foreground flex gap-2">
+              {tool.pros.map((s) => (
+                <li key={s} className="text-sm text-muted-foreground flex gap-2">
                   <span className="text-green-500 shrink-0">+</span>{s}
                 </li>
               ))}
@@ -94,8 +96,8 @@ export default function ToolDetail() {
           <Card className="p-4 border-border bg-card">
             <h3 className="text-xs font-semibold uppercase tracking-widest text-red-400 mb-3">Weaknesses</h3>
             <ul className="space-y-2">
-              {tool.weaknesses.map((w, i) => (
-                <li key={i} className="text-sm text-muted-foreground flex gap-2">
+              {tool.cons.map((w) => (
+                <li key={w} className="text-sm text-muted-foreground flex gap-2">
                   <span className="text-red-500 shrink-0">-</span>{w}
                 </li>
               ))}
@@ -105,27 +107,25 @@ export default function ToolDetail() {
 
         <Card className="p-4 border-border bg-card mb-4">
           <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Best For</h3>
-          <div className="flex flex-wrap gap-2">
-            {tool.bestFor.map((b, i) => (
-              <Badge key={i} variant="outline" className="text-xs">{b}</Badge>
-            ))}
-          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">{tool.bestUseCase}</p>
         </Card>
 
         <Card className="p-4 border-border bg-card mb-4">
           <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Platforms</h3>
           <div className="flex flex-wrap gap-2">
-            {tool.platforms.map((p, i) => (
-              <Badge key={i} variant="secondary" className="text-xs">{p}</Badge>
+            {tool.supportedPlatforms.map((p) => (
+              <Badge key={p} variant="secondary" className="text-xs">{p}</Badge>
             ))}
           </div>
         </Card>
 
         <Card className="p-4 border-border bg-card">
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Tags</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Workflow Fit</h3>
           <div className="flex flex-wrap gap-2">
-            {tool.tags.map((t, i) => (
-              <Badge key={i} variant="outline" className="text-xs text-muted-foreground">{t}</Badge>
+            <Badge variant="outline" className="text-xs text-muted-foreground">{tool.toolNature}</Badge>
+            <Badge variant="outline" className="text-xs text-muted-foreground">{tool.learningCurve} learning curve</Badge>
+            {tool.engineCompatibility.map((engine) => (
+              <Badge key={engine} variant="outline" className="text-xs text-muted-foreground">{engine}</Badge>
             ))}
           </div>
         </Card>

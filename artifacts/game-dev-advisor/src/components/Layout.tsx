@@ -38,7 +38,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {stats && (
             <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground">
               <span><span className="text-foreground font-semibold">{stats.totalAnalyses}</span> analyses run</span>
-              <span><span className="text-primary font-semibold">{Math.round(stats.avgConfidenceScore)}</span> avg fit</span>
+              <span><span className="text-primary font-semibold">{stats.avgRecommendationsPerAnalysis.toFixed(1)}</span> avg recs</span>
             </div>
           )}
         </div>
