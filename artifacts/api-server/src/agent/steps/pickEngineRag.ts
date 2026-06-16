@@ -1,9 +1,19 @@
 import type { AdvisorInput, EngineDecision } from "../../types/advisor.js";
+import type { EngineName } from "../../types/catalog.js";
 import {
   EngineDecisionSchema,
   engineSystemPrompt,
   engineUserPrompt,
 } from "../prompts/advisorPrompts.js";
+
+const ENGINE_PATTERNS: Array<{ engine: EngineName; pattern: RegExp }> = [
+  { engine: "Unity", pattern: /\bunity\b/gi },
+  { engine: "Unreal", pattern: /\bunreal\s+engine\b|\bue[45]?\b/gi },
+  { engine: "Godot", pattern: /\bgodot\b/gi },
+];
+
+const NEGATED_ENGINE_CONTEXT =
+  /\b(no|not|avoid|without|against|instead of|do not want|don't want|dont want)\s+$/i;
 
 export async function runPickEngine(input: AdvisorInput): Promise<EngineDecision> {
   const [{ chatModel }, { retrieveEngineDocs }] = await Promise.all([
@@ -18,8 +28,45 @@ export async function runPickEngine(input: AdvisorInput): Promise<EngineDecision
     { role: "system", content: engineSystemPrompt() },
     { role: "user", content: engineUserPrompt(input.projectIdea, context) },
   ]);
-  assertEngineInvariant(decision as EngineDecision);
-  return decision as EngineDecision;
+  const normalized = normalizeEngineDecision(decision as EngineDecision, input.projectIdea);
+  assertEngineInvariant(normalized);
+  return normalized;
+}
+
+export function detectUserPreferredEngine(projectIdea: string): EngineName | null {
+  const matches: Array<{ engine: EngineName; index: number }> = [];
+
+  for (const { engine, pattern } of ENGINE_PATTERNS) {
+    pattern.lastIndex = 0;
+    for (const match of projectIdea.matchAll(pattern)) {
+      const index = match.index ?? 0;
+      const before = projectIdea.slice(Math.max(0, index - 32), index);
+      if (NEGATED_ENGINE_CONTEXT.test(before)) continue;
+      matches.push({ engine, index });
+    }
+  }
+
+  matches.sort((a, b) => a.index - b.index);
+  return matches[0]?.engine ?? null;
+}
+
+export function normalizeEngineDecision(
+  decision: EngineDecision,
+  projectIdea: string,
+): EngineDecision {
+  const userPreferred = detectUserPreferredEngine(projectIdea);
+  const agreement =
+    userPreferred === null
+      ? "user_silent"
+      : decision.picked === userPreferred
+        ? "agreed"
+        : "challenged";
+
+  return {
+    ...decision,
+    userPreferred,
+    agreement,
+  };
 }
 
 export function assertEngineInvariant(d: EngineDecision): void {
