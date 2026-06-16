@@ -1,7 +1,6 @@
 import type { Document } from "@langchain/core/documents";
 import type { Where } from "chromadb";
 import type { Category, EngineName } from "../../types/catalog.js";
-import { getVectorStore } from "./vectorStore.js";
 
 const TOOL_K = 5;
 const GUIDANCE_K = 2;
@@ -26,6 +25,7 @@ export function guidanceWhere(topic?: string): Where {
 export interface RetrievedCandidates { toolDocs: Document[]; guidanceDocs: Document[]; toolIds: string[]; }
 
 async function search(query: string, k: number, where: Where): Promise<Document[]> {
+  const { getVectorStore } = await import("./vectorStore.js");
   return getVectorStore().similaritySearch(query, k, where);
 }
 

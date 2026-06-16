@@ -1,6 +1,6 @@
 import { db, sessionsTable } from "@workspace/db";
 import { desc, eq } from "drizzle-orm";
-import type { AnalysisResult } from "../types/recommendation.js";
+import type { AnalysisResult } from "../types/advisor.js";
 
 export interface PersistedSessionInput {
   id: string;
@@ -13,8 +13,6 @@ export async function persistSession(s: PersistedSessionInput): Promise<void> {
     id: s.id,
     inputs: s.inputs,
     result: s.result as unknown as Record<string, unknown>,
-    trustScore: s.result.trustScore,
-    trustTier: s.result.trustTier,
   });
 }
 
@@ -23,8 +21,7 @@ export async function listRecentSessions(limit = 50) {
     .select({
       id: sessionsTable.id,
       inputs: sessionsTable.inputs,
-      trustScore: sessionsTable.trustScore,
-      trustTier: sessionsTable.trustTier,
+      result: sessionsTable.result,
       createdAt: sessionsTable.createdAt,
     })
     .from(sessionsTable)

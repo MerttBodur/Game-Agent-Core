@@ -4,8 +4,7 @@ import { fileURLToPath } from "node:url";
 import { ToolCatalogSchema, CATEGORIES, CATEGORY_LABELS, type Category, type ToolEntry } from "../types/catalog.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// NOTE: Task 13 renames data/catalog.json -> data/toolCatalog.json; update this path then.
-const catalogPath = resolve(__dirname, "../data/catalog.json");
+const catalogPath = resolve(__dirname, "../data/toolCatalog.json");
 
 function loadCatalog(): ToolEntry[] {
   const raw = JSON.parse(readFileSync(catalogPath, "utf8"));

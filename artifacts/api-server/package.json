@@ -7,9 +7,8 @@
     "dev": "cross-env NODE_ENV=development pnpm run build && cross-env NODE_ENV=development pnpm run start",
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
-    "test": "tsx --test src/agent/constraints/apply.test.ts src/agent/steps/checkRetry.test.ts src/agent/steps/broaden.test.ts",
+    "test": "tsx --test src/lib/catalog.test.ts src/lib/rag/indexer.test.ts src/lib/rag/retriever.test.ts src/services/scoring.test.ts src/agent/steps/feasibility.test.ts src/agent/steps/pickEngineRag.test.ts src/agent/steps/recommendCategory.test.ts src/agent/steps/scoreStack.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "tree:build": "tsx ./src/scripts/buildTree.ts",
     "rag:index": "tsx ./src/scripts/indexRag.ts"
   },
   "dependencies": {

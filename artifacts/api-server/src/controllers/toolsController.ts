@@ -18,8 +18,7 @@ export function getTools(req: Request, res: Response): void {
       platform: query.platform,
       pricing: query.pricing,
       difficulty: query.difficulty,
-      teamSize: query.teamSize,
-      fit2d3d: query.fit2d3d,
+      toolNature: query.toolNature,
     }),
   );
 }
