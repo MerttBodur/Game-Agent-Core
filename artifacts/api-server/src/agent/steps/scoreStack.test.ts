@@ -7,10 +7,8 @@ const input: AdvisorInput = {
   projectIdea: "x",
   budget: "low",
   skillLevel: "beginner",
-  teamSize: "solo",
   platformTarget: ["pc"],
   artCapability: "none",
-  paidPriorityCategories: [],
 };
 
 const recs: CategoryRecommendation[] = [

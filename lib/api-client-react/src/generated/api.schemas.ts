@@ -51,17 +51,6 @@ export const ProjectInputSkillLevel = {
 } as const;
 
 /**
- * Team size
- */
-export type ProjectInputTeamSize =
-  (typeof ProjectInputTeamSize)[keyof typeof ProjectInputTeamSize];
-
-export const ProjectInputTeamSize = {
-  solo: "solo",
-  team: "team",
-} as const;
-
-/**
  * Art and design capability level
  */
 export type ProjectInputArtCapability =
@@ -82,21 +71,12 @@ export interface ProjectInput {
   budget: ProjectInputBudget;
   /** Developer skill level */
   skillLevel: ProjectInputSkillLevel;
-  /** Team size */
-  teamSize: ProjectInputTeamSize;
   /** Target platforms (pc, mobile, web, console, vr, ar) */
   platformTarget: string[];
   /** Art and design capability level */
   artCapability: ProjectInputArtCapability;
-  /** Category ids where user accepts paid tools. Empty = prefer free. */
-  paidPriorityCategories?: Category[];
   /** Tool ids the user explicitly wants kept. */
   pinnedToolIds?: string[];
-  /**
-   * Any other constraints or notes
-   * @nullable
-   */
-  notes?: string | null;
 }
 
 export interface RecommendationItem {

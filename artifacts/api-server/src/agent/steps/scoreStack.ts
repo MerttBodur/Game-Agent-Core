@@ -29,7 +29,6 @@ export function applyDeterministicScores(
       platformTarget: input.platformTarget,
       pickedEngine: picked,
       category,
-      paidPriorityCategories: input.paidPriorityCategories ?? [],
     };
     return scoreTool(tool, ctx);
   };

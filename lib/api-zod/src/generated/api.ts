@@ -27,33 +27,16 @@ export const AnalyzeProjectBody = zod.object({
   skillLevel: zod
     .enum(["beginner", "intermediate", "advanced", "expert"])
     .describe("Developer skill level"),
-  teamSize: zod.enum(["solo", "team"]).describe("Team size"),
   platformTarget: zod
     .array(zod.string())
     .describe("Target platforms (pc, mobile, web, console, vr, ar)"),
   artCapability: zod
     .enum(["none", "basic", "intermediate", "advanced", "professional"])
     .describe("Art and design capability level"),
-  paidPriorityCategories: zod
-    .array(
-      zod.enum([
-        "game_engine",
-        "art_asset",
-        "vfx",
-        "animation",
-        "audio",
-        "ai_coding",
-      ]),
-    )
-    .optional()
-    .describe(
-      "Category ids where user accepts paid tools. Empty = prefer free.",
-    ),
   pinnedToolIds: zod
     .array(zod.string())
     .optional()
     .describe("Tool ids the user explicitly wants kept."),
-  notes: zod.string().nullish().describe("Any other constraints or notes"),
 });
 
 export const analyzeProjectResponseRecommendationsItemPrimaryScoreMin = 0;
@@ -170,33 +153,16 @@ export const GetSessionResponse = zod.object({
     skillLevel: zod
       .enum(["beginner", "intermediate", "advanced", "expert"])
       .describe("Developer skill level"),
-    teamSize: zod.enum(["solo", "team"]).describe("Team size"),
     platformTarget: zod
       .array(zod.string())
       .describe("Target platforms (pc, mobile, web, console, vr, ar)"),
     artCapability: zod
       .enum(["none", "basic", "intermediate", "advanced", "professional"])
       .describe("Art and design capability level"),
-    paidPriorityCategories: zod
-      .array(
-        zod.enum([
-          "game_engine",
-          "art_asset",
-          "vfx",
-          "animation",
-          "audio",
-          "ai_coding",
-        ]),
-      )
-      .optional()
-      .describe(
-        "Category ids where user accepts paid tools. Empty = prefer free.",
-      ),
     pinnedToolIds: zod
       .array(zod.string())
       .optional()
       .describe("Tool ids the user explicitly wants kept."),
-    notes: zod.string().nullish().describe("Any other constraints or notes"),
   }),
   result: zod.object({
     sessionId: zod.string().describe("Empty string when terminated is true"),

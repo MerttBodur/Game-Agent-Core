@@ -14,7 +14,7 @@ export async function runFeasibility(input: AdvisorInput): Promise<FeasibilityDe
   ]);
 
   const guidanceDocs = await retrieveFeasibilityContext(
-    `${input.projectIdea} budget ${input.budget} skill ${input.skillLevel} team ${input.teamSize}`,
+    `${input.projectIdea} budget ${input.budget} skill ${input.skillLevel}`,
   );
   const guidance = guidanceDocs.map((d) => d.pageContent).join("\n---\n");
   const model = chatModel().withStructuredOutput(FeasibilitySchema, { name: "feasibility_decision" });

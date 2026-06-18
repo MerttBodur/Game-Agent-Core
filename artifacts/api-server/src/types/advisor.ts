@@ -4,11 +4,8 @@ export interface AdvisorInput {
   projectIdea: string;
   budget: "low" | "medium" | "high" | "enterprise";
   skillLevel: "beginner" | "intermediate" | "advanced" | "expert";
-  teamSize: "solo" | "team";
   platformTarget: string[];
   artCapability: "none" | "basic" | "intermediate" | "advanced" | "professional";
-  paidPriorityCategories?: string[];
-  notes?: string | null;
 }
 
 export interface FeasibilityDecision {

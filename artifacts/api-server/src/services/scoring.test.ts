@@ -16,7 +16,7 @@ const blender: ToolEntry = {
 
 const weakArtLowBudget: ScoringContext = {
   budget: "low", skillLevel: "beginner", artCapability: "none",
-  platformTarget: ["pc"], pickedEngine: "Unity", category: "art_asset", paidPriorityCategories: [],
+  platformTarget: ["pc"], pickedEngine: "Unity", category: "art_asset",
 };
 
 test("scores are clamped to 0-10", () => {
@@ -35,9 +35,8 @@ test("engine-incompatible tool is penalized", () => {
   assert.ok(scoreTool(unityOnly, forUnity) > scoreTool(unityOnly, forUnreal));
 });
 
-test("paid-priority category relaxes the budget penalty", () => {
+test("a tool outside the budget tier is penalized", () => {
   const paidTool: ToolEntry = { ...blender, pricing: "subscription" };
-  const strict: ScoringContext = { ...weakArtLowBudget, paidPriorityCategories: [] };
-  const relaxed: ScoringContext = { ...weakArtLowBudget, paidPriorityCategories: ["art_asset"] };
-  assert.ok(scoreTool(paidTool, relaxed) >= scoreTool(paidTool, strict));
+  const freeTool: ToolEntry = { ...blender, pricing: "open_source" };
+  assert.ok(scoreTool(freeTool, weakArtLowBudget) > scoreTool(paidTool, weakArtLowBudget));
 });

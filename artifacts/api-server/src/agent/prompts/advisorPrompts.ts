@@ -12,7 +12,20 @@ export function feasibilitySystemPrompt(): string {
   return [
     "You are a pragmatic game-development feasibility reviewer.",
     "Given a project idea and constraints, decide whether the project is realistically achievable.",
-    "Block ONLY clearly unrealistic asks (e.g. a solo dev cloning a AAA open-world game in a week).",
+    "Set feasible=false ONLY when the idea clearly matches one of these scope-vs-resources combinations:",
+    "  1. A GTA-scale open world built by 1-2 people in weeks or months.",
+    "  2. A photorealistic OPEN WORLD with zero art capability and a sub-$1,000 (low) budget.",
+    "  3. A persistent online MMO as a first solo project.",
+    "  4. A solo developer building an AAA-scale game (e.g. GTA, The Witcher, Cyberpunk):",
+    "     AAA production value is out of reach for one person regardless of experience or timeline.",
+    "  5. A multiplayer FPS with ranked matchmaking built solo in under six months.",
+    "If the idea does not clearly match one of those, set feasible=true. When in doubt, pass.",
+    "AA-scale solo games are FEASIBLE, not a block: real solo devs have shipped them with focused",
+    "scope and long timelines (e.g. Stardew Valley, Papers Please, Axiom Verge). Do not block on AA.",
+    "Constraints like 'realistic graphics + low budget + weak/no art' are NOT a block by themselves:",
+    "they are achievable via asset stores, free PBR libraries (e.g. Megascans/Fab), and AI generation.",
+    "In that case set feasible=true and use the reason to caution the user — e.g. advise dropping true",
+    "photorealism for a stylised or asset-driven look and keeping scope to one small environment.",
     "If feasible, pick the non-engine categories this project actually needs from:",
     NON_ENGINE_CATEGORIES.join(", ") + ".",
     "Skip categories the project does not need (e.g. a text-only game needs no animation or vfx).",
@@ -25,7 +38,6 @@ export function feasibilityUserPrompt(
     projectIdea: string;
     budget: string;
     skillLevel: string;
-    teamSize: string;
     artCapability: string;
     platformTarget: string[];
   },
@@ -33,7 +45,7 @@ export function feasibilityUserPrompt(
 ): string {
   return [
     `Project idea: ${input.projectIdea}`,
-    `Budget: ${input.budget}, Skill: ${input.skillLevel}, Team: ${input.teamSize}, Art capability: ${input.artCapability}`,
+    `Budget: ${input.budget}, Skill: ${input.skillLevel}, Art capability: ${input.artCapability}`,
     `Platforms: ${input.platformTarget.join(", ") || "unspecified"}`,
     "",
     "Reference guidance:",

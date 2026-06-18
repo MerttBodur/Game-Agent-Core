@@ -5,11 +5,9 @@
  * Game Dev Stack Advisor API
  * OpenAPI spec version: 0.1.0
  */
-import type { Category } from "./category";
 import type { ProjectInputArtCapability } from "./projectInputArtCapability";
 import type { ProjectInputBudget } from "./projectInputBudget";
 import type { ProjectInputSkillLevel } from "./projectInputSkillLevel";
-import type { ProjectInputTeamSize } from "./projectInputTeamSize";
 
 export interface ProjectInput {
   /** Description of the game project idea */
@@ -18,19 +16,10 @@ export interface ProjectInput {
   budget: ProjectInputBudget;
   /** Developer skill level */
   skillLevel: ProjectInputSkillLevel;
-  /** Team size */
-  teamSize: ProjectInputTeamSize;
   /** Target platforms (pc, mobile, web, console, vr, ar) */
   platformTarget: string[];
   /** Art and design capability level */
   artCapability: ProjectInputArtCapability;
-  /** Category ids where user accepts paid tools. Empty = prefer free. */
-  paidPriorityCategories?: Category[];
   /** Tool ids the user explicitly wants kept. */
   pinnedToolIds?: string[];
-  /**
-   * Any other constraints or notes
-   * @nullable
-   */
-  notes?: string | null;
 }

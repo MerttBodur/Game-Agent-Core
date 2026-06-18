@@ -23,7 +23,6 @@ export * from "./projectInput";
 export * from "./projectInputArtCapability";
 export * from "./projectInputBudget";
 export * from "./projectInputSkillLevel";
-export * from "./projectInputTeamSize";
 export * from "./recommendation";
 export * from "./recommendationItem";
 export * from "./session";

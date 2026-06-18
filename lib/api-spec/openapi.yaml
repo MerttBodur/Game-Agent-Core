@@ -207,10 +207,6 @@ components:
           type: string
           enum: [beginner, intermediate, advanced, expert]
           description: Developer skill level
-        teamSize:
-          type: string
-          enum: [solo, team]
-          description: Team size
         platformTarget:
           type: array
           items:
@@ -220,24 +216,15 @@ components:
           type: string
           enum: [none, basic, intermediate, advanced, professional]
           description: Art and design capability level
-        paidPriorityCategories:
-          type: array
-          items:
-            $ref: "#/components/schemas/Category"
-          description: Category ids where user accepts paid tools. Empty = prefer free.
         pinnedToolIds:
           type: array
           items:
             type: string
           description: Tool ids the user explicitly wants kept.
-        notes:
-          type: ["string", "null"]
-          description: Any other constraints or notes
       required:
         - projectIdea
         - budget
         - skillLevel
-        - teamSize
         - platformTarget
         - artCapability
 

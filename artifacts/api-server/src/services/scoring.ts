@@ -7,7 +7,6 @@ export interface ScoringContext {
   platformTarget: string[];
   pickedEngine: EngineName;
   category: Category;
-  paidPriorityCategories: string[];
 }
 
 const WEIGHTS = { budget: 0.2, skill: 0.15, platform: 0.15, art: 0.15, ai: 0.15, engine: 0.2 } as const;
@@ -25,8 +24,7 @@ const CURVE_RANK = { low: 0, medium: 1, high: 2 } as const;
 const ART_CATEGORIES: Category[] = ["art_asset", "vfx", "animation"];
 
 function budgetFit(t: ToolEntry, ctx: ScoringContext): number {
-  if (BUDGET_ALLOWED[ctx.budget].includes(t.pricing)) return 1;
-  return ctx.paidPriorityCategories.includes(ctx.category) ? 0.7 : 0.2;
+  return BUDGET_ALLOWED[ctx.budget].includes(t.pricing) ? 1 : 0.2;
 }
 
 function skillFit(t: ToolEntry, ctx: ScoringContext): number {

@@ -11,11 +11,8 @@ const base: AdvisorInput = {
   projectIdea: "",
   budget: "low",
   skillLevel: "beginner",
-  teamSize: "solo",
   platformTarget: ["pc"],
   artCapability: "none",
-  paidPriorityCategories: [],
-  notes: null,
 };
 
 after(async () => {
