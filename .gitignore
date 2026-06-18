@@ -18,6 +18,8 @@ node_modules
 
 # Claude Code / MCP local config
 .mcp.json
+.claude/
+.playwright-mcp/
 
 # IDEs and editors
 /.idea
