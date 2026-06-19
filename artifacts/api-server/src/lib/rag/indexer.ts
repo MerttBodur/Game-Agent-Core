@@ -8,6 +8,8 @@ import type { ToolEntry } from "../../types/catalog.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const knowledgeDir = resolve(__dirname, "../../data/knowledge");
 
+const PLATFORM_KEYS = ["pc", "mobile", "web", "console", "vr", "ar"] as const;
+
 // One document PER (tool × category) because Chroma metadata must be scalar.
 export function toolDocuments(catalog: readonly ToolEntry[] = TOOL_CATALOG): Document[] {
   const docs: Document[] = [];
@@ -19,10 +21,16 @@ export function toolDocuments(catalog: readonly ToolEntry[] = TOOL_CATALOG): Doc
       `Pros: ${t.pros.join(", ")}`,
       `Cons: ${t.cons.join(", ")}`,
       `Pricing: ${t.pricing}`,
+      `Platforms: ${t.supportedPlatforms.join(", ")}`,
+      `Beginner suitability: ${t.beginnerSuitability}/100`,
       `Nature: ${t.toolNature}`,
       `Learning curve: ${t.learningCurve}`,
     ].join("\n");
     const compat = new Set(t.engineCompatibility);
+    const platforms = new Set(t.supportedPlatforms);
+    const platformFlags = Object.fromEntries(
+      PLATFORM_KEYS.map((p) => [`platform_${p}`, platforms.has(p)]),
+    );
     for (const category of t.categories) {
       docs.push(
         new Document({
@@ -36,10 +44,13 @@ export function toolDocuments(catalog: readonly ToolEntry[] = TOOL_CATALOG): Doc
             toolNature: t.toolNature,
             pricing: t.pricing,
             learningCurve: t.learningCurve,
+            difficultyLevel: t.difficultyLevel,
+            beginnerSuitability: t.beginnerSuitability,
             engine_unity: compat.has("Unity"),
             engine_unreal: compat.has("Unreal"),
             engine_godot: compat.has("Godot"),
             engine_any: compat.has("any"),
+            ...platformFlags,
           },
         }),
       );

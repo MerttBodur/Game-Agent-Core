@@ -34,6 +34,16 @@ test("cross-platform desktop tools include pc in supportedPlatforms", () => {
   }
 });
 
+test("tool documents carry platform flags and enriched content", () => {
+  const blender = toolDocuments().find((d) => d.metadata.toolId === "blender");
+  assert.ok(blender);
+  assert.equal(blender!.metadata.platform_pc, true);
+  assert.equal(typeof blender!.metadata.beginnerSuitability, "number");
+  assert.equal(typeof blender!.metadata.difficultyLevel, "string");
+  assert.match(blender!.pageContent, /Platforms:/);
+  assert.match(blender!.pageContent, /Beginner suitability:/);
+});
+
 test("broadened catalog includes the new usability-filtered tools", () => {
   const expected = [
     "gamemaker", "construct_3", "gdevelop", "rpg_maker", "renpy", "defold", "phaser", "love2d",
