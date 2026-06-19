@@ -33,3 +33,17 @@ test("cross-platform desktop tools include pc in supportedPlatforms", () => {
     assert.ok(tool!.supportedPlatforms.includes("pc"), `${id} should list pc`);
   }
 });
+
+test("broadened catalog includes the new usability-filtered tools", () => {
+  const expected = [
+    "gamemaker", "construct_3", "gdevelop", "rpg_maker", "renpy", "defold", "phaser", "love2d",
+    "nano_banana", "tripo", "rodin", "midjourney", "photoshop", "gimp", "clip_studio_paint", "magicavoxel",
+    "kling", "opentoonz", "moho", "rive",
+    "runway",
+    "fl_studio", "lmms", "bosca_ceoil", "chiptone",
+    "claude_code", "cline", "aider",
+  ];
+  const ids = new Set(TOOL_CATALOG.map((t) => t.id));
+  for (const id of expected) assert.ok(ids.has(id), `missing new tool ${id}`);
+  assert.equal(ids.has("leonardo_ai"), true); // dedupe: must not be duplicated
+});
