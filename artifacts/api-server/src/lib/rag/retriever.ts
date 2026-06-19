@@ -1,6 +1,8 @@
-import type { Document } from "@langchain/core/documents";
+import { Document } from "@langchain/core/documents";
 import type { Where } from "chromadb";
 import type { Category, EngineName } from "../../types/catalog.js";
+import { buildBm25, rrfFuse, type Bm25Index } from "./bm25.js";
+import { toolDocuments } from "./indexer.js";
 
 const TOOL_K = 5;
 const GUIDANCE_K = 2;
@@ -29,19 +31,60 @@ async function search(query: string, k: number, where: Where): Promise<Document[
   return getVectorStore().similaritySearch(query, k, where);
 }
 
+// Predicate mirror of toolWhereForCategory, used to scope the in-memory BM25
+// corpus to the SAME subspace Chroma's `where` filters to.
+export function metadataMatchesWhere(
+  meta: Record<string, unknown>,
+  category: Category,
+  picked?: EngineName,
+): boolean {
+  if (meta.type !== "tool") return false;
+  if (meta.category !== category) return false;
+  if (!picked) return true;
+  const flag = engineFlagKey(picked);
+  return meta[flag] === true || meta.engine_any === true;
+}
+
+function bm25ForCategory(category: Category, picked?: EngineName): Bm25Index {
+  const docs = toolDocuments()
+    .filter((d) => metadataMatchesWhere(d.metadata as Record<string, unknown>, category, picked))
+    .map((d) => ({ id: d.metadata.toolId as string, text: d.pageContent }));
+  return buildBm25(docs);
+}
+
+// Fuse a vector-ranked Document list with a BM25-ranked id list via RRF,
+// returning the top-k Documents in fused order (vector docs are the payload
+// source; bm25 only contributes ranking signal).
+export function fuseToolDocs(vectorDocs: Document[], bm25Ids: string[], k: number): Document[] {
+  const vectorIds = vectorDocs.map((d) => d.metadata.toolId as string);
+  const byId = new Map(vectorDocs.map((d) => [d.metadata.toolId as string, d]));
+  const fusedIds = rrfFuse([vectorIds, bm25Ids]);
+  const ordered: Document[] = [];
+  for (const id of fusedIds) {
+    const doc = byId.get(id);
+    if (doc && !ordered.includes(doc)) ordered.push(doc);
+    if (ordered.length >= k) break;
+  }
+  return ordered;
+}
+
 export async function retrieveEngineDocs(query: string): Promise<RetrievedCandidates> {
-  const [toolDocs, guidanceDocs] = await Promise.all([
+  const [vectorDocs, guidanceDocs] = await Promise.all([
     search(query, 3, toolWhereForCategory("game_engine")),
     search(query, 1, guidanceWhere("choosing-engine-unity-unreal-godot")),
   ]);
+  const bm25Ids = bm25ForCategory("game_engine").search(query, 3).map((h) => h.id);
+  const toolDocs = fuseToolDocs(vectorDocs, bm25Ids, 3);
   return { toolDocs, guidanceDocs, toolIds: uniqueToolIds(toolDocs) };
 }
 
 export async function retrieveForCategory(query: string, category: Category, picked: EngineName): Promise<RetrievedCandidates> {
-  const [toolDocs, guidanceDocs] = await Promise.all([
+  const [vectorDocs, guidanceDocs] = await Promise.all([
     search(query, TOOL_K, toolWhereForCategory(category, picked)),
     search(query, GUIDANCE_K, guidanceWhere()),
   ]);
+  const bm25Ids = bm25ForCategory(category, picked).search(query, TOOL_K).map((h) => h.id);
+  const toolDocs = fuseToolDocs(vectorDocs, bm25Ids, TOOL_K);
   return { toolDocs, guidanceDocs, toolIds: uniqueToolIds(toolDocs) };
 }
 
