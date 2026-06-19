@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { toolDocuments, guidanceDocuments } from "./indexer.js";
+import { TOOL_CATALOG } from "../catalog.js";
 
 test("blender produces one document per category", () => {
   const docs = toolDocuments();
@@ -22,4 +23,13 @@ test("guidance docs are loaded with topic metadata", () => {
   const g = guidanceDocuments();
   assert.ok(g.length >= 4);
   assert.ok(g.every((d) => d.metadata.type === "guidance" && typeof d.metadata.topic === "string"));
+});
+
+test("cross-platform desktop tools include pc in supportedPlatforms", () => {
+  const desktop = ["blender", "krita", "aseprite", "audacity", "reaper", "fmod_studio", "wwise", "autodesk_maya", "zbrush", "substance_painter"];
+  for (const id of desktop) {
+    const tool = TOOL_CATALOG.find((t) => t.id === id);
+    assert.ok(tool, `missing tool ${id}`);
+    assert.ok(tool!.supportedPlatforms.includes("pc"), `${id} should list pc`);
+  }
 });
