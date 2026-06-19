@@ -1,0 +1,14 @@
+[
+  { "name": "weak art + low budget 3D models", "query": "weak art skills, low budget, wants good-looking 3D models", "category": "art_asset", "picked": "Unity", "relevantToolIds": ["meshy", "tripo"] },
+  { "name": "free pixel art editor", "query": "free pixel art sprite editor for a 2D game", "category": "art_asset", "picked": "Godot", "relevantToolIds": ["aseprite", "krita"] },
+  { "name": "lightweight 2D engine for beginner", "query": "lightweight open-source 2D pixel game, beginner solo dev", "category": "game_engine", "relevantToolIds": ["godot", "gamemaker"] },
+  { "name": "visual novel engine", "query": "narrative visual novel with branching dialogue", "category": "game_engine", "relevantToolIds": ["renpy"] },
+  { "name": "AI image generation for textures", "query": "generate concept art and textures with AI", "category": "art_asset", "picked": "Unity", "relevantToolIds": ["nano_banana", "midjourney", "leonardo_ai"] },
+  { "name": "retro chiptune sfx", "query": "make retro 8-bit chiptune sound effects for free", "category": "audio", "picked": "Godot", "relevantToolIds": ["bfxr", "chiptone"] },
+  { "name": "free DAW for music", "query": "free digital audio workstation to compose game music", "category": "audio", "picked": "Unity", "relevantToolIds": ["lmms", "reaper"] },
+  { "name": "skeletal 2D animation", "query": "skeletal rig 2D character animation for a game", "category": "animation", "picked": "Unity", "relevantToolIds": ["spine", "moho"] },
+  { "name": "AI video cutscene", "query": "generate an AI video cutscene from an image", "category": "animation", "picked": "Unreal", "relevantToolIds": ["kling"] },
+  { "name": "AI coding assistant in terminal", "query": "AI coding assistant that works in the terminal", "category": "ai_coding", "picked": "Godot", "relevantToolIds": ["claude_code", "aider"] },
+  { "name": "AI pair programmer in editor", "query": "AI autocomplete and chat inside my editor", "category": "ai_coding", "picked": "Unity", "relevantToolIds": ["github_copilot", "cursor", "cline"] },
+  { "name": "vfx particle effects", "query": "real-time particle and visual effects in the engine", "category": "vfx", "picked": "Unreal", "relevantToolIds": ["niagara_ue5"] }
+]
