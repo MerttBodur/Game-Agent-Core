@@ -742,7 +742,7 @@
     "pricing": "subscription",
     "difficultyLevel": "intermediate",
     "beginnerSuitability": 55,
-    "supportedPlatforms": ["pc"],
+    "supportedPlatforms": ["pc", "mobile"],
     "pros": ["Industry-standard tool with deep feature set", "Excellent layer and blend mode workflows", "Rich plugin ecosystem", "Ideal for UI and texture work"],
     "cons": ["Ongoing subscription cost", "Heavy for simple tasks", "Steeper learning curve than free alternatives"],
     "website": "https://www.adobe.com/products/photoshop.html"
@@ -895,7 +895,7 @@
     "pricing": "paid",
     "difficultyLevel": "intermediate",
     "beginnerSuitability": 60,
-    "supportedPlatforms": ["pc"],
+    "supportedPlatforms": ["pc", "mobile"],
     "pros": ["Lifetime free updates after purchase", "Excellent pattern-based composition workflow", "Huge plugin ecosystem", "Popular for electronic and indie game music"],
     "cons": ["Upfront purchase cost", "Pattern-centric workflow not ideal for linear film scoring", "macOS support historically inferior to Windows"],
     "website": "https://www.image-line.com"
