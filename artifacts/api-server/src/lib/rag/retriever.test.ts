@@ -39,3 +39,13 @@ test("fuseToolDocs orders by RRF of vector and bm25 id lists", () => {
   assert.deepEqual(fused.slice(0, 2).map((d) => d.metadata.toolId).sort(), ["a", "b"]);
   assert.equal(fused[2].metadata.toolId, "c");
 });
+
+test("fuseToolDocs skips bm25 ids that have no vector payload", () => {
+  const mk = (id: string) => new Document({ id, pageContent: id, metadata: { toolId: id } });
+  const vector = [mk("a"), mk("b")];
+  const bm25Ids = ["c", "a"]; // 'c' is bm25-only, not in vector docs
+  const fused = fuseToolDocs(vector, bm25Ids, 5);
+  const ids = fused.map((d) => d.metadata.toolId);
+  assert.ok(!ids.includes("c")); // bm25-only id is dropped (no payload)
+  assert.deepEqual([...ids].sort(), ["a", "b"]);
+});

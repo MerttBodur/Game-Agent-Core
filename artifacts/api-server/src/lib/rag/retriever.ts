@@ -6,6 +6,10 @@ import { toolDocuments } from "./indexer.js";
 
 const TOOL_K = 5;
 const GUIDANCE_K = 2;
+// Over-fetch a wider candidate pool from both retrievers so RRF fuses a real
+// union of vector + BM25 signals before slicing to the final TOOL_K / engine K.
+// 20 is safely above the largest per-category tool count (~17).
+const FETCH_K = 20;
 
 // Chroma metadata is scalar-only; engine compatibility is matched via boolean flags.
 export function engineFlagKey(engine: EngineName): "engine_unity" | "engine_unreal" | "engine_godot" {
@@ -57,6 +61,9 @@ function bm25ForCategory(category: Category, picked?: EngineName): Bm25Index {
 // source; bm25 only contributes ranking signal).
 export function fuseToolDocs(vectorDocs: Document[], bm25Ids: string[], k: number): Document[] {
   const vectorIds = vectorDocs.map((d) => d.metadata.toolId as string);
+  // byId is keyed by toolId; the per-category Chroma `where` filter guarantees
+  // one doc per toolId in the result set (indexer emits one doc per tool×category,
+  // and a category-filtered search returns only that category's docs).
   const byId = new Map(vectorDocs.map((d) => [d.metadata.toolId as string, d]));
   const fusedIds = rrfFuse([vectorIds, bm25Ids]);
   const ordered: Document[] = [];
@@ -70,20 +77,20 @@ export function fuseToolDocs(vectorDocs: Document[], bm25Ids: string[], k: numbe
 
 export async function retrieveEngineDocs(query: string): Promise<RetrievedCandidates> {
   const [vectorDocs, guidanceDocs] = await Promise.all([
-    search(query, 3, toolWhereForCategory("game_engine")),
+    search(query, FETCH_K, toolWhereForCategory("game_engine")),
     search(query, 1, guidanceWhere("choosing-engine-unity-unreal-godot")),
   ]);
-  const bm25Ids = bm25ForCategory("game_engine").search(query, 3).map((h) => h.id);
+  const bm25Ids = bm25ForCategory("game_engine").search(query, FETCH_K).map((h) => h.id);
   const toolDocs = fuseToolDocs(vectorDocs, bm25Ids, 3);
   return { toolDocs, guidanceDocs, toolIds: uniqueToolIds(toolDocs) };
 }
 
 export async function retrieveForCategory(query: string, category: Category, picked: EngineName): Promise<RetrievedCandidates> {
   const [vectorDocs, guidanceDocs] = await Promise.all([
-    search(query, TOOL_K, toolWhereForCategory(category, picked)),
+    search(query, FETCH_K, toolWhereForCategory(category, picked)),
     search(query, GUIDANCE_K, guidanceWhere()),
   ]);
-  const bm25Ids = bm25ForCategory(category, picked).search(query, TOOL_K).map((h) => h.id);
+  const bm25Ids = bm25ForCategory(category, picked).search(query, FETCH_K).map((h) => h.id);
   const toolDocs = fuseToolDocs(vectorDocs, bm25Ids, TOOL_K);
   return { toolDocs, guidanceDocs, toolIds: uniqueToolIds(toolDocs) };
 }
