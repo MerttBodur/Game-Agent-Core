@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { assertCandidatesOnly } from "./recommendCategory.js";
+import { assertCandidatesOnly, formatCandidates } from "./recommendCategory.js";
+import { categorySystemPrompt } from "../prompts/advisorPrompts.js";
 
 test("passes when all ids are candidates", () => {
   assert.doesNotThrow(() =>
@@ -15,4 +16,24 @@ test("throws when a non-candidate id appears", () => {
   assert.throws(() =>
     assertCandidatesOnly({ primary: { toolId: "ghost" }, alternatives: [] }, ["meshy"]),
   );
+});
+
+test("formatCandidates separates candidates with --- and keeps full content", () => {
+  const out = formatCandidates(
+    [
+      { metadata: { toolId: "aseprite" }, pageContent: "Aseprite\nPixel art tool\nPricing: paid" },
+      { metadata: { toolId: "krita" }, pageContent: "Krita\nDigital painting\nPricing: open_source" },
+    ],
+    [{ pageContent: "Guidance text" }],
+  );
+  assert.match(out, /---/);
+  assert.match(out, /aseprite/);
+  assert.match(out, /krita/);
+  assert.match(out, /Pricing: paid/);
+});
+
+test("categorySystemPrompt forbids fabricating attributes", () => {
+  const p = categorySystemPrompt("art_asset");
+  assert.match(p, /only/i);
+  assert.match(p, /not invent|do not invent|don't invent/i);
 });

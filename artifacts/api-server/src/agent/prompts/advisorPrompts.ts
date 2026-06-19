@@ -101,6 +101,9 @@ export function categorySystemPrompt(category: string): string {
   return [
     `You recommend tools for the "${category}" category of a game project.`,
     "Choose ONE primary tool and up to 2 alternatives, ONLY from the provided candidates.",
+    "Use ONLY the pros, cons, pricing, platforms and facts present in each candidate's text.",
+    "Do NOT invent capabilities, prices, or platform support that are not shown in the candidate text.",
+    "If the candidates are insufficient for a confident pick, say so in your reasoning rather than fabricating.",
     "Apply the AI-vs-traditional rule: when skill/art capability is low and budget is tight,",
     "prefer ai / low-learning-curve tools (e.g. Meshy) over high-curve standalone tools (e.g. Blender), and say why.",
     "Answer in English.",

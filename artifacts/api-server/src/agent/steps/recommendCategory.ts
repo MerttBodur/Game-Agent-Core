@@ -57,13 +57,13 @@ export function assertCandidatesOnly(
   }
 }
 
-function formatCandidates(
+export function formatCandidates(
   toolDocs: Array<{ metadata: Record<string, unknown>; pageContent: string }>,
   guidanceDocs: Array<{ pageContent: string }>,
 ): string {
   const tools = toolDocs
-    .map((d) => `- ${d.metadata.toolId}: ${d.pageContent.split("\n").slice(0, 3).join(" ")}`)
-    .join("\n");
+    .map((d) => `toolId: ${d.metadata.toolId}\n${d.pageContent}`)
+    .join("\n---\n");
   const guidance = guidanceDocs.map((d) => d.pageContent).join("\n");
   return `${tools}\n\nGuidance:\n${guidance}`;
 }
