@@ -198,6 +198,7 @@ components:
       properties:
         projectIdea:
           type: string
+          maxLength: 1000
           description: Description of the game project idea
         budget:
           type: string

@@ -10,7 +10,10 @@ import type { ProjectInputBudget } from "./projectInputBudget";
 import type { ProjectInputSkillLevel } from "./projectInputSkillLevel";
 
 export interface ProjectInput {
-  /** Description of the game project idea */
+  /**
+   * Description of the game project idea
+   * @maxLength 1000
+   */
   projectIdea: string;
   /** Budget range for the project */
   budget: ProjectInputBudget;

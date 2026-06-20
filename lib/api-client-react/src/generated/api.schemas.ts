@@ -65,7 +65,10 @@ export const ProjectInputArtCapability = {
 } as const;
 
 export interface ProjectInput {
-  /** Description of the game project idea */
+  /**
+   * Description of the game project idea
+   * @maxLength 1000
+   */
   projectIdea: string;
   /** Budget range for the project */
   budget: ProjectInputBudget;

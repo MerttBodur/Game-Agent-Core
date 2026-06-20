@@ -19,8 +19,13 @@ export const HealthCheckResponse = zod.object({
  * Takes user project inputs and streams a full AI-powered tool stack recommendation with RAG-backed rationale
  * @summary Analyze project and recommend tools
  */
+export const analyzeProjectBodyProjectIdeaMax = 1000;
+
 export const AnalyzeProjectBody = zod.object({
-  projectIdea: zod.string().describe("Description of the game project idea"),
+  projectIdea: zod
+    .string()
+    .max(analyzeProjectBodyProjectIdeaMax)
+    .describe("Description of the game project idea"),
   budget: zod
     .enum(["low", "medium", "high", "enterprise"])
     .describe("Budget range for the project"),
@@ -135,6 +140,8 @@ export const GetSessionParams = zod.object({
   id: zod.coerce.string(),
 });
 
+export const getSessionResponseProjectInputProjectIdeaMax = 1000;
+
 export const getSessionResponseResultRecommendationsItemPrimaryScoreMin = 0;
 export const getSessionResponseResultRecommendationsItemPrimaryScoreMax = 10;
 
@@ -146,7 +153,10 @@ export const getSessionResponseResultRecommendationsItemAlternativesMax = 2;
 export const GetSessionResponse = zod.object({
   id: zod.string(),
   projectInput: zod.object({
-    projectIdea: zod.string().describe("Description of the game project idea"),
+    projectIdea: zod
+      .string()
+      .max(getSessionResponseProjectInputProjectIdeaMax)
+      .describe("Description of the game project idea"),
     budget: zod
       .enum(["low", "medium", "high", "enterprise"])
       .describe("Budget range for the project"),
