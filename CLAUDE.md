@@ -64,6 +64,8 @@ pnpm monorepo. Packages under `lib/` are shared libraries; `artifacts/` contains
 
 **RAG pipeline:** The advisor first runs a feasibility gate. Unrealistic projects terminate early with `terminated: true` and no persisted row. Feasible projects choose an engine, retrieve per-category candidates, score recommendations deterministically on a 0-10 scale, and stream progress over SSE.
 
+**RAG defense layers:** Input passes a Layer 1 prompt-injection guard before the SSE pipeline (`middleware/inputGuard.ts` -> `lib/security/promptGuard.ts`). Per-category retrieval passes a Layer 2 confidence gate (`lib/rag/retrievalGate.ts`) using a BM25 floor calibrated via `rag:eval`; weak categories are skipped, not request-failed. Layer 4 faithfulness checking is deferred; see `rag-defense-layers-integration.md`.
+
 **Chroma indexing:** Chroma stores one document per `(tool x category)` because metadata filters must be scalar. Tool metadata includes `category`, `toolId`, `engine_unity`, `engine_unreal`, `engine_godot`, and `engine_any`; guidance docs are stored in the same collection with `type: guidance` and `topic`.
 
 **Taxonomy:** The canonical categories are `game_engine`, `art_asset`, `vfx`, `animation`, `audio`, and `ai_coding`.
