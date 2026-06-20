@@ -25,7 +25,7 @@ The following combinations signal scope that a solo developer cannot deliver in 
 - **GTA-scale open world** built by 1–2 people in weeks or months. Requires hundreds of person-years.
 - **Photorealistic open world** with zero art capability and a sub-$1,000 budget. Photorealistic art production alone exceeds this budget by orders of magnitude.
 - **Persistent online MMO** as a first solo project. Requires dedicated server infrastructure, anti-cheat, balance, and community management — none of which a solo beginner can sustain.
-- **AAA-quality 3D action game** in under a year solo, with no prior engine experience.
+- **AAA-scale game** (GTA, The Witcher, Cyberpunk tier) built solo. AAA production value is out of reach for one person regardless of experience or timeline — block it. Note: **AA-scale solo games are realistic** with focused scope and a long timeline (e.g. Stardew Valley, Papers Please, Axiom Verge), so do not block those.
 - **Multiplayer FPS** with ranked matchmaking built solo in under six months.
 
 When any of these patterns is detected, the feasibility gate must block and explain why before recommending tools.
