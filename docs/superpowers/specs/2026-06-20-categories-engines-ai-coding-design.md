@@ -38,9 +38,19 @@ There are two pruning points; both are removed:
 
 - **Always analyze all five `NON_ENGINE_CATEGORIES`** (`art_asset`, `vfx`, `animation`, `audio`, `ai_coding`) for every feasible project. `targetCategories` becomes a fixed list, not an LLM output.
 - **Remove `targetCategories` from `FeasibilitySchema`** and from the feasibility prompt's category-selection instructions ("pick the categories this project needs / skip the ones it doesn't"). The orchestrator assigns the full `NON_ENGINE_CATEGORIES` list directly. This shrinks the LLM's structured-output surface and removes the first pruning failure mode.
-- **Always recommend the best candidate per category.** Remove the `answerPossible: false` escape path from `buildCategorySchema` / `categorySystemPrompt`; `recommendCategory` must always return a `primary`. The catalog is populated in all five categories (art_asset 17, vfx 6, animation 11, audio 11, ai_coding 7+2), so a reasonable candidate always exists. Guarantee: 5 categories → 5 recommendations.
+- **Always recommend the best candidate per category.** Remove the `answerPossible: false` escape path (Layer 3) from `buildCategorySchema` / `categorySystemPrompt`; `recommendCategory` must always return a `primary`. The catalog is populated in all five categories (art_asset 17, vfx 6, animation 11, audio 11, ai_coding 7+2), so a reasonable candidate always exists. Guarantee: 5 categories → 5 recommendations.
 - **Keep the feasibility gate** (`feasible` boolean + `reason`) exactly as-is — unrealistic projects still terminate early.
 - **No `category_skipped` event needed.** With both pruning points removed, a category can no longer vanish, so the orchestrator's silent-drop branch (`if (rec)`) is deleted rather than instrumented.
+
+#### Interaction with the new RAG defense layers (Layer 1/2/3)
+
+The advisor recently gained three defense layers (`rag-defense-layers-integration.md`). The "guarantee one recommendation per category" rule conflicts with the *skip* action of Layer 2 and Layer 3 but **not** with their protective intent. Resolution (decided with the user):
+
+- **Layer 1 (prompt-injection input guard):** untouched — it runs at input, unrelated to category selection.
+- **Layer 2 (retrieval confidence gate, `confidenceGate`/`shouldSkipCategory`):** keep the gate code, but `recommendCategory` no longer returns `null` on a failed gate. Instead it **logs** the gate reason (`console.warn`) and proceeds to recommend the best candidate. The low-confidence signal is observable in server logs, not silently dropped — but the category still produces a recommendation.
+- **Layer 3 (`answerPossible`):** removed — the model can no longer decline to pick.
+- **Anti-fabrication prompt rule** (categorySystemPrompt: "use ONLY facts in the candidate text; do not invent capabilities/prices/platforms") is **kept verbatim** — this is the real protection against hallucinated recommendations and does not conflict with the guarantee.
+- **Transparency:** low-confidence is server-log only for now; surfacing a "low confidence" flag to the UI (new `confidence` field + openapi.yaml + frontend) is explicitly out of scope.
 
 ### Part 2 — Full engine support (11 catalog engines + Three.js)
 
