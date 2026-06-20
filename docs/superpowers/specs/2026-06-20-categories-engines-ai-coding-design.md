@@ -27,12 +27,20 @@ Investigation of the engine-compatibility flags showed they affect only **2 of 4
 
 ### Part 1 — Category selection
 
-User decision: every game needs Coding, Animation, and VFX too — so **all five non-engine categories are always active**, like art_asset and audio already were. The LLM no longer decides *which* categories; it only decides *whether the project is feasible*.
+User decision: every game needs Coding, Animation, and VFX too — so **all five non-engine categories are always active**. The LLM no longer decides *which* categories; it only decides *whether the project is feasible*.
+
+Note: previously *no* category was guaranteed. All five (including art_asset and audio) came from the LLM's `targetCategories` output, so the set varied per run — the "2D web RPG" run happened to keep art_asset + audio and drop the other three, but a later run could have dropped audio too. The fix makes the set deterministic and guarantees one recommendation per category.
+
+There are two pruning points; both are removed:
+
+1. **Feasibility-level pruning** (the LLM picks `targetCategories`).
+2. **Recommendation-level pruning** (`recommendCategory` returns `null` when retrieval finds no confident candidate, so the orchestrator skips it).
 
 - **Always analyze all five `NON_ENGINE_CATEGORIES`** (`art_asset`, `vfx`, `animation`, `audio`, `ai_coding`) for every feasible project. `targetCategories` becomes a fixed list, not an LLM output.
-- **Remove `targetCategories` from `FeasibilitySchema`** and from the feasibility prompt's category-selection instructions ("pick the categories this project needs / skip the ones it doesn't"). The orchestrator assigns the full `NON_ENGINE_CATEGORIES` list directly. This shrinks the LLM's structured-output surface and removes a pruning failure mode.
+- **Remove `targetCategories` from `FeasibilitySchema`** and from the feasibility prompt's category-selection instructions ("pick the categories this project needs / skip the ones it doesn't"). The orchestrator assigns the full `NON_ENGINE_CATEGORIES` list directly. This shrinks the LLM's structured-output surface and removes the first pruning failure mode.
+- **Always recommend the best candidate per category.** Remove the `answerPossible: false` escape path from `buildCategorySchema` / `categorySystemPrompt`; `recommendCategory` must always return a `primary`. The catalog is populated in all five categories (art_asset 17, vfx 6, animation 11, audio 11, ai_coding 7+2), so a reasonable candidate always exists. Guarantee: 5 categories → 5 recommendations.
 - **Keep the feasibility gate** (`feasible` boolean + `reason`) exactly as-is — unrealistic projects still terminate early.
-- **Fix silent category drop.** `advisorOrchestrator.ts` skips a category when `recommendCategory` returns `null`. Emit a `category_skipped` event (with the category and a reason) instead of dropping silently — now that the user expects all five categories, a missing one must be explained rather than vanish.
+- **No `category_skipped` event needed.** With both pruning points removed, a category can no longer vanish, so the orchestrator's silent-drop branch (`if (rec)`) is deleted rather than instrumented.
 
 ### Part 2 — Full engine support (11 catalog engines + Three.js)
 
@@ -79,18 +87,19 @@ Schema unchanged; data + reindex only.
 
 - `artifacts/api-server/src/types/catalog.ts` — `ENGINES` derived from catalog.
 - `artifacts/api-server/src/agent/steps/feasibility.ts` — drop `targetCategories` from output; orchestrator assigns all five `NON_ENGINE_CATEGORIES`.
-- `artifacts/api-server/src/agent/prompts/advisorPrompts.ts` — feasibility (remove category-selection instructions), `FeasibilitySchema` (drop `targetCategories`), category (engine-specific guard), engine (generalize).
+- `artifacts/api-server/src/agent/prompts/advisorPrompts.ts` — feasibility (remove category-selection instructions), `FeasibilitySchema` (drop `targetCategories`), `buildCategorySchema` (drop `answerPossible`), category prompt (engine-specific guard, always-pick), engine (generalize).
+- `artifacts/api-server/src/agent/steps/recommendCategory.ts` — always return a `primary` (no null path).
 - `artifacts/api-server/src/agent/steps/pickEngineRag.ts` — catalog-aware engine detection.
 - `artifacts/api-server/src/lib/rag/retriever.ts` — remove engine flag filter.
-- `artifacts/api-server/src/orchestrators/advisorOrchestrator.ts` — emit `category_skipped`.
+- `artifacts/api-server/src/orchestrators/advisorOrchestrator.ts` — fan out over all five categories; delete the silent-drop branch.
 - `artifacts/api-server/src/data/toolCatalog.json` — add Three.js, Codex, Gemini; update 4 AI-coding tools.
 - RAG index — rebuild after catalog edits.
 
 ## Testing
 
-- Unit: catalog-derived `ENGINES`; catalog-aware `detectUserPreferredEngine` (catalog engine → detected; non-catalog → null); orchestrator always fans out over all five `NON_ENGINE_CATEGORIES`; retriever no longer filters by engine flag.
+- Unit: catalog-derived `ENGINES`; catalog-aware `detectUserPreferredEngine` (catalog engine → detected; non-catalog → null); orchestrator always fans out over all five `NON_ENGINE_CATEGORIES` and produces five recommendations; `recommendCategory` always returns a `primary`; retriever no longer filters by engine flag.
 - Catalog validation: `ToolCatalogSchema` passes with the 3 new/edited entries at boot.
-- Integration: a "2D web RPG" run surfaces Engine (Phaser-eligible) plus all five categories — Art, VFX, Animation, Audio, AI Coding; a low-budget run favors freemium AI coding tools.
+- Integration: a "2D web RPG" run surfaces Engine (Phaser-eligible) plus all five categories — Art, VFX, Animation, Audio, AI Coding (exactly five recommendations, none dropped); a low-budget run favors freemium AI coding tools.
 - Reindex + `rag:eval` to confirm retrieval quality holds.
 
 ## Sources (AI coding pricing, June 2026)
