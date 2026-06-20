@@ -54,7 +54,7 @@ The advisor recently gained three defense layers (`rag-defense-layers-integratio
 
 ### Part 2 — Full engine support (11 catalog engines + Three.js)
 
-- **Derive `ENGINES` from the catalog** instead of the hardcoded 3-name const: the names of all tools whose `categories` include `game_engine`.
+- **Make `EngineName` the catalog tool `id`, not the display name.** Today `ENGINES = ["Unity","Unreal","Godot"]` are display-ish names that happen to lowercase-match their ids — but this is fragile: the real catalog name "Unreal Engine" does not match id `unreal_engine`, and 5 of 11 engines (Unreal Engine, Construct 3, RPG Maker, Ren'Py, LÖVE) fail `name.toLowerCase() === id`. `scoring.engineFit` relies on `t.id === ctx.pickedEngine.toLowerCase()`, which breaks at scale. Fix: `ENGINES` becomes the **ids** of all `game_engine` tools (`unity`, `unreal_engine`, `godot`, `gamemaker`, `construct_3`, `gdevelop`, `rpg_maker`, `renpy`, `defold`, `phaser`, `love2d`, plus new `threejs`), derived from the catalog at load time. `engineFit` becomes a direct `t.id === ctx.pickedEngine` match (no `.toLowerCase()`). Display names are looked up from the catalog (`TOOL_BY_ID`) when rendering.
 - **Remove the engine-compatibility flag filter.** Delete `engineFlagKey`, and the engine portion of `toolWhereForCategory` / `metadataMatchesWhere`. Category tools are no longer filtered by engine (96% are `any`).
 - **Guard the 2 engine-specific VFX tools via prompt.** Add to `categorySystemPrompt`: "If a candidate's text says it is specific to a particular engine (e.g. Unity only) and the chosen engine is not that one, do not select it as primary."
 - **Add Three.js to the catalog.** Modeled on Phaser (JS/web framework) but as a *3D* library with a high learning curve: `pricing: open_source` (MIT), `toolNature: traditional`, `learningCurve: high`, `difficultyLevel: advanced`, `beginnerSuitability: ~35`, `supportedPlatforms: ["web"]`, `engineCompatibility: ["any"]`, `description`/`bestUseCase` clearly stating "3D web" so the LLM does not pick it for a 2D project.
@@ -65,8 +65,8 @@ The advisor recently gained three defense layers (`rag-defense-layers-integratio
 
 User rule: if the user names a specific engine, check whether it exists in the catalog; if it does, use it; if not, recommend an alternative.
 
-- **Make engine detection catalog-aware.** `detectUserPreferredEngine` builds its patterns from the catalog engine names (Phaser, Three.js, Construct 3, …) instead of the fixed 3-engine `ENGINE_PATTERNS`.
-- If the user names a **catalog** engine → `userPreferred` = that engine → `agreement: "agreed"` → it is used.
+- **Make engine detection catalog-aware.** `detectUserPreferredEngine` builds its patterns from the catalog engine display names (Phaser, Three.js, Construct 3, …) and returns the matched engine **id** (e.g. "Unreal" / "Unreal Engine" → `unreal_engine`), instead of the fixed 3-engine `ENGINE_PATTERNS`.
+- If the user names a **catalog** engine → `userPreferred` = that engine id → `agreement: "agreed"` → it is used.
 - If the user names a **non-catalog** engine (e.g. CryEngine) or names none → `userPreferred: null` → system recommends the best fit. This "otherwise recommend" behavior needs no extra code: an unrecognized name simply isn't detected.
 
 ### Part 3 — Budget-aware AI coding + token/cost data
