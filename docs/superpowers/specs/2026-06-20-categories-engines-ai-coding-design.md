@@ -27,10 +27,12 @@ Investigation of the engine-compatibility flags showed they affect only **2 of 4
 
 ### Part 1 — Category selection
 
-- **Always include `ai_coding`** in `feasibility.targetCategories` (every dev project benefits, especially solo/beginner). Implemented by unioning `ai_coding` into the result of `runFeasibility`.
-- **Encourage `animation` for 2D games** via the feasibility prompt — sprite animation is animation. Prevents 2D projects from dropping it.
-- **Leave `vfx` to LLM discretion** — a text-only game genuinely needs no VFX. But when selected it now surfaces.
-- **Fix silent category drop.** `advisorOrchestrator.ts` skips a category when `recommendCategory` returns `null`. Emit a `category_skipped` event (with the category and a reason) instead of dropping silently, so the user sees why a category produced no recommendation.
+User decision: every game needs Coding, Animation, and VFX too — so **all five non-engine categories are always active**, like art_asset and audio already were. The LLM no longer decides *which* categories; it only decides *whether the project is feasible*.
+
+- **Always analyze all five `NON_ENGINE_CATEGORIES`** (`art_asset`, `vfx`, `animation`, `audio`, `ai_coding`) for every feasible project. `targetCategories` becomes a fixed list, not an LLM output.
+- **Remove `targetCategories` from `FeasibilitySchema`** and from the feasibility prompt's category-selection instructions ("pick the categories this project needs / skip the ones it doesn't"). The orchestrator assigns the full `NON_ENGINE_CATEGORIES` list directly. This shrinks the LLM's structured-output surface and removes a pruning failure mode.
+- **Keep the feasibility gate** (`feasible` boolean + `reason`) exactly as-is — unrealistic projects still terminate early.
+- **Fix silent category drop.** `advisorOrchestrator.ts` skips a category when `recommendCategory` returns `null`. Emit a `category_skipped` event (with the category and a reason) instead of dropping silently — now that the user expects all five categories, a missing one must be explained rather than vanish.
 
 ### Part 2 — Full engine support (11 catalog engines + Three.js)
 
@@ -76,8 +78,8 @@ Schema unchanged; data + reindex only.
 ## Affected Files
 
 - `artifacts/api-server/src/types/catalog.ts` — `ENGINES` derived from catalog.
-- `artifacts/api-server/src/agent/steps/feasibility.ts` — always-include `ai_coding`.
-- `artifacts/api-server/src/agent/prompts/advisorPrompts.ts` — feasibility (animation), category (engine-specific guard), engine (generalize).
+- `artifacts/api-server/src/agent/steps/feasibility.ts` — drop `targetCategories` from output; orchestrator assigns all five `NON_ENGINE_CATEGORIES`.
+- `artifacts/api-server/src/agent/prompts/advisorPrompts.ts` — feasibility (remove category-selection instructions), `FeasibilitySchema` (drop `targetCategories`), category (engine-specific guard), engine (generalize).
 - `artifacts/api-server/src/agent/steps/pickEngineRag.ts` — catalog-aware engine detection.
 - `artifacts/api-server/src/lib/rag/retriever.ts` — remove engine flag filter.
 - `artifacts/api-server/src/orchestrators/advisorOrchestrator.ts` — emit `category_skipped`.
@@ -86,9 +88,9 @@ Schema unchanged; data + reindex only.
 
 ## Testing
 
-- Unit: catalog-derived `ENGINES`; catalog-aware `detectUserPreferredEngine` (catalog engine → detected; non-catalog → null); feasibility always includes `ai_coding`; retriever no longer filters by engine flag.
+- Unit: catalog-derived `ENGINES`; catalog-aware `detectUserPreferredEngine` (catalog engine → detected; non-catalog → null); orchestrator always fans out over all five `NON_ENGINE_CATEGORIES`; retriever no longer filters by engine flag.
 - Catalog validation: `ToolCatalogSchema` passes with the 3 new/edited entries at boot.
-- Integration: a "2D web RPG" run surfaces Engine (Phaser-eligible), AI Coding, Animation, Art, Audio; a low-budget run favors freemium AI coding tools.
+- Integration: a "2D web RPG" run surfaces Engine (Phaser-eligible) plus all five categories — Art, VFX, Animation, Audio, AI Coding; a low-budget run favors freemium AI coding tools.
 - Reindex + `rag:eval` to confirm retrieval quality holds.
 
 ## Sources (AI coding pricing, June 2026)
