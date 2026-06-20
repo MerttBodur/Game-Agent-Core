@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { assertCandidatesOnly, formatCandidates } from "./recommendCategory.js";
+import { assertCandidatesOnly, formatCandidates, shouldSkipCategory } from "./recommendCategory.js";
 import { categorySystemPrompt } from "../prompts/advisorPrompts.js";
 
 test("passes when all ids are candidates", () => {
@@ -36,4 +36,10 @@ test("categorySystemPrompt forbids fabricating attributes", () => {
   const p = categorySystemPrompt("art_asset");
   assert.match(p, /only/i);
   assert.match(p, /not invent|do not invent|don't invent/i);
+  assert.match(p, /answerPossible=false/);
+});
+
+test("shouldSkipCategory skips on weak retrieval signal", () => {
+  assert.equal(shouldSkipCategory(0, 0), true);
+  assert.equal(shouldSkipCategory(3, 10), false);
 });

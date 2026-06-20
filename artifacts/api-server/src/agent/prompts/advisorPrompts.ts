@@ -91,6 +91,7 @@ export function buildCategorySchema(candidateIds: string[]) {
     cons: z.array(z.string().min(1)).min(1),
   });
   return z.object({
+    answerPossible: z.boolean(),
     primary: item,
     alternatives: z.array(item).max(2),
     reasoning: z.string().min(1),
@@ -104,6 +105,7 @@ export function categorySystemPrompt(category: string): string {
     "Use ONLY the pros, cons, pricing, platforms and facts present in each candidate's text.",
     "Do NOT invent capabilities, prices, or platform support that are not shown in the candidate text.",
     "If the candidates are insufficient for a confident pick, say so in your reasoning rather than fabricating.",
+    "Set answerPossible=false if the provided candidates are genuinely insufficient for a confident pick; otherwise set it true.",
     "Apply the AI-vs-traditional rule: when skill/art capability is low and budget is tight,",
     "prefer ai / low-learning-curve tools (e.g. Meshy) over high-curve standalone tools (e.g. Blender), and say why.",
     "Answer in English.",
