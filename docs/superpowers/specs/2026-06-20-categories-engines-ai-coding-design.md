@@ -1,0 +1,100 @@
+# Design — Category Coverage, Full Engine Support & Budget-Aware AI Coding
+
+**Date:** 2026-06-20
+**Status:** Approved (pending spec review)
+
+## Problem
+
+Three user-reported defects in the advisor analysis:
+
+1. **Missing categories.** A run for "A 2D Web RPG Game" returned only Engine, Art & Asset, and Audio. AI Coding, VFX, and Animation were absent. The catalog defines all six categories, but the LLM feasibility step prunes `targetCategories`, and the orchestrator silently drops any category whose retrieval yields no confident pick.
+
+2. **Engine selection is structurally limited.** The pipeline can only recommend Unity / Unreal / Godot (hardcoded `ENGINES` const), even though the catalog contains 11 game engines including web-native ones (Phaser, Construct 3, GDevelop, Defold, LÖVE, Ren'Py). For a 2D web game the correct answer is Phaser, but the system was forbidden from recommending it and fell back to Godot. Three.js is not in the catalog at all.
+
+3. **No token / cost data for AI coding tools.** The catalog models price as a coarse `pricing` enum (`subscription` / `freemium` / `open_source`) with no notion of token-usage cost. The pipeline therefore cannot express that Codex/Cursor are cheaper per task than token-heavy Claude Code.
+
+## Root Cause
+
+All three share one root cause: **hardcoded narrowing that ignores the catalog.**
+
+- Categories are narrowed by an LLM with no "always include" floor (`ai_coding`).
+- Engines are narrowed to 3 by a const (`ENGINES`) that predates the catalog's 11 engines, plus an engine-compatibility flag system (`engine_unity`/`engine_unreal`/`engine_godot`) baked into the Chroma index and retriever.
+- Cost is narrowed to a 3-value enum that cannot represent token-usage economics.
+
+Investigation of the engine-compatibility flags showed they affect only **2 of 48** non-engine tools (Unity VFX Graph → Unity only, Niagara → Unreal only); 46 tools are `engine_any`. The filter's cost (blocking 11-engine support) far exceeds its benefit (eliminating 2 tools from the wrong engine).
+
+## Solution
+
+### Part 1 — Category selection
+
+- **Always include `ai_coding`** in `feasibility.targetCategories` (every dev project benefits, especially solo/beginner). Implemented by unioning `ai_coding` into the result of `runFeasibility`.
+- **Encourage `animation` for 2D games** via the feasibility prompt — sprite animation is animation. Prevents 2D projects from dropping it.
+- **Leave `vfx` to LLM discretion** — a text-only game genuinely needs no VFX. But when selected it now surfaces.
+- **Fix silent category drop.** `advisorOrchestrator.ts` skips a category when `recommendCategory` returns `null`. Emit a `category_skipped` event (with the category and a reason) instead of dropping silently, so the user sees why a category produced no recommendation.
+
+### Part 2 — Full engine support (11 catalog engines + Three.js)
+
+- **Derive `ENGINES` from the catalog** instead of the hardcoded 3-name const: the names of all tools whose `categories` include `game_engine`.
+- **Remove the engine-compatibility flag filter.** Delete `engineFlagKey`, and the engine portion of `toolWhereForCategory` / `metadataMatchesWhere`. Category tools are no longer filtered by engine (96% are `any`).
+- **Guard the 2 engine-specific VFX tools via prompt.** Add to `categorySystemPrompt`: "If a candidate's text says it is specific to a particular engine (e.g. Unity only) and the chosen engine is not that one, do not select it as primary."
+- **Add Three.js to the catalog.** Modeled on Phaser (JS/web framework) but as a *3D* library with a high learning curve: `pricing: open_source` (MIT), `toolNature: traditional`, `learningCurve: high`, `difficultyLevel: advanced`, `beginnerSuitability: ~35`, `supportedPlatforms: ["web"]`, `engineCompatibility: ["any"]`, `description`/`bestUseCase` clearly stating "3D web" so the LLM does not pick it for a 2D project.
+- **Generalize the engine-selection prompt** (`engineSystemPrompt`) from "choose one of Unity/Unreal/Godot" to "choose one of the retrieved candidate engines."
+- **Reindex** (`pnpm --filter @workspace/api-server run rag:index`) — required because Three.js is a new document and the engine flag fields are removed.
+
+### Part 2b — User-specified engine: "use it if it exists, otherwise recommend"
+
+User rule: if the user names a specific engine, check whether it exists in the catalog; if it does, use it; if not, recommend an alternative.
+
+- **Make engine detection catalog-aware.** `detectUserPreferredEngine` builds its patterns from the catalog engine names (Phaser, Three.js, Construct 3, …) instead of the fixed 3-engine `ENGINE_PATTERNS`.
+- If the user names a **catalog** engine → `userPreferred` = that engine → `agreement: "agreed"` → it is used.
+- If the user names a **non-catalog** engine (e.g. CryEngine) or names none → `userPreferred: null` → system recommends the best fit. This "otherwise recommend" behavior needs no extra code: an unrecognized name simply isn't detected.
+
+### Part 3 — Budget-aware AI coding + token/cost data
+
+Schema unchanged; data + reindex only.
+
+- **Add two tools** the user requested:
+  - **ChatGPT Codex** — `pricing: freemium` (Free tier + Go $8 / Plus $20), `toolNature: ai`.
+  - **Gemini CLI / Code Assist** — `pricing: freemium` (generous free tier: ~60 req/min, ~1,000 req/day).
+- **Set realistic pricing + add token/cost notes** to pros/cons for the four target tools (from June 2026 research):
+
+  | Tool | pricing | Added note |
+  |------|---------|------------|
+  | Claude Code | `subscription` | con: token-heavy agent use is expensive; Max plan $100–200/mo |
+  | Cursor | `freemium` | pro: flat $20/mo + included credit pool; predictable cost |
+  | ChatGPT Codex | `freemium` | pro: free tier + $8 Go plan; affordable entry |
+  | Gemini | `freemium` | pro: generous free tier (~1,000 req/day); ideal for low budget |
+
+- **Budget filtering already works.** `budgetFit` + `BUDGET_ALLOWED` give `free`/`open_source`/`freemium` tools full score at low budget and drop `subscription` tools to 0.2. No scoring code changes.
+
+## Out of Scope (YAGNI)
+
+- No new `costModel` schema field — pros/cons text + correct `pricing` enum meets the goal.
+- No full per-engine compatibility model for all 11 engines — the flag filter is removed, not expanded.
+- No changes to the `agreement` three-state model beyond making detection catalog-aware.
+
+## Affected Files
+
+- `artifacts/api-server/src/types/catalog.ts` — `ENGINES` derived from catalog.
+- `artifacts/api-server/src/agent/steps/feasibility.ts` — always-include `ai_coding`.
+- `artifacts/api-server/src/agent/prompts/advisorPrompts.ts` — feasibility (animation), category (engine-specific guard), engine (generalize).
+- `artifacts/api-server/src/agent/steps/pickEngineRag.ts` — catalog-aware engine detection.
+- `artifacts/api-server/src/lib/rag/retriever.ts` — remove engine flag filter.
+- `artifacts/api-server/src/orchestrators/advisorOrchestrator.ts` — emit `category_skipped`.
+- `artifacts/api-server/src/data/toolCatalog.json` — add Three.js, Codex, Gemini; update 4 AI-coding tools.
+- RAG index — rebuild after catalog edits.
+
+## Testing
+
+- Unit: catalog-derived `ENGINES`; catalog-aware `detectUserPreferredEngine` (catalog engine → detected; non-catalog → null); feasibility always includes `ai_coding`; retriever no longer filters by engine flag.
+- Catalog validation: `ToolCatalogSchema` passes with the 3 new/edited entries at boot.
+- Integration: a "2D web RPG" run surfaces Engine (Phaser-eligible), AI Coding, Animation, Art, Audio; a low-budget run favors freemium AI coding tools.
+- Reindex + `rag:eval` to confirm retrieval quality holds.
+
+## Sources (AI coding pricing, June 2026)
+
+- [Claude Code Pricing 2026 — finout.io](https://www.finout.io/blog/claude-code-pricing-2026)
+- [OpenAI Codex Pricing 2026 — eesel.ai](https://www.eesel.ai/blog/codex-pricing)
+- [Cursor Pricing 2026 — eesel.ai](https://www.eesel.ai/blog/cursor-pricing)
+- [Gemini CLI Quotas and Pricing — google-gemini.github.io](https://google-gemini.github.io/gemini-cli/docs/quota-and-pricing.html)
+- [Three.js LICENSE (MIT) — github.com/mrdoob/three.js](https://github.com/mrdoob/three.js/blob/dev/LICENSE)
