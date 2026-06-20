@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { toolWhereForCategory, guidanceWhere, engineFlagKey, metadataMatchesWhere, fuseToolDocs } from "./retriever.js";
+import type { RetrievedCandidates } from "./retriever.js";
 import { Document } from "@langchain/core/documents";
 
 test("engineFlagKey maps engine names to boolean metadata keys", () => {
@@ -48,4 +49,14 @@ test("fuseToolDocs skips bm25 ids that have no vector payload", () => {
   const ids = fused.map((d) => d.metadata.toolId);
   assert.ok(!ids.includes("c")); // bm25-only id is dropped (no payload)
   assert.deepEqual([...ids].sort(), ["a", "b"]);
+});
+
+test("RetrievedCandidates includes the top BM25 score signal", () => {
+  const sample: RetrievedCandidates = {
+    toolDocs: [],
+    guidanceDocs: [],
+    toolIds: [],
+    topBm25Score: 1.25,
+  };
+  assert.equal(sample.topBm25Score, 1.25);
 });

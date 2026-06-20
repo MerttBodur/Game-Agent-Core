@@ -28,7 +28,12 @@ export function guidanceWhere(topic?: string): Where {
   return topic ? { $and: [{ type: { $eq: "guidance" } }, { topic: { $eq: topic } }] } : { type: { $eq: "guidance" } };
 }
 
-export interface RetrievedCandidates { toolDocs: Document[]; guidanceDocs: Document[]; toolIds: string[]; }
+export interface RetrievedCandidates {
+  toolDocs: Document[];
+  guidanceDocs: Document[];
+  toolIds: string[];
+  topBm25Score: number;
+}
 
 async function search(query: string, k: number, where: Where): Promise<Document[]> {
   const { getVectorStore } = await import("./vectorStore.js");
@@ -80,9 +85,10 @@ export async function retrieveEngineDocs(query: string): Promise<RetrievedCandid
     search(query, FETCH_K, toolWhereForCategory("game_engine")),
     search(query, 1, guidanceWhere("choosing-engine-unity-unreal-godot")),
   ]);
-  const bm25Ids = bm25ForCategory("game_engine").search(query, FETCH_K).map((h) => h.id);
+  const bm25Hits = bm25ForCategory("game_engine").search(query, FETCH_K);
+  const bm25Ids = bm25Hits.map((h) => h.id);
   const toolDocs = fuseToolDocs(vectorDocs, bm25Ids, 3);
-  return { toolDocs, guidanceDocs, toolIds: uniqueToolIds(toolDocs) };
+  return { toolDocs, guidanceDocs, toolIds: uniqueToolIds(toolDocs), topBm25Score: bm25Hits[0]?.score ?? 0 };
 }
 
 export async function retrieveForCategory(query: string, category: Category, picked: EngineName): Promise<RetrievedCandidates> {
@@ -90,9 +96,10 @@ export async function retrieveForCategory(query: string, category: Category, pic
     search(query, FETCH_K, toolWhereForCategory(category, picked)),
     search(query, GUIDANCE_K, guidanceWhere()),
   ]);
-  const bm25Ids = bm25ForCategory(category, picked).search(query, FETCH_K).map((h) => h.id);
+  const bm25Hits = bm25ForCategory(category, picked).search(query, FETCH_K);
+  const bm25Ids = bm25Hits.map((h) => h.id);
   const toolDocs = fuseToolDocs(vectorDocs, bm25Ids, TOOL_K);
-  return { toolDocs, guidanceDocs, toolIds: uniqueToolIds(toolDocs) };
+  return { toolDocs, guidanceDocs, toolIds: uniqueToolIds(toolDocs), topBm25Score: bm25Hits[0]?.score ?? 0 };
 }
 
 export async function retrieveFeasibilityContext(query: string): Promise<Document[]> {
