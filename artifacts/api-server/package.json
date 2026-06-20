@@ -7,7 +7,7 @@
     "dev": "cross-env NODE_ENV=development pnpm run build && cross-env NODE_ENV=development pnpm run start",
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
-    "test": "tsx --test src/lib/catalog.test.ts src/lib/rag/indexer.test.ts src/lib/rag/bm25.test.ts src/lib/rag/retriever.test.ts src/services/scoring.test.ts src/agent/steps/feasibility.test.ts src/agent/steps/pickEngineRag.test.ts src/agent/steps/recommendCategory.test.ts src/agent/steps/scoreStack.test.ts src/lib/security/promptGuard.test.ts",
+    "test": "tsx --test src/lib/catalog.test.ts src/lib/rag/indexer.test.ts src/lib/rag/bm25.test.ts src/lib/rag/retriever.test.ts src/lib/rag/retrievalGate.test.ts src/services/scoring.test.ts src/agent/steps/feasibility.test.ts src/agent/steps/pickEngineRag.test.ts src/agent/steps/recommendCategory.test.ts src/agent/steps/scoreStack.test.ts src/lib/security/promptGuard.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "rag:index": "tsx ./src/scripts/indexRag.ts",
     "rag:eval": "tsx ./src/scripts/ragEval.ts"
