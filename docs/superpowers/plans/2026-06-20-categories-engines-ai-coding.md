@@ -951,11 +951,15 @@ function engineFit(t: ToolEntry, ctx: ScoringContext): number {
   if (ctx.category === "game_engine") {
     return t.id === ctx.pickedEngine ? 1 : 0.3;
   }
-  return t.engineCompatibility.includes("any") || t.engineCompatibility.includes(ctx.pickedEngine) ? 1 : 0.2;
+  return t.engineCompatibility.includes("any") ? 1 : 0.2;
 }
 ```
 
-(For non-engine categories, `engineCompatibility.includes(ctx.pickedEngine)` will now rarely match since `pickedEngine` is an id like `phaser` and compat values are `["any"]` for 46/48 tools — but `includes("any")` covers them, returning 1. The 2 engine-specific tools, Unity VFX Graph / Niagara, have compat `["Unity"]`/`["Unreal"]` which no longer equal the id; they score 0.2 for non-Unity/Unreal picks, which is the desired de-prioritization the prompt guard reinforces.)
+IMPORTANT — why the `includes(ctx.pickedEngine)` comparison is removed (not kept):
+- After Task 2 widened `EngineName` to `string`, `ctx.pickedEngine` is a catalog **id** (e.g. `phaser`, `unreal_engine`). But `t.engineCompatibility` values are display-style names from the `ENGINE_COMPAT` union (`"Unity" | "Unreal" | "Godot" | "any"`). So `t.engineCompatibility.includes(ctx.pickedEngine)`:
+  1. **fails to type-check** — `Array<"Unity"|"Unreal"|"Godot"|"any">.includes(x)` requires `x` to be that union, not `string`; this is exactly the `scoring.ts` error surfaced in Task 2; and
+  2. is **semantically dead** — an id like `phaser` can never equal a compat display-name, so the comparison was always false for non-engine tools.
+- Dropping it fixes the type error and changes no behavior: the 46/48 `["any"]` tools still score 1 via `includes("any")`; the 2 engine-specific tools (Unity VFX Graph `["Unity"]`, Niagara `["Unreal"]`) score 0.2 for any picked engine, which is the desired de-prioritization the category prompt's engine-guard (Task 3) reinforces.
 
 - [ ] **Step 8: Run the tests to verify they pass**
 
