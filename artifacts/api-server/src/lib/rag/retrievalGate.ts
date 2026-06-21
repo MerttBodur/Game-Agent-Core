@@ -1,8 +1,9 @@
 // Layer 2 (softblock): a graceful-degradation gate over retrieval strength.
 // The reference doc gates on a Cohere rerank score; we have no reranker, so we
 // gate on signals we own — a non-empty fused pool AND a top BM25 score above a
-// floor. A failed gate causes the category to be skipped, not the request to
-// error. MIN_BM25_SCORE is a starting point: calibrate it with the gold-set
+// floor. A failed gate is logged as low-confidence; the category still produces
+// a recommendation (it is not skipped or errored). MIN_BM25_SCORE is a starting
+// point: calibrate it with the gold-set
 // harness (`pnpm --filter @workspace/api-server run rag:eval`) when the catalog,
 // embeddings, or BM25 weighting change. Do NOT guess it higher without data.
 

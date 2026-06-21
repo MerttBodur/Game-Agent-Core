@@ -23,8 +23,7 @@ function loadCases(): GoldCase[] {
 
 async function retrieve(c: GoldCase): Promise<string[]> {
   if (c.category === "game_engine") return (await retrieveEngineDocs(c.query)).toolIds;
-  if (!c.picked) throw new Error(`case "${c.name}" needs a picked engine`);
-  return (await retrieveForCategory(c.query, c.category, c.picked)).toolIds;
+  return (await retrieveForCategory(c.query, c.category)).toolIds;
 }
 
 function metrics(retrieved: string[], relevant: string[]) {
