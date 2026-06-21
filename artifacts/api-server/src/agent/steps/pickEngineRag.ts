@@ -1,19 +1,36 @@
 import type { AdvisorInput, EngineDecision } from "../../types/advisor.js";
 import type { EngineName } from "../../types/catalog.js";
+import { TOOL_CATALOG } from "../../lib/catalog.js";
 import {
   EngineDecisionSchema,
   engineSystemPrompt,
   engineUserPrompt,
 } from "../prompts/advisorPrompts.js";
 
-const ENGINE_PATTERNS: Array<{ engine: EngineName; pattern: RegExp }> = [
-  { engine: "Unity", pattern: /\bunity\b/gi },
-  { engine: "Unreal", pattern: /\bunreal\s+engine\b|\bue[45]?\b/gi },
-  { engine: "Godot", pattern: /\bgodot\b/gi },
-];
+// Build detection patterns from the catalog: each game_engine tool maps a
+// name/alias regex to its id. Aliases cover common ways users name an engine.
+const ENGINE_ALIASES: Record<string, string[]> = {
+  unreal_engine: ["unreal\\s+engine", "unreal", "ue[45]?"],
+  threejs: ["three\\.?js"],
+  love2d: ["l[öo]ve2?d?", "l[öo]ve"],
+  renpy: ["ren'?py"],
+  construct_3: ["construct\\s*3?"],
+  rpg_maker: ["rpg\\s*maker"],
+};
+
+const ENGINE_PATTERNS: Array<{ engine: EngineName; pattern: RegExp }> = TOOL_CATALOG.filter(
+  (t) => t.categories.includes("game_engine"),
+).map((t) => {
+  const aliases = ENGINE_ALIASES[t.id] ?? [escapeRegExp(t.name)];
+  return { engine: t.id, pattern: new RegExp(`\\b(?:${aliases.join("|")})\\b`, "gi") };
+});
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 const NEGATED_ENGINE_CONTEXT =
-  /\b(no|not|avoid|without|against|instead of|do not want|don't want|dont want)\s+$/i;
+  /\b(no|not|but|avoid|without|against|instead of|do not want|don't want|dont want)\s+$/i;
 
 export async function runPickEngine(input: AdvisorInput): Promise<EngineDecision> {
   const [{ chatModel }, { retrieveEngineDocs }] = await Promise.all([
