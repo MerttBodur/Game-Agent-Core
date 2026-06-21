@@ -6,8 +6,7 @@ import {
 } from "../prompts/advisorPrompts.js";
 
 export async function runFeasibility(input: AdvisorInput): Promise<FeasibilityDecision> {
-  // Dynamic imports defer module-level side effects (API key check) until call time,
-  // keeping the pure normalizeFeasibility export testable without a real key.
+  // Dynamic imports defer module-level side effects (API key check) until call time.
   const [{ chatModel }, { retrieveFeasibilityContext }] = await Promise.all([
     import("../../lib/rag/chatModel.js"),
     import("../../lib/rag/retriever.js"),
@@ -22,10 +21,5 @@ export async function runFeasibility(input: AdvisorInput): Promise<FeasibilityDe
     { role: "system", content: feasibilitySystemPrompt() },
     { role: "user", content: feasibilityUserPrompt(input, guidance) },
   ]);
-  return normalizeFeasibility(result as FeasibilityDecision);
-}
-
-// If blocked, targetCategories is irrelevant — force empty so downstream never fans out.
-export function normalizeFeasibility(d: FeasibilityDecision): FeasibilityDecision {
-  return d.feasible ? d : { ...d, targetCategories: [] };
+  return result as FeasibilityDecision;
 }

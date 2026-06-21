@@ -10,9 +10,10 @@ import type {
   CategoryRecommendation,
   EngineDecision,
 } from "../types/advisor.js";
+import { NON_ENGINE_CATEGORIES } from "../types/catalog.js";
 
 export type AdvisorEvent =
-  | { type: "feasibility_complete"; targetCategories: string[] }
+  | { type: "feasibility_complete"; targetCategories: readonly string[] }
   | { type: "feasibility_blocked"; reason: string }
   | { type: "engine_picked"; engineDecision: EngineDecision }
   | { type: "category_recommended"; category: string; primaryToolId: string }
@@ -38,18 +39,16 @@ export async function runAdvisorPipeline(
     emit({ type: "done", result });
     return result;
   }
-  emit({ type: "feasibility_complete", targetCategories: feasibility.targetCategories });
+  emit({ type: "feasibility_complete", targetCategories: NON_ENGINE_CATEGORIES });
 
   const engineDecision = await runPickEngine(input);
   emit({ type: "engine_picked", engineDecision });
 
   const recs: CategoryRecommendation[] = [];
-  for (const category of feasibility.targetCategories) {
+  for (const category of NON_ENGINE_CATEGORIES) {
     const rec = await recommendCategory(input, category, engineDecision.picked);
-    if (rec) {
-      recs.push(rec);
-      emit({ type: "category_recommended", category, primaryToolId: rec.primary.toolId });
-    }
+    recs.push(rec);
+    emit({ type: "category_recommended", category, primaryToolId: rec.primary.toolId });
   }
 
   const { projectSummary, finalSummary, recommendations } = await runScoreStack(

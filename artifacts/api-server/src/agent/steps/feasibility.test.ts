@@ -1,21 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { normalizeFeasibility } from "./feasibility.js";
+import { FeasibilitySchema } from "../prompts/advisorPrompts.js";
 
-test("blocked decision drops targetCategories", () => {
-  const out = normalizeFeasibility({
-    feasible: false,
-    reason: "Too ambitious for a solo dev in a week.",
-    targetCategories: ["art_asset", "audio"],
-  });
-  assert.deepEqual(out.targetCategories, []);
-});
-
-test("feasible decision keeps targetCategories", () => {
-  const out = normalizeFeasibility({
+test("FeasibilitySchema accepts a decision without targetCategories", () => {
+  const parsed = FeasibilitySchema.safeParse({
     feasible: true,
     reason: "Reasonable scope.",
-    targetCategories: ["audio"],
   });
-  assert.deepEqual(out.targetCategories, ["audio"]);
+  assert.equal(parsed.success, true);
+});
+
+test("FeasibilitySchema rejects a missing reason", () => {
+  const parsed = FeasibilitySchema.safeParse({ feasible: false, reason: "" });
+  assert.equal(parsed.success, false);
 });

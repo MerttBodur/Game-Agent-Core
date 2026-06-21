@@ -1,4 +1,4 @@
-import type { Category, EngineName, NonEngineCategory } from "./catalog.js";
+import type { Category, EngineName } from "./catalog.js";
 
 export interface AdvisorInput {
   projectIdea: string;
@@ -11,7 +11,6 @@ export interface AdvisorInput {
 export interface FeasibilityDecision {
   feasible: boolean;
   reason: string;
-  targetCategories: NonEngineCategory[];
 }
 
 export interface EngineDecision {
