@@ -1,10 +1,9 @@
 import { z } from "zod/v4";
-import { ENGINES, NON_ENGINE_CATEGORIES } from "../../types/catalog.js";
+import { ENGINE_IDS } from "../../lib/engines.js";
 
 export const FeasibilitySchema = z.object({
   feasible: z.boolean(),
   reason: z.string().min(1),
-  targetCategories: z.array(z.enum(NON_ENGINE_CATEGORIES)),
 });
 export type FeasibilityShape = z.infer<typeof FeasibilitySchema>;
 
@@ -26,9 +25,7 @@ export function feasibilitySystemPrompt(): string {
     "they are achievable via asset stores, free PBR libraries (e.g. Megascans/Fab), and AI generation.",
     "In that case set feasible=true and use the reason to caution the user — e.g. advise dropping true",
     "photorealism for a stylised or asset-driven look and keeping scope to one small environment.",
-    "If feasible, pick the non-engine categories this project actually needs from:",
-    NON_ENGINE_CATEGORIES.join(", ") + ".",
-    "Skip categories the project does not need (e.g. a text-only game needs no animation or vfx).",
+    "You only decide feasibility — category selection is handled downstream.",
     "Answer in English. Keep the reason to 1-2 sentences.",
   ].join("\n");
 }
@@ -54,13 +51,13 @@ export function feasibilityUserPrompt(
 }
 
 export const EngineDecisionSchema = z.object({
-  picked: z.enum(ENGINES),
-  userPreferred: z.enum(ENGINES).nullable(),
+  picked: z.enum(ENGINE_IDS as [string, ...string[]]),
+  userPreferred: z.enum(ENGINE_IDS as [string, ...string[]]).nullable(),
   agreement: z.enum(["agreed", "challenged", "user_silent"]),
   reasoning: z.string().min(1),
   alternativesConsidered: z.array(
     z.object({
-      engine: z.enum(ENGINES),
+      engine: z.enum(ENGINE_IDS as [string, ...string[]]),
       reasonRejected: z.string().min(1),
     }),
   ),
@@ -69,8 +66,9 @@ export type EngineDecisionShape = z.infer<typeof EngineDecisionSchema>;
 
 export function engineSystemPrompt(): string {
   return [
-    "You are a senior game engine consultant. Choose exactly one of Unity, Unreal, or Godot.",
-    "Parse any engine the user mentioned in their idea. You MAY challenge their choice with reasoning if another engine fits better.",
+    "You are a senior game engine consultant. Choose exactly one engine, by its id, from the candidate engines in the provided docs.",
+    "Match the project to the right engine: 2D web games favor Phaser; 3D web favors Three.js; cross-platform 2D/3D favors Unity, Godot, or GameMaker; AAA 3D favors Unreal; visual novels favor Ren'Py.",
+    "If the user named an engine that is among the candidates, use it. You MAY challenge their choice with reasoning only if another candidate clearly fits better.",
     "Set userPreferred to the engine the user mentioned, or null if they mentioned none.",
     "agreement rules: 'user_silent' if userPreferred is null; 'agreed' if picked === userPreferred; 'challenged' if picked !== userPreferred.",
     "Only use the provided engine docs and guidance as evidence. Answer in English.",
@@ -91,7 +89,6 @@ export function buildCategorySchema(candidateIds: string[]) {
     cons: z.array(z.string().min(1)).min(1),
   });
   return z.object({
-    answerPossible: z.boolean(),
     primary: item,
     alternatives: z.array(item).max(2),
     reasoning: z.string().min(1),
@@ -104,8 +101,8 @@ export function categorySystemPrompt(category: string): string {
     "Choose ONE primary tool and up to 2 alternatives, ONLY from the provided candidates.",
     "Use ONLY the pros, cons, pricing, platforms and facts present in each candidate's text.",
     "Do NOT invent capabilities, prices, or platform support that are not shown in the candidate text.",
-    "If the candidates are insufficient for a confident pick, say so in your reasoning rather than fabricating.",
-    "Set answerPossible=false if the provided candidates are genuinely insufficient for a confident pick; otherwise set it true.",
+    "Always choose a primary from the candidates — pick the best available even if imperfect, and note any limitation in your reasoning.",
+    "If a candidate's text says it is specific to one engine (e.g. Unity only) and the chosen engine is different, do not select it as primary.",
     "Apply the AI-vs-traditional rule: when skill/art capability is low and budget is tight,",
     "prefer ai / low-learning-curve tools (e.g. Meshy) over high-curve standalone tools (e.g. Blender), and say why.",
     "Answer in English.",

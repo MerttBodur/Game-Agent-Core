@@ -32,11 +32,12 @@ test("formatCandidates separates candidates with --- and keeps full content", ()
   assert.match(out, /Pricing: paid/);
 });
 
-test("categorySystemPrompt forbids fabricating attributes", () => {
+test("categorySystemPrompt forbids fabricating attributes and guards engine-specific tools", () => {
   const p = categorySystemPrompt("art_asset");
   assert.match(p, /only/i);
   assert.match(p, /not invent|do not invent|don't invent/i);
-  assert.match(p, /answerPossible=false/);
+  assert.match(p, /engine|specific/i);
+  assert.doesNotMatch(p, /answerPossible/);
 });
 
 test("shouldSkipCategory skips on weak retrieval signal", () => {
