@@ -9,14 +9,7 @@ test("blender produces one document per category", () => {
   assert.ok(blender.length >= 2);
   for (const d of blender) {
     assert.equal(typeof d.metadata.category, "string");
-    assert.equal(d.metadata.engine_any, true);
   }
-});
-
-test("engine docs flatten compatibility into booleans", () => {
-  const unity = toolDocuments().find((d) => d.metadata.toolId === "unity");
-  assert.equal(unity?.metadata.engine_unity, true);
-  assert.equal(unity?.metadata.engine_unreal, false);
 });
 
 test("guidance docs are loaded with topic metadata", () => {

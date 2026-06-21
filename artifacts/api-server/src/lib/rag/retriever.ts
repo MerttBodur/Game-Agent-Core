@@ -1,6 +1,6 @@
 import { Document } from "@langchain/core/documents";
 import type { Where } from "chromadb";
-import type { Category, EngineName } from "../../types/catalog.js";
+import type { Category } from "../../types/catalog.js";
 import { buildBm25, rrfFuse, type Bm25Index } from "./bm25.js";
 import { toolDocuments } from "./indexer.js";
 
@@ -11,17 +11,8 @@ const GUIDANCE_K = 2;
 // 20 is safely above the largest per-category tool count (~17).
 const FETCH_K = 20;
 
-// Chroma metadata is scalar-only; engine compatibility is matched via boolean flags.
-export function engineFlagKey(engine: EngineName): "engine_unity" | "engine_unreal" | "engine_godot" {
-  return engine === "Unity" ? "engine_unity" : engine === "Unreal" ? "engine_unreal" : "engine_godot";
-}
-
-export function toolWhereForCategory(category: Category, picked?: EngineName): Where {
-  const clauses: Where[] = [{ type: { $eq: "tool" } }, { category: { $eq: category } }];
-  if (picked) {
-    clauses.push({ $or: [{ [engineFlagKey(picked)]: { $eq: true } }, { engine_any: { $eq: true } }] });
-  }
-  return { $and: clauses };
+export function toolWhereForCategory(category: Category): Where {
+  return { $and: [{ type: { $eq: "tool" } }, { category: { $eq: category } }] };
 }
 
 export function guidanceWhere(topic?: string): Where {
@@ -45,18 +36,13 @@ async function search(query: string, k: number, where: Where): Promise<Document[
 export function metadataMatchesWhere(
   meta: Record<string, unknown>,
   category: Category,
-  picked?: EngineName,
 ): boolean {
-  if (meta.type !== "tool") return false;
-  if (meta.category !== category) return false;
-  if (!picked) return true;
-  const flag = engineFlagKey(picked);
-  return meta[flag] === true || meta.engine_any === true;
+  return meta.type === "tool" && meta.category === category;
 }
 
-function bm25ForCategory(category: Category, picked?: EngineName): Bm25Index {
+function bm25ForCategory(category: Category): Bm25Index {
   const docs = toolDocuments()
-    .filter((d) => metadataMatchesWhere(d.metadata as Record<string, unknown>, category, picked))
+    .filter((d) => metadataMatchesWhere(d.metadata as Record<string, unknown>, category))
     .map((d) => ({ id: d.metadata.toolId as string, text: d.pageContent }));
   return buildBm25(docs);
 }
@@ -91,12 +77,12 @@ export async function retrieveEngineDocs(query: string): Promise<RetrievedCandid
   return { toolDocs, guidanceDocs, toolIds: uniqueToolIds(toolDocs), topBm25Score: bm25Hits[0]?.score ?? 0 };
 }
 
-export async function retrieveForCategory(query: string, category: Category, picked: EngineName): Promise<RetrievedCandidates> {
+export async function retrieveForCategory(query: string, category: Category): Promise<RetrievedCandidates> {
   const [vectorDocs, guidanceDocs] = await Promise.all([
-    search(query, FETCH_K, toolWhereForCategory(category, picked)),
+    search(query, FETCH_K, toolWhereForCategory(category)),
     search(query, GUIDANCE_K, guidanceWhere()),
   ]);
-  const bm25Hits = bm25ForCategory(category, picked).search(query, FETCH_K);
+  const bm25Hits = bm25ForCategory(category).search(query, FETCH_K);
   const bm25Ids = bm25Hits.map((h) => h.id);
   const toolDocs = fuseToolDocs(vectorDocs, bm25Ids, TOOL_K);
   return { toolDocs, guidanceDocs, toolIds: uniqueToolIds(toolDocs), topBm25Score: bm25Hits[0]?.score ?? 0 };

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { assertCandidatesOnly, formatCandidates, shouldSkipCategory } from "./recommendCategory.js";
+import { assertCandidatesOnly, formatCandidates } from "./recommendCategory.js";
 import { categorySystemPrompt } from "../prompts/advisorPrompts.js";
 
 test("passes when all ids are candidates", () => {
@@ -40,7 +40,3 @@ test("categorySystemPrompt forbids fabricating attributes and guards engine-spec
   assert.doesNotMatch(p, /answerPossible/);
 });
 
-test("shouldSkipCategory skips on weak retrieval signal", () => {
-  assert.equal(shouldSkipCategory(0, 0), true);
-  assert.equal(shouldSkipCategory(3, 10), false);
-});

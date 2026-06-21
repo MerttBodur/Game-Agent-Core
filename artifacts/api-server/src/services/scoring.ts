@@ -55,9 +55,9 @@ function aiAppropriateness(t: ToolEntry, ctx: ScoringContext): number {
 
 function engineFit(t: ToolEntry, ctx: ScoringContext): number {
   if (ctx.category === "game_engine") {
-    return t.id === ctx.pickedEngine.toLowerCase() || t.engineCompatibility.includes(ctx.pickedEngine) ? 1 : 0.3;
+    return t.id === ctx.pickedEngine ? 1 : 0.3;
   }
-  return t.engineCompatibility.includes("any") || t.engineCompatibility.includes(ctx.pickedEngine) ? 1 : 0.2;
+  return t.engineCompatibility.includes("any") ? 1 : 0.2;
 }
 
 export function scoreTool(t: ToolEntry, ctx: ScoringContext): number {

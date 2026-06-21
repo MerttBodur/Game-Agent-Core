@@ -26,7 +26,6 @@ export function toolDocuments(catalog: readonly ToolEntry[] = TOOL_CATALOG): Doc
       `Nature: ${t.toolNature}`,
       `Learning curve: ${t.learningCurve}`,
     ].join("\n");
-    const compat = new Set(t.engineCompatibility);
     const platforms = new Set(t.supportedPlatforms);
     const platformFlags = Object.fromEntries(
       PLATFORM_KEYS.map((p) => [`platform_${p}`, platforms.has(p)]),
@@ -46,10 +45,6 @@ export function toolDocuments(catalog: readonly ToolEntry[] = TOOL_CATALOG): Doc
             learningCurve: t.learningCurve,
             difficultyLevel: t.difficultyLevel,
             beginnerSuitability: t.beginnerSuitability,
-            engine_unity: compat.has("Unity"),
-            engine_unreal: compat.has("Unreal"),
-            engine_godot: compat.has("Godot"),
-            engine_any: compat.has("any"),
             ...platformFlags,
           },
         }),

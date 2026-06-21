@@ -1,34 +1,24 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { toolWhereForCategory, guidanceWhere, engineFlagKey, metadataMatchesWhere, fuseToolDocs } from "./retriever.js";
+import { toolWhereForCategory, guidanceWhere, metadataMatchesWhere, fuseToolDocs } from "./retriever.js";
 import type { RetrievedCandidates } from "./retriever.js";
 import { Document } from "@langchain/core/documents";
 
-test("engineFlagKey maps engine names to boolean metadata keys", () => {
-  assert.equal(engineFlagKey("Unreal"), "engine_unreal");
-});
-
-test("category where without engine omits the engine clause", () => {
+test("category where filters by type and category", () => {
   assert.deepEqual(toolWhereForCategory("audio"), {
     $and: [{ type: { $eq: "tool" } }, { category: { $eq: "audio" } }],
   });
-});
-
-test("category where with engine includes picked OR any", () => {
-  const where = toolWhereForCategory("art_asset", "Unity") as { $and: unknown[] };
-  assert.deepEqual(where.$and[2], { $or: [{ engine_unity: { $eq: true } }, { engine_any: { $eq: true } }] });
 });
 
 test("guidanceWhere filters by topic when provided", () => {
   assert.deepEqual(guidanceWhere("x"), { $and: [{ type: { $eq: "guidance" } }, { topic: { $eq: "x" } }] });
 });
 
-test("metadataMatchesWhere enforces category and engine OR-any", () => {
-  const meta = { type: "tool", category: "art_asset", engine_unity: false, engine_any: true };
-  assert.equal(metadataMatchesWhere(meta, "art_asset", "Unity"), true);
-  const metaNo = { type: "tool", category: "art_asset", engine_unity: false, engine_any: false };
-  assert.equal(metadataMatchesWhere(metaNo, "art_asset", "Unity"), false);
-  assert.equal(metadataMatchesWhere(meta, "audio", "Unity"), false);
+test("metadataMatchesWhere enforces type and category only", () => {
+  const meta = { type: "tool", category: "art_asset" };
+  assert.equal(metadataMatchesWhere(meta, "art_asset"), true);
+  assert.equal(metadataMatchesWhere(meta, "audio"), false);
+  assert.equal(metadataMatchesWhere({ type: "guidance", category: "art_asset" }, "art_asset"), false);
 });
 
 test("fuseToolDocs orders by RRF of vector and bm25 id lists", () => {
