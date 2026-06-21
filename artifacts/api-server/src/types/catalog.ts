@@ -6,8 +6,10 @@ export type Category = (typeof CATEGORIES)[number];
 export const NON_ENGINE_CATEGORIES = ["art_asset", "vfx", "animation", "audio", "ai_coding"] as const;
 export type NonEngineCategory = (typeof NON_ENGINE_CATEGORIES)[number];
 
-export const ENGINES = ["Unity", "Unreal", "Godot"] as const;
-export type EngineName = (typeof ENGINES)[number];
+// EngineName is a catalog tool id (e.g. "unity", "unreal_engine", "threejs").
+// The runtime list of valid ids lives in lib/engines.ts (derived from the catalog)
+// to avoid a circular import between types/ and lib/.
+export type EngineName = string;
 
 export const ENGINE_COMPAT = ["Unity", "Unreal", "Godot", "any"] as const;
 export const TOOL_NATURES = ["ai", "traditional", "hybrid"] as const;
