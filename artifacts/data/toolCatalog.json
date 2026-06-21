@@ -454,9 +454,61 @@
     "difficultyLevel": "beginner",
     "beginnerSuitability": 80,
     "supportedPlatforms": ["pc"],
-    "pros": ["Strong codebase-aware code generation", "Fast refactoring loops with context", "Familiar VS Code-based editor UX", "Chat and inline edit modes"],
+    "pros": ["Strong codebase-aware code generation", "Fast refactoring loops with context", "Familiar VS Code-based editor UX", "Chat and inline edit modes", "Flat $20/mo with an included credit pool — predictable monthly cost"],
     "cons": ["Paid tier required for advanced usage", "Generated code still needs careful review", "IDE migration overhead for existing workflows"],
     "website": "https://cursor.com"
+  },
+  {
+    "id": "chatgpt_codex",
+    "name": "ChatGPT Codex",
+    "categories": ["ai_coding"],
+    "description": "OpenAI's agentic coding tool available inside ChatGPT (Free, Go, Plus, and Pro tiers) and via the Codex CLI. Generates and edits code, runs cloud tasks, and reviews changes within message/task quotas.",
+    "bestUseCase": "Affordable agentic AI coding for game scripting, with a free tier and low-cost entry plans.",
+    "toolNature": "ai",
+    "learningCurve": "low",
+    "engineCompatibility": ["any"],
+    "pricing": "freemium",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 80,
+    "supportedPlatforms": ["pc", "web"],
+    "pros": [
+      "Free tier plus low-cost Go ($8/mo) and Plus ($20/mo) plans",
+      "Message/task quotas instead of per-token billing keep costs predictable",
+      "Strong multi-step code generation and review",
+      "Available in ChatGPT and via the Codex CLI"
+    ],
+    "cons": [
+      "Quota-limited per 5-hour window on lower tiers",
+      "Generated code still needs careful review",
+      "Cloud-based — code is sent to OpenAI"
+    ],
+    "website": "https://developers.openai.com/codex"
+  },
+  {
+    "id": "gemini_code_assist",
+    "name": "Gemini CLI / Code Assist",
+    "categories": ["ai_coding"],
+    "description": "Google's AI coding assistant via the Gemini CLI and IDE extensions, running on the free Gemini Code Assist for Individuals tier with generous daily quotas, plus paid Standard and Enterprise subscriptions.",
+    "bestUseCase": "Low-budget AI-assisted game scripting with a generous free tier in the terminal or IDE.",
+    "toolNature": "ai",
+    "learningCurve": "low",
+    "engineCompatibility": ["any"],
+    "pricing": "freemium",
+    "difficultyLevel": "beginner",
+    "beginnerSuitability": 82,
+    "supportedPlatforms": ["pc", "web"],
+    "pros": [
+      "Generous free tier (~60 requests/min, ~1,000 requests/day)",
+      "Ideal for low-budget solo developers",
+      "Works in the terminal (Gemini CLI) and major IDEs",
+      "Flat paid tiers available when you outgrow free"
+    ],
+    "cons": [
+      "Free-tier quotas can throttle heavy sessions",
+      "Generated code still needs review",
+      "Cloud-based — code is sent to Google"
+    ],
+    "website": "https://google-gemini.github.io/gemini-cli"
   },
   {
     "id": "codeium",
@@ -661,6 +713,33 @@
     "pros": ["Completely free with no restrictions", "Lightweight and portable", "Full Lua code control", "Great for game jams"],
     "cons": ["No built-in editor or visual tools", "Lua knowledge required", "Manual setup for common engine features"],
     "website": "https://love2d.org"
+  },
+  {
+    "id": "threejs",
+    "name": "Three.js",
+    "categories": ["game_engine"],
+    "description": "Open-source JavaScript 3D library built on WebGL for rendering animated 3D graphics in the browser. A rendering library, not a full game engine: it provides scene, camera, lights, and meshes, but you build the game loop, physics, and tooling yourself.",
+    "bestUseCase": "Custom 3D games and interactive 3D experiences that run in a web browser.",
+    "toolNature": "traditional",
+    "learningCurve": "high",
+    "engineCompatibility": ["any"],
+    "pricing": "open_source",
+    "difficultyLevel": "advanced",
+    "beginnerSuitability": 35,
+    "supportedPlatforms": ["web"],
+    "pros": [
+      "Free and open source (MIT license)",
+      "Industry-standard WebGL 3D rendering in the browser",
+      "Huge community and ecosystem of examples",
+      "No install required for end users"
+    ],
+    "cons": [
+      "Rendering library only — no built-in game loop, physics, or editor",
+      "Steep learning curve; you assemble engine features yourself",
+      "3D-focused — overkill for 2D games",
+      "Web/browser output only"
+    ],
+    "website": "https://threejs.org"
   },
   {
     "id": "nano_banana",
@@ -965,7 +1044,7 @@
     "beginnerSuitability": 78,
     "supportedPlatforms": ["pc"],
     "pros": ["Strong agentic multi-step task execution", "Understands full codebase context", "Runs shell commands and tools autonomously", "Works across any language or engine codebase"],
-    "cons": ["Subscription cost via Anthropic API or Claude Pro", "Requires careful review of autonomous changes", "Terminal-based UX not suited for all workflows"],
+    "cons": ["Subscription cost via Anthropic API or Claude Pro", "Requires careful review of autonomous changes", "Terminal-based UX not suited for all workflows", "Token-heavy agentic use is expensive; Max plans run $100–200/mo"],
     "website": "https://claude.ai/code"
   },
   {
