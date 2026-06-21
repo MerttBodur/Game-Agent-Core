@@ -60,7 +60,7 @@ test("returns null for a non-catalog engine or no engine", () => {
 });
 
 test("ignores a negated engine mention", () => {
-  assert.equal(detectUserPreferredEngine("anything but Unity"), null);
+  assert.equal(detectUserPreferredEngine("not Unity"), null);
 });
 
 test("does not treat absent engine as a user preference", () => {

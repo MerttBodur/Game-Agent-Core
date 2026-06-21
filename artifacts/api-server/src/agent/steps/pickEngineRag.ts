@@ -30,7 +30,7 @@ function escapeRegExp(s: string): string {
 }
 
 const NEGATED_ENGINE_CONTEXT =
-  /\b(no|not|but|avoid|without|against|instead of|do not want|don't want|dont want)\s+$/i;
+  /\b(no|not|avoid|without|against|instead of|do not want|don't want|dont want)\s+$/i;
 
 export async function runPickEngine(input: AdvisorInput): Promise<EngineDecision> {
   const [{ chatModel }, { retrieveEngineDocs }] = await Promise.all([
