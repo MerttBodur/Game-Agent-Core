@@ -40,3 +40,12 @@ test("categorySystemPrompt forbids fabricating attributes and guards engine-spec
   assert.doesNotMatch(p, /answerPossible/);
 });
 
+test("categorySystemPrompt has a symmetric high-budget/advanced rule favoring frontier tools", () => {
+  const p = categorySystemPrompt("ai_coding");
+  // The low-budget/low-skill rule must have a counterpart: high budget + advanced
+  // skill should push toward frontier / highest-quality tools, not the value pick.
+  assert.match(p, /high\b[\s\S]*budget|budget[\s\S]*high\b/i);
+  assert.match(p, /advanced|experienced|expert/i);
+  assert.match(p, /frontier|highest[- ]quality|best[- ]in[- ]class|top[- ]tier/i);
+});
+

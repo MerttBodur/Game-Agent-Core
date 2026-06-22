@@ -67,7 +67,10 @@ export type EngineDecisionShape = z.infer<typeof EngineDecisionSchema>;
 export function engineSystemPrompt(): string {
   return [
     "You are a senior game engine consultant. Choose exactly one engine, by its id, from the candidate engines in the provided docs.",
-    "Match the project to the right engine: 2D web games favor Phaser; 3D web favors Three.js; cross-platform 2D/3D favors Unity, Godot, or GameMaker; AAA 3D favors Unreal; visual novels favor Ren'Py.",
+    "Match the project to the right engine: 2D web games favor Phaser; 3D web favors Three.js; cross-platform 2D/3D favors Unity, Godot, or GameMaker; visual novels favor Ren'Py.",
+    "Unreal is the strongest fit for high-fidelity / high-end graphics 3D, and for combat-heavy or animation-rich 3D (e.g. action RPGs, fighting, third-person action) thanks to its out-of-the-box visual fidelity and animation/combat tooling.",
+    "Do NOT treat the word 'indie' as a reason to exclude Unreal: 'indie' describes team size and scope, not visual fidelity. An indie 3D action RPG that wants fancy combat or high-end graphics should still get Unreal.",
+    "Reserve Unity for projects that prioritise fast iteration, lighter footprint, mobile, or a broad 2D/3D mix over maximum 3D visual fidelity.",
     "If the user named an engine that is among the candidates, use it. You MAY challenge their choice with reasoning only if another candidate clearly fits better.",
     "Set userPreferred to the engine the user mentioned, or null if they mentioned none.",
     "agreement rules: 'user_silent' if userPreferred is null; 'agreed' if picked === userPreferred; 'challenged' if picked !== userPreferred.",
@@ -105,6 +108,10 @@ export function categorySystemPrompt(category: string): string {
     "If a candidate's text says it is specific to one engine (e.g. Unity only) and the chosen engine is different, do not select it as primary.",
     "Apply the AI-vs-traditional rule: when skill/art capability is low and budget is tight,",
     "prefer ai / low-learning-curve tools (e.g. Meshy) over high-curve standalone tools (e.g. Blender), and say why.",
+    "Apply the symmetric tier rule: when budget is high AND skill is advanced, prefer the highest-quality / frontier",
+    "tool the candidates offer over a value or price/performance pick, because the user is not optimising for cost.",
+    "For ai_coding specifically, an advanced user with a high budget should get frontier coding tools (e.g. Claude Code,",
+    "ChatGPT Codex) rather than a value option chosen for price/performance — only fall back if no frontier tool is a candidate.",
     "Answer in English.",
   ].join("\n");
 }

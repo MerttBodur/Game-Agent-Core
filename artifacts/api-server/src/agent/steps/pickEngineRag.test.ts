@@ -5,6 +5,17 @@ import {
   detectUserPreferredEngine,
   normalizeEngineDecision,
 } from "./pickEngineRag.js";
+import { engineSystemPrompt } from "../prompts/advisorPrompts.js";
+
+test("engine prompt routes high-fidelity 3D to Unreal without requiring AAA scope", () => {
+  const p = engineSystemPrompt();
+  // The rule must not gate Unreal behind "AAA" alone — high-fidelity / combat-focused
+  // 3D (indie included) should map to Unreal too.
+  assert.match(p, /high[- ]fidelity|high[- ]end graphics|visual fidelity/i);
+  assert.match(p, /unreal/i);
+  // "indie" must not be treated as a reason to exclude Unreal.
+  assert.match(p, /indie/i);
+});
 
 test("user_silent required when no engine mentioned", () => {
   assert.throws(() =>
